@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #0B0B0E;
+    color: #F5F5F7;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Custom telemetry scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0B0E;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #242432;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #E10600;
+}
+
+/* Subtle carbon grid texture */
+.carbon-grid {
+  background-image: linear-gradient(to right, #15151E 1px, transparent 1px),
+                    linear-gradient(to bottom, #15151E 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.pitwall-panel {
+  background: #15151E;
+  border: 1px solid #242432;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+
+.pitwall-panel:hover {
+  border-color: rgba(225, 6, 0, 0.4);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.65), 0 0 15px -3px rgba(225, 6, 0, 0.15);
+}
+
+.telemetry-tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}

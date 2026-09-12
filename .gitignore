@@ -31,3 +31,9 @@ data/cache/openmeteo/
 
 # Retain pre-processed parquet datasets for offline pipeline execution
 !data/cache/processed/
+
+# Frontend dependencies and build
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
