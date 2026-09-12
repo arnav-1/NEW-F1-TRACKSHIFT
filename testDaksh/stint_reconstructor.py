@@ -127,14 +127,19 @@ class StintReconstructor:
                 fuel_burn_rate = 105.0 / max(50, total_race_laps)
                 lap_nos = s_clean["LapNumber"].values
                 fuel_rem = np.maximum(5.0, 105.0 - fuel_burn_rate * lap_nos)
-                fuel_burned = 105.0 - fuel_rem
-                fuel_correction = self.beta_fuel * fuel_burned
+                
+                # IN-STINT FUEL BURN NORMALIZATION:
+                # Base pace is measured on fresh tyres at the start of THIS stint.
+                # Therefore, fuel correction within the stint must be relative to the stint start lap
+                # to prevent accumulating whole-race fuel burn as a multi-second artificial DC offset.
+                fuel_burned_in_stint = fuel_burn_rate * s_clean["stint_lap_idx"].values
+                fuel_correction = self.beta_fuel * fuel_burned_in_stint
 
                 s_clean["fuel_mass_remaining"] = fuel_rem
                 s_clean["fuel_correction_s"] = fuel_correction
 
                 # Isolated tyre degradation target: delta t_tyre,obs
-                # Note: Track evolution is unmodelled and absorbed into residual epsilon(k)
+                # Strictly starts at ~0.0s on fresh tyres at stint start
                 s_clean["degradation_obs"] = s_clean["lap_time_s"] - base_pace + fuel_correction
 
                 # Micro-sector extraction (S1, S2, S3 in seconds)

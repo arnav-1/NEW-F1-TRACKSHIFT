@@ -123,6 +123,53 @@ class TelemetricGripValidator:
             logger.info("Successfully extracted %d apex telemetry points. Peak a_y = %.2f g.", len(df_apex), df_apex["a_y_g"].max())
         return df_apex
 
+    def compute_grip_validation_metrics(
+        self,
+        predicted_mu: np.ndarray,
+        measured_mu: np.ndarray,
+    ) -> Dict[str, float]:
+        """
+        Computes non-circular telemetric grip validation metrics:
+        - Pearson correlation coefficient (r)
+        - Magnitude error: MAE_mu = mean(|predicted_mu - measured_mu|)
+        - Calibration slope (alpha_1) and offset (alpha_0) via OLS: measured_mu = alpha_0 + alpha_1 * predicted_mu
+        - Lin's Concordance Correlation Coefficient (CCC)
+        """
+        p = np.array(predicted_mu)
+        m = np.array(measured_mu)
+        n = min(len(p), len(m))
+        p = p[:n]
+        m = m[:n]
+
+        if n < 4:
+            return {"r": 0.0, "mae_mu": 0.0, "calib_slope": 1.0, "calib_intercept": 0.0, "ccc": 0.0}
+
+        # Pearson r
+        corr = float(np.corrcoef(p, m)[0, 1])
+
+        # Magnitude MAE
+        mae_mu = float(np.mean(np.abs(p - m)))
+
+        # Calibration slope and intercept
+        poly = np.polyfit(p, m, deg=1)  # [slope, intercept]
+        slope = float(poly[0])
+        intercept = float(poly[1])
+
+        # Lin's Concordance Correlation Coefficient (CCC)
+        mean_p, mean_m = np.mean(p), np.mean(m)
+        var_p, var_m = np.var(p), np.var(m)
+        cov = np.cov(p, m)[0, 1]
+        ccc = float((2 * cov) / (var_p + var_m + (mean_p - mean_m) ** 2)) if (var_p + var_m + (mean_p - mean_m) ** 2) > 0 else 0.0
+
+        return {
+            "r": corr,
+            "mae_mu": mae_mu,
+            "calib_slope": slope,
+            "calib_intercept": intercept,
+            "ccc": ccc,
+            "points_evaluated": n,
+        }
+
 
 if __name__ == "__main__":
     validator = TelemetricGripValidator()
