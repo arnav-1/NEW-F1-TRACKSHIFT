@@ -1,12 +1,18 @@
-import type { LapTelemetryPoint, StintValidationSummary, CircuitId, SessionId } from '../types/telemetry';
+import type {
+  LapTelemetryRecord,
+  StintBenchmark,
+  CircuitId,
+  SessionId,
+  TyreCompound,
+  TyreCornerMetrics,
+} from '../types/telemetry';
 
-export const VALIDATION_SUMMARIES: StintValidationSummary[] = [
+export const STINT_BENCHMARKS: StintBenchmark[] = [
   {
-    session_id: '2024_barcelona_R_stint1',
-    driver: 'Nico Hülkenberg #27',
+    circuit: 'Barcelona (Stint 1)',
     compound: 'SOFT',
-    stint_laps: 10,
-    baseline_poly_mae: 0.842,
+    laps_completed: 10,
+    poly_baseline_mae: 0.842,
     trackshift_physical_mae: 0.182,
     slope_error: 0.012,
     r_squared: 0.865,
@@ -15,11 +21,10 @@ export const VALIDATION_SUMMARIES: StintValidationSummary[] = [
     status: 'PASSED',
   },
   {
-    session_id: '2024_barcelona_R_stint2',
-    driver: 'Nico Hülkenberg #27',
+    circuit: 'Barcelona (Stint 2)',
     compound: 'HARD',
-    stint_laps: 27,
-    baseline_poly_mae: 1.534,
+    laps_completed: 27,
+    poly_baseline_mae: 1.534,
     trackshift_physical_mae: 0.618,
     slope_error: 0.048,
     r_squared: 0.082,
@@ -28,11 +33,10 @@ export const VALIDATION_SUMMARIES: StintValidationSummary[] = [
     status: 'PASSED',
   },
   {
-    session_id: '2024_silverstone_R_stint1',
-    driver: 'Nico Hülkenberg #27',
+    circuit: 'Silverstone (Stint 1)',
     compound: 'SOFT',
-    stint_laps: 12,
-    baseline_poly_mae: 1.280,
+    laps_completed: 12,
+    poly_baseline_mae: 1.280,
     trackshift_physical_mae: 0.346,
     slope_error: 0.015,
     r_squared: 0.812,
@@ -45,117 +49,137 @@ export const VALIDATION_SUMMARIES: StintValidationSummary[] = [
 export function generateLapTelemetry(
   circuit: CircuitId,
   session: SessionId,
+  compound: TyreCompound = 'SOFT',
   aeroDeficit: number = 0.88,
   massScaling: boolean = true,
   pushLevel: number = 0.94
-): LapTelemetryPoint[] {
+): LapTelemetryRecord[] {
   const isBarcelona = circuit === 'barcelona';
-  const totalLaps = isBarcelona ? (session === 'Race' ? 26 : 18) : (session === 'Race' ? 24 : 16);
   const basePace = isBarcelona ? 80.2 : 90.5;
 
-  const points: LapTelemetryPoint[] = [];
+  // Stint length depending on compound and session
+  let totalLaps = 18;
+  if (session === 'Race') {
+    if (compound === 'SOFT') totalLaps = 12;
+    else if (compound === 'MEDIUM') totalLaps = 20;
+    else totalLaps = 27;
+  } else {
+    totalLaps = compound === 'HARD' ? 22 : 14;
+  }
 
-  // Starting fuel based on session
-  const startFuel = session === 'Race' ? 104.0 : 35.0;
-  const burnRate = 1.62;
+  const points: LapTelemetryRecord[] = [];
+  const startFuel = session === 'Race' ? 102.5 : 36.0;
+  const burnRate = 1.60;
 
-  // Extra thermal penalty from aero deficit (default 0.88 downforce -> higher slide)
-  const aeroHeatDelta = (1.0 - aeroDeficit) * 40.0; // ~ 4.8°C extra heat
+  // Extra thermal penalty from aero deficit (default 0.88 downforce -> +4.8°C extra heat)
+  const aeroHeatDelta = (1.0 - aeroDeficit) * 40.0; // ~4.8°C
+
+  // Thermal baseline and wear sensitivity per compound
+  const compoundWearFactor = compound === 'SOFT' ? 1.45 : compound === 'MEDIUM' ? 1.0 : 0.65;
+  const compoundTempOffset = compound === 'SOFT' ? 4.0 : compound === 'MEDIUM' ? 0.0 : -6.0;
+  const cliffLapNominal = compound === 'SOFT' ? 9.8 : compound === 'MEDIUM' ? 17.5 : 24.5;
 
   for (let lap = 1; lap <= totalLaps; lap++) {
-    const fuelRemaining = Math.max(5.0, startFuel - (lap - 1) * burnRate);
+    const fuelRemaining = Math.max(4.0, startFuel - (lap - 1) * burnRate);
     const fuelPenalty = 0.033 * fuelRemaining;
-    const sessionLapOffset = session === 'Race' ? lap + 40 : lap;
+    const sessionLapOffset = session === 'Race' ? lap + 38 : lap;
     const trackEvo = 1.25 * (1.0 - Math.exp(-sessionLapOffset / 120.0));
 
-    // Dynamic degradation curve with thermal cliff onset around lap 19
     const massFactor = massScaling ? Math.pow(fuelRemaining / 35.0, 0.4) : 1.0;
     const tyreAge = lap;
 
-    // Abrasion, graining, blistering rates
-    const abrasion = 0.00018 * Math.pow(tyreAge / 10.0, 1.15) * massFactor * pushLevel;
-    const graining = tyreAge <= 2 ? 0.00012 : 0.0;
-    const blistering = tyreAge >= 17 ? 0.00035 * Math.pow((tyreAge - 16) / 4.0, 1.8) : 0.0;
+    // Physical damage rates
+    const abrasion = 0.00014 * Math.pow(tyreAge / 10.0, 1.15) * compoundWearFactor * massFactor * pushLevel;
+    const graining = (tyreAge <= 2 && compound === 'SOFT') ? 0.00010 : 0.0;
+    const isPastCliff = tyreAge >= Math.floor(cliffLapNominal);
+    const blistering = isPastCliff
+      ? 0.00028 * Math.pow(Math.max(0, tyreAge - cliffLapNominal + 1) / 3.0, 1.75) * compoundWearFactor
+      : 0.0;
+
     const totalWearRate = abrasion + graining + blistering;
-    const cumulativeDamage = Math.min(1.0, 0.04 + totalWearRate * tyreAge * 12.0);
+    const cumulativeDamage = Math.min(1.0, 0.03 + totalWearRate * tyreAge * 14.0);
 
     // Pace delta from wear
-    const wearPaceLoss = (0.075 * tyreAge + (tyreAge > 18 ? 0.018 * Math.pow(tyreAge - 18, 2) : 0.002 * Math.pow(tyreAge, 2))) * (1.0 + (1.0 - pushLevel) * 0.2);
+    const linearDeg = compound === 'SOFT' ? 0.075 : compound === 'MEDIUM' ? 0.052 : 0.035;
+    const quadraticDeg = isPastCliff
+      ? 0.022 * Math.pow(tyreAge - cliffLapNominal, 2)
+      : 0.0015 * Math.pow(tyreAge, 1.8);
+    const wearPaceLoss = (linearDeg * tyreAge + quadraticDeg) * (1.0 + (1.0 - pushLevel) * 0.15);
 
-    // Cleaned pace
     const paceCorrected = basePace + wearPaceLoss;
 
-    // Raw lap time: pace_corrected + fuel - trackEvo + noise
-    let noise = ((lap * 37) % 17 - 8) * 0.025;
+    // Deterministic timing noise and domain filter outliers
+    let noise = ((lap * 41) % 19 - 9) * 0.022;
+    let isOutlier = false;
     let outlierReason: string | null = null;
 
-    if (lap === 7 && session === 'Race') {
-      noise += 2.85; // Traffic delay
+    if (lap === 5 && session === 'Race') {
+      noise += 2.85;
+      isOutlier = true;
       outlierReason = 'Traffic Spike (+2.85s behind Bottas)';
-    } else if (lap === 14 && session === 'Race') {
-      noise += 3.10; // Yellow flag sector 2
-      outlierReason = 'Yellow Flag Slowdown (+3.10s Sector 2)';
+    } else if (lap === 10 && session === 'Race' && totalLaps >= 14) {
+      noise += 3.20;
+      isOutlier = true;
+      outlierReason = 'Yellow Flag Slowdown (+3.20s Sector 2)';
     }
 
     const rawLapTime = paceCorrected + fuelPenalty - trackEvo + noise;
-    const predictedPace = basePace + 0.072 * tyreAge + 0.0025 * Math.pow(tyreAge, 2);
+    const predictedPace = basePace + linearDeg * tyreAge + (isPastCliff ? 0.019 * Math.pow(tyreAge - cliffLapNominal, 2) : 0.0018 * Math.pow(tyreAge, 1.8));
 
-    // Thermal stack per wheel
-    const flBaseTread = 98.0 + (tyreAge * 0.9) + aeroHeatDelta * 0.4 + (tyreAge > 18 ? 8.0 : 0);
-    const flBaseCarcass = 90.0 + (tyreAge * 0.7) + aeroHeatDelta * 0.2 + (tyreAge > 18 ? 6.0 : 0);
+    // Corner thermals
+    const flTread = 98.0 + compoundTempOffset + (tyreAge * 0.85) + aeroHeatDelta * 0.4 + (isPastCliff ? 7.5 : 0);
+    const flCarcass = 91.0 + compoundTempOffset + (tyreAge * 0.65) + aeroHeatDelta * 0.2 + (isPastCliff ? 5.5 : 0);
+
+    const getCornerStatus = (tread: number): 'OPTIMAL' | 'GRAINING_RISK' | 'OVERHEATING' => {
+      if (tread < 85 && compound === 'SOFT') return 'GRAINING_RISK';
+      if (tread > 118) return 'OVERHEATING';
+      return 'OPTIMAL';
+    };
+
+    const makeCorner = (
+      corner: 'FL' | 'FR' | 'RL' | 'RR',
+      share: number,
+      treadDelta: number,
+      carcDelta: number,
+      abrasionScale: number,
+      blisterScale: number,
+      isLimiting: boolean
+    ): TyreCornerMetrics => {
+      const tread = flTread + treadDelta;
+      const carc = flCarcass + carcDelta;
+      return {
+        corner,
+        workload_share: share,
+        tread_temp_c: Number(tread.toFixed(1)),
+        carcass_temp_c: Number(carc.toFixed(1)),
+        abrasion_rate: Number((abrasion * abrasionScale).toFixed(5)),
+        graining_rate: Number((graining * (isLimiting ? 1.0 : 0.3)).toFixed(5)),
+        blistering_rate: Number((blistering * blisterScale).toFixed(5)),
+        cumulative_damage: Number((cumulativeDamage * (isLimiting ? 1.0 : share / 0.362)).toFixed(3)),
+        is_limiting: isLimiting,
+        status: getCornerStatus(tread),
+      };
+    };
+
+    const corners: Record<'FL' | 'FR' | 'RL' | 'RR', TyreCornerMetrics> = {
+      FL: makeCorner('FL', 0.362, 0.0, 0.0, 0.40, 0.55, true),
+      FR: makeCorner('FR', 0.181, -13.8, -11.5, 0.18, 0.15, false),
+      RL: makeCorner('RL', 0.276, -5.6, -3.2, 0.28, 0.20, false),
+      RR: makeCorner('RR', 0.181, -15.9, -13.1, 0.14, 0.10, false),
+    };
 
     points.push({
       lap_number: lap,
+      tyre_life: lap,
       raw_lap_time: Number(rawLapTime.toFixed(3)),
       fuel_remaining_kg: Number(fuelRemaining.toFixed(1)),
       fuel_penalty_s: Number(fuelPenalty.toFixed(3)),
       track_evolution_s: Number(trackEvo.toFixed(3)),
       pace_corrected_s: Number(paceCorrected.toFixed(3)),
       predicted_pace_s: Number(predictedPace.toFixed(3)),
-      limiting_corner: 'FL',
+      is_outlier: isOutlier,
       outlier_reason: outlierReason,
-      corners: {
-        FL: {
-          workload_share: 0.362,
-          tread_temp_c: Number(flBaseTread.toFixed(1)),
-          carcass_temp_c: Number(flBaseCarcass.toFixed(1)),
-          abrasion_rate: Number((abrasion * 0.40).toFixed(5)),
-          graining_rate: Number((graining * 0.50).toFixed(5)),
-          blistering_rate: Number((blistering * 0.55).toFixed(5)),
-          cumulative_damage: Number(cumulativeDamage.toFixed(3)),
-          is_limiting: true,
-        },
-        FR: {
-          workload_share: 0.181,
-          tread_temp_c: Number((flBaseTread - 13.8).toFixed(1)),
-          carcass_temp_c: Number((flBaseCarcass - 11.5).toFixed(1)),
-          abrasion_rate: Number((abrasion * 0.18).toFixed(5)),
-          graining_rate: Number((graining * 0.20).toFixed(5)),
-          blistering_rate: Number((blistering * 0.15).toFixed(5)),
-          cumulative_damage: Number((cumulativeDamage * 0.52).toFixed(3)),
-          is_limiting: false,
-        },
-        RL: {
-          workload_share: 0.276,
-          tread_temp_c: Number((flBaseTread - 5.6).toFixed(1)),
-          carcass_temp_c: Number((flBaseCarcass - 3.2).toFixed(1)),
-          abrasion_rate: Number((abrasion * 0.28).toFixed(5)),
-          graining_rate: Number((graining * 0.15).toFixed(5)),
-          blistering_rate: Number((blistering * 0.20).toFixed(5)),
-          cumulative_damage: Number((cumulativeDamage * 0.78).toFixed(3)),
-          is_limiting: false,
-        },
-        RR: {
-          workload_share: 0.181,
-          tread_temp_c: Number((flBaseTread - 15.9).toFixed(1)),
-          carcass_temp_c: Number((flBaseCarcass - 13.1).toFixed(1)),
-          abrasion_rate: Number((abrasion * 0.14).toFixed(5)),
-          graining_rate: Number((graining * 0.15).toFixed(5)),
-          blistering_rate: Number((blistering * 0.10).toFixed(5)),
-          cumulative_damage: Number((cumulativeDamage * 0.49).toFixed(3)),
-          is_limiting: false,
-        },
-      },
+      corners,
     });
   }
 

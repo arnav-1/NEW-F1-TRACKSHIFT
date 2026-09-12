@@ -1,38 +1,35 @@
-export interface TyreCornerState {
-  workload_share: number;       // e.g. 0.362 for FL
-  tread_temp_c: number;         // e.g. 112.4
-  carcass_temp_c: number;       // e.g. 104.1
-  abrasion_rate: number;        // e.g. 0.00014
-  graining_rate: number;        // e.g. 0.0
-  blistering_rate: number;      // e.g. 0.00008
-  cumulative_damage: number;    // e.g. 0.245 (0 to 1)
-  is_limiting: boolean;         // true for FL
+export interface TyreCornerMetrics {
+  corner: 'FL' | 'FR' | 'RL' | 'RR';
+  workload_share: number;        // e.g. 0.362 for FL
+  tread_temp_c: number;          // e.g. 112.4
+  carcass_temp_c: number;        // e.g. 104.1
+  abrasion_rate: number;         // e.g. 0.00014
+  graining_rate: number;         // e.g. 0.0
+  blistering_rate: number;       // e.g. 0.00008
+  cumulative_damage: number;     // e.g. 0.245 (0.0 to 1.0)
+  is_limiting: boolean;          // true for FL at Barcelona
+  status: 'OPTIMAL' | 'GRAINING_RISK' | 'OVERHEATING';
 }
 
-export interface LapTelemetryPoint {
+export interface LapTelemetryRecord {
   lap_number: number;
+  tyre_life: number;
   raw_lap_time: number;
   fuel_remaining_kg: number;
   fuel_penalty_s: number;
   track_evolution_s: number;
   pace_corrected_s: number;
   predicted_pace_s: number;
-  limiting_corner: 'FL' | 'FR' | 'RL' | 'RR';
-  corners: {
-    FL: TyreCornerState;
-    FR: TyreCornerState;
-    RL: TyreCornerState;
-    RR: TyreCornerState;
-  };
-  outlier_reason?: string | null; // e.g. 'Traffic Spike (> 2.5s)'
+  is_outlier: boolean;
+  outlier_reason?: string | null;
+  corners: Record<'FL' | 'FR' | 'RL' | 'RR', TyreCornerMetrics>;
 }
 
-export interface StintValidationSummary {
-  session_id: string;
-  driver: string;
+export interface StintBenchmark {
+  circuit: string;
   compound: 'SOFT' | 'MEDIUM' | 'HARD';
-  stint_laps: number;
-  baseline_poly_mae: number;
+  laps_completed: number;
+  poly_baseline_mae: number;
   trackshift_physical_mae: number;
   slope_error: number;
   r_squared: number;
@@ -49,3 +46,4 @@ export interface AblationConfig {
 
 export type CircuitId = 'barcelona' | 'silverstone';
 export type SessionId = 'FP1' | 'FP2' | 'FP3' | 'Race';
+export type TyreCompound = 'SOFT' | 'MEDIUM' | 'HARD';
