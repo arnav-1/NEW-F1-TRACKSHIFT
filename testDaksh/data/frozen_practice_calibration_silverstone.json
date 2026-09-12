@@ -1,0 +1,43 @@
+{
+  "circuit": "Silverstone",
+  "calibration_status": "FROZEN_PRE_RACE",
+  "source_provenance": "FP2 Practice Long-Run Latent Parameter Estimation",
+  "compounds": {
+    "SOFT": {
+      "inferred_beta_0": 0.08178571428571677,
+      "inferred_beta_1": -0.011053571428575763,
+      "inferred_beta_2": 1.5758749999999955,
+      "inferred_beta_1_per_lap": -0.002210714285715153,
+      "stints_analyzed": 7,
+      "calibrated_w_p1": 0.005,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 95.0,
+      "t_window": 15.0,
+      "source": "Inferred from Practice Long Runs (FP2)"
+    },
+    "MEDIUM": {
+      "inferred_beta_0": 0.13331428571429627,
+      "inferred_beta_1": -0.0579567099567124,
+      "inferred_beta_2": 1.2162077922077703,
+      "inferred_beta_1_per_lap": -0.00724458874458905,
+      "stints_analyzed": 9,
+      "calibrated_w_p1": 0.005,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 105.0,
+      "t_window": 18.0,
+      "source": "Inferred from Practice Long Runs (FP2)"
+    },
+    "HARD": {
+      "inferred_beta_0": 0.0,
+      "inferred_beta_1": 1.2,
+      "inferred_beta_2": 0.35,
+      "inferred_beta_1_per_lap": 0.05,
+      "stints_analyzed": 0,
+      "calibrated_w_p1": 0.03076923076923077,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 112.0,
+      "t_window": 20.0,
+      "source": "Physical Compound Prior (Unobserved in FP long runs)"
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "circuit": "Belgium",
+  "calibration_status": "FROZEN_PRE_RACE",
+  "source_provenance": "FP2 Practice Long-Run Latent Parameter Estimation",
+  "compounds": {
+    "SOFT": {
+      "inferred_beta_0": 0.13429166666666625,
+      "inferred_beta_1": 0.3394749999999991,
+      "inferred_beta_2": 1.6495535714285918,
+      "inferred_beta_1_per_lap": 0.06271785714285295,
+      "stints_analyzed": 5,
+      "calibrated_w_p1": 0.03859560439560182,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 95.0,
+      "t_window": 15.0,
+      "source": "Inferred from Practice Long Runs (FP2)"
+    },
+    "MEDIUM": {
+      "inferred_beta_0": 0.08333035714285811,
+      "inferred_beta_1": 2.0333428571428502,
+      "inferred_beta_2": -0.18258630952380062,
+      "inferred_beta_1_per_lap": 0.3412942640692645,
+      "stints_analyzed": 12,
+      "calibrated_w_p1": 0.2100272394272397,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 105.0,
+      "t_window": 18.0,
+      "source": "Inferred from Practice Long Runs (FP2)"
+    },
+    "HARD": {
+      "inferred_beta_0": 0.005466666666661624,
+      "inferred_beta_1": 2.209847619047625,
+      "inferred_beta_2": -1.0217142857143005,
+      "inferred_beta_1_per_lap": 0.27623095238095313,
+      "stints_analyzed": 1,
+      "calibrated_w_p1": 0.16998827838827885,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 112.0,
+      "t_window": 20.0,
+      "source": "Inferred from Practice Long Runs (FP2)"
+    }
+  }
+}

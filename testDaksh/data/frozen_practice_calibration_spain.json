@@ -1,0 +1,43 @@
+{
+  "circuit": "Spain",
+  "calibration_status": "FROZEN_PRE_RACE",
+  "source_provenance": "FP2 Practice Long-Run Latent Parameter Estimation",
+  "compounds": {
+    "SOFT": {
+      "inferred_beta_0": 0.1024285714285728,
+      "inferred_beta_1": 0.5094333333333368,
+      "inferred_beta_2": 0.40955844155844945,
+      "inferred_beta_1_per_lap": 0.07277619047619098,
+      "stints_analyzed": 11,
+      "calibrated_w_p1": 0.04478534798534829,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 95.0,
+      "t_window": 15.0,
+      "source": "Inferred from Practice Long Runs (FP2)"
+    },
+    "MEDIUM": {
+      "inferred_beta_0": 0.10575757575756901,
+      "inferred_beta_1": 1.8308018648018596,
+      "inferred_beta_2": -0.019347319347317316,
+      "inferred_beta_1_per_lap": 0.18308018648018595,
+      "stints_analyzed": 7,
+      "calibrated_w_p1": 0.11266473014165289,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 105.0,
+      "t_window": 18.0,
+      "source": "Inferred from Practice Long Runs (FP2)"
+    },
+    "HARD": {
+      "inferred_beta_0": -0.10562857142857146,
+      "inferred_beta_1": 3.6859428571428556,
+      "inferred_beta_2": -1.7067142857142896,
+      "inferred_beta_1_per_lap": 0.2835340659340658,
+      "stints_analyzed": 1,
+      "calibrated_w_p1": 0.17448250211327127,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 112.0,
+      "t_window": 20.0,
+      "source": "Inferred from Practice Long Runs (FP2)"
+    }
+  }
+}
