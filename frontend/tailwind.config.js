@@ -8,18 +8,33 @@ export default {
   theme: {
     extend: {
       colors: {
-        haas: {
-          bg: '#0B0B0E',
-          card: '#15151E',
-          cardHover: '#1B1B26',
-          border: '#242432',
+        tgr: {
+          white: '#FFFFFF',
+          canvas: '#F4F5F8',
+          card: '#FFFFFF',
+          cardMuted: '#F8F9FB',
+          border: '#E2E4E9',
+          borderHover: '#CBD0DC',
+          carbon: '#111116',
+          carbonLight: '#1E1E26',
+          muted: '#686B78',
           red: '#E10600',
-          redGlow: 'rgba(225, 6, 0, 0.25)',
-          white: '#F5F5F7',
-          gray: '#8C8C9A',
-          cyan: '#00E5FF',
-          amber: '#FF9100',
+          redDark: '#D40000',
+          redLight: '#FF3B30',
+          cyan: '#0284C7',
+          amber: '#F59E0B',
           green: '#10B981',
+        },
+        haas: {
+          bg: '#F4F5F8',
+          card: '#FFFFFF',
+          border: '#E2E4E9',
+          red: '#E10600',
+          white: '#111116',
+          gray: '#686B78',
+          cyan: '#0284C7',
+          amber: '#D97706',
+          green: '#059669',
         },
         pirelli: {
           soft: '#E10600',
@@ -28,22 +43,13 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"Chivo Mono"', 'monospace'],
       },
       boxShadow: {
-        'haas-red': '0 0 20px -3px rgba(225, 6, 0, 0.35)',
-        'haas-cyan': '0 0 15px -3px rgba(0, 229, 255, 0.25)',
-        'haas-card': '0 4px 20px -2px rgba(0, 0, 0, 0.65)',
-      },
-      keyframes: {
-        pulseGlow: {
-          '0%, 100%': { opacity: 1, boxShadow: '0 0 10px rgba(225, 6, 0, 0.5)' },
-          '50%': { opacity: 0.6, boxShadow: '0 0 4px rgba(225, 6, 0, 0.2)' },
-        }
-      },
-      animation: {
-        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'tgr-subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+        'tgr-card': '0 4px 12px -2px rgba(17, 17, 22, 0.06), 0 2px 6px -1px rgba(17, 17, 22, 0.04)',
+        'tgr-red': '0 4px 14px 0 rgba(225, 6, 0, 0.25)',
       }
     },
   },
