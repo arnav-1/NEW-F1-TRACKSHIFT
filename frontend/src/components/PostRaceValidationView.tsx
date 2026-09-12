@@ -8,7 +8,6 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  Legend,
 } from 'recharts';
 
 interface BenchmarkRow {
@@ -24,7 +23,7 @@ interface BenchmarkRow {
 
 const BENCHMARK_ROWS: BenchmarkRow[] = [
   {
-    stint: 'BARCELONA STINT 1',
+    stint: 'Barcelona Stint 1',
     compound: 'SOFT (C3)',
     laps: 10,
     poly_mae: '0.842s',
@@ -34,7 +33,7 @@ const BENCHMARK_ROWS: BenchmarkRow[] = [
     passed: true,
   },
   {
-    stint: 'BARCELONA STINT 2',
+    stint: 'Barcelona Stint 2',
     compound: 'HARD (C1)',
     laps: 27,
     poly_mae: '1.534s',
@@ -44,7 +43,7 @@ const BENCHMARK_ROWS: BenchmarkRow[] = [
     passed: true,
   },
   {
-    stint: 'SILVERSTONE ST1',
+    stint: 'Silverstone Stint 1',
     compound: 'SOFT (C3)',
     laps: 12,
     poly_mae: '1.280s',
@@ -61,11 +60,8 @@ export const PostRaceValidationView: React.FC = () => {
   // Extrapolation comparison data across 28 laps proving stability against polynomial blowout
   const extrapolationData = Array.from({ length: 28 }, (_, i) => {
     const lap = i + 1;
-    // Ground truth actual pace from Nico Hülkenberg Barcelona Hard Stint
     const actualPace = 80.5 + 0.048 * lap + (lap > 21 ? 0.012 * Math.pow(lap - 21, 1.8) : 0);
-    // Uncontrolled polynomial divergence (blows out past +10s quadratically)
     const polynomialDivergent = 80.5 + 0.015 * lap + 0.016 * Math.pow(lap, 2);
-    // TrackShift physics-constrained monotonic prediction
     const trackshiftPhysics = 80.5 + 0.046 * lap + (lap > 22 ? 0.010 * Math.pow(lap - 22, 1.7) : 0.001 * Math.pow(lap, 1.5));
 
     return {
@@ -77,97 +73,109 @@ export const PostRaceValidationView: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 font-sans">
       
       {/* Top Benchmark Summary Banner */}
       <div className="tgr-card p-5">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#242432]">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/[0.06]">
           <div>
-            <h2 className="text-base font-bold text-[#F5F5F7] flex items-center gap-2 font-mono">
-              <Award className="w-4 h-4 text-[#E10600]" />
-              <span>WORKSPACE 4: POST-RACE BENCHMARK VALIDATION</span>
+            <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
+              <Award className="w-4 h-4 text-red-500" />
+              <span>Workspace 4: Post-Race Benchmark Validation</span>
             </h2>
-            <p className="text-xs text-[#8C8C9A] font-mono mt-0.5">
-              EMPIRICAL VERIFICATION OF TRACKSHIFT PHYSICS MODEL AGAINST HELD-OUT SUNDAY RACE STINTS
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Empirical verification of TrackShift physics model against held-out Sunday race stints
             </p>
           </div>
 
           <button
             onClick={() => setShowGraph(!showGraph)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#242432] bg-[#101018] hover:bg-[#181824] text-xs font-mono font-bold text-[#F5F5F7] shadow-sm transition-all"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] text-xs font-medium text-zinc-200 shadow-sm transition-all"
           >
-            <GitCompare className="w-3.5 h-3.5 text-[#E10600]" />
+            <GitCompare className="w-3.5 h-3.5 text-red-400" />
             <span>{showGraph ? 'Hide Blowout Overlay' : 'Show Blowout Overlay'}</span>
           </button>
         </div>
 
         {/* 4 Performance KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 font-mono">
-          <div className="bg-[#0B0B0E] p-3.5 rounded-lg border border-[#242432]">
-            <div className="text-[#8C8C9A] text-[10px] font-bold">SOFT TYRE PEAK MAE</div>
-            <div className="text-2xl font-bold text-emerald-400 mt-1 tabular-nums">0.182s</div>
-            <div className="text-[10px] text-[#8C8C9A] mt-0.5">TOLERANCE: &le; 0.200s [PASS]</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+          <div className="bg-[#0A0C0F] p-3.5 rounded-lg border border-white/[0.06] flex flex-col justify-between">
+            <div className="text-zinc-500 text-[10px] tracking-wider uppercase font-medium">Soft Tyre Peak MAE</div>
+            <div className="text-2xl font-bold text-emerald-400 mt-1 font-mono tabular-nums">0.182s</div>
+            <div className="text-[11px] text-zinc-400 mt-1 flex items-center justify-between">
+              <span>Tolerance: &le; 0.200s</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded font-medium bg-emerald-950/40 text-emerald-300 border border-emerald-800/40">PASS</span>
+            </div>
           </div>
 
-          <div className="bg-[#0B0B0E] p-3.5 rounded-lg border border-[#242432]">
-            <div className="text-[#8C8C9A] text-[10px] font-bold">HARD TYRE ERROR DROP</div>
-            <div className="text-2xl font-bold text-emerald-400 mt-1 tabular-nums">60% DROP</div>
-            <div className="text-[10px] text-[#8C8C9A] mt-0.5">1.534s &rarr; 0.618s [PASS]</div>
+          <div className="bg-[#0A0C0F] p-3.5 rounded-lg border border-white/[0.06] flex flex-col justify-between">
+            <div className="text-zinc-500 text-[10px] tracking-wider uppercase font-medium">Hard Tyre Error Drop</div>
+            <div className="text-2xl font-bold text-emerald-400 mt-1 font-mono tabular-nums">60% Drop</div>
+            <div className="text-[11px] text-zinc-400 mt-1 flex items-center justify-between">
+              <span>1.534s &rarr; 0.618s</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded font-medium bg-emerald-950/40 text-emerald-300 border border-emerald-800/40">PASS</span>
+            </div>
           </div>
 
-          <div className="bg-[#0B0B0E] p-3.5 rounded-lg border border-[#242432]">
-            <div className="text-[#8C8C9A] text-[10px] font-bold">SLOPE ERROR BOUND</div>
-            <div className="text-2xl font-bold text-[#F5F5F7] mt-1 tabular-nums">0.012 s/l</div>
-            <div className="text-[10px] text-[#8C8C9A] mt-0.5">TOLERANCE: &le; 0.050 s/l</div>
+          <div className="bg-[#0A0C0F] p-3.5 rounded-lg border border-white/[0.06] flex flex-col justify-between">
+            <div className="text-zinc-500 text-[10px] tracking-wider uppercase font-medium">Slope Error Bound</div>
+            <div className="text-2xl font-bold text-zinc-100 mt-1 font-mono tabular-nums">0.012 s/l</div>
+            <div className="text-[11px] text-zinc-400 mt-1 flex items-center justify-between">
+              <span>Tolerance: &le; 0.050 s/l</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded font-medium bg-emerald-950/40 text-emerald-300 border border-emerald-800/40">PASS</span>
+            </div>
           </div>
 
-          <div className="bg-[#0B0B0E] p-3.5 rounded-lg border border-[#242432]">
-            <div className="text-[#8C8C9A] text-[10px] font-bold">CLIFF LAP PRECISION</div>
-            <div className="text-2xl font-bold text-emerald-400 mt-1 tabular-nums">&plusmn;0.5 LAPS</div>
-            <div className="text-[10px] text-[#8C8C9A] mt-0.5">PRED 25.0 vs ACT 24.5</div>
+          <div className="bg-[#0A0C0F] p-3.5 rounded-lg border border-white/[0.06] flex flex-col justify-between">
+            <div className="text-zinc-500 text-[10px] tracking-wider uppercase font-medium">Cliff Lap Precision</div>
+            <div className="text-2xl font-bold text-emerald-400 mt-1 font-mono tabular-nums">&plusmn;0.5 Laps</div>
+            <div className="text-[11px] text-zinc-400 mt-1 flex items-center justify-between">
+              <span>Pred 25.0 vs Act 24.5</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded font-medium bg-emerald-950/40 text-emerald-300 border border-emerald-800/40">PASS</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Benchmark Verification Table */}
-      <div className="tgr-card p-5 font-mono">
-        <div className="pb-3 mb-3 border-b border-[#242432]">
-          <h3 className="text-xs font-bold text-[#F5F5F7] tracking-wider">
-            BENCHMARK VERIFICATION TABLE (HELD-OUT SUNDAY RACE STINTS)
+      <div className="tgr-card p-5">
+        <div className="pb-3 mb-3 border-b border-white/[0.06]">
+          <h3 className="text-xs font-semibold text-zinc-200 tracking-wider uppercase">
+            Benchmark Verification Table (Held-Out Sunday Race Stints)
           </h3>
-          <span className="text-[10px] text-[#8C8C9A]">
-            VALIDATION AGAINST NICO HÜLKENBERG CAR #27 GROUND TRUTH TELEMETRY
+          <span className="text-[11px] text-zinc-400">
+            Validation against Nico Hülkenberg Car #27 ground truth telemetry
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-[#242432] text-[#8C8C9A] text-[10px]">
-                <th className="py-2 px-3">STINT</th>
-                <th className="py-2 px-3">COMPOUND</th>
-                <th className="py-2 px-3 text-center">LAPS</th>
-                <th className="py-2 px-3 text-right">POLY_MAE</th>
-                <th className="py-2 px-3 text-right">TRACKSHIFT_MAE</th>
-                <th className="py-2 px-3 text-right">SLOPE_ERR</th>
-                <th className="py-2 px-3 text-right">VERDICT</th>
+              <tr className="border-b border-white/[0.06] text-zinc-500 text-[10px] tracking-wider uppercase font-medium">
+                <th className="py-2.5 px-3 font-medium">Stint</th>
+                <th className="py-2.5 px-3 font-medium">Compound</th>
+                <th className="py-2.5 px-3 text-center font-medium">Laps</th>
+                <th className="py-2.5 px-3 text-right font-medium">Poly MAE</th>
+                <th className="py-2.5 px-3 text-right font-medium">TrackShift MAE</th>
+                <th className="py-2.5 px-3 text-right font-medium">Slope Error</th>
+                <th className="py-2.5 px-3 text-right font-medium">Verdict</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#242432]/60 tabular-nums">
+            <tbody className="divide-y divide-white/[0.04] font-mono tabular-nums">
               {BENCHMARK_ROWS.map((row) => (
-                <tr key={row.stint} className="hover:bg-[#181824] transition-colors">
-                  <td className="py-2.5 px-3 font-bold text-[#F5F5F7]">{row.stint}</td>
+                <tr key={row.stint} className="hover:bg-white/[0.02] transition-colors">
+                  <td className="py-2.5 px-3 font-semibold text-zinc-100 font-sans">{row.stint}</td>
                   <td className="py-2.5 px-3">
-                    <span className="px-2 py-0.5 rounded text-[10px] bg-[#151520] border border-[#242432] text-[#F5F5F7]">
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-white/[0.04] border border-white/[0.08] text-zinc-300 font-sans">
                       {row.compound}
                     </span>
                   </td>
-                  <td className="py-2.5 px-3 text-center text-[#8C8C9A]">{row.laps}</td>
-                  <td className="py-2.5 px-3 text-right text-[#E10600] font-bold">{row.poly_mae}</td>
-                  <td className="py-2.5 px-3 text-right text-emerald-400 font-bold">{row.trackshift_mae}</td>
-                  <td className="py-2.5 px-3 text-right text-[#F5F5F7]">{row.slope_err}</td>
-                  <td className="py-2.5 px-3 text-right">
-                    <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-950/40 text-emerald-400 border border-emerald-800/40 font-bold">
+                  <td className="py-2.5 px-3 text-center text-zinc-400">{row.laps}</td>
+                  <td className="py-2.5 px-3 text-right text-red-400 font-semibold">{row.poly_mae}</td>
+                  <td className="py-2.5 px-3 text-right text-emerald-400 font-semibold">{row.trackshift_mae}</td>
+                  <td className="py-2.5 px-3 text-right text-zinc-200">{row.slope_err}</td>
+                  <td className="py-2.5 px-3 text-right font-sans">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-950/40 text-emerald-300 border border-emerald-800/40 font-medium">
                       {row.verdict}
                     </span>
                   </td>
@@ -180,69 +188,69 @@ export const PostRaceValidationView: React.FC = () => {
 
       {/* Blowout Comparison Overlay: Polynomial Extrapolation vs Physical Monotonic */}
       {showGraph && (
-        <div className="tgr-card p-6 font-mono">
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-[#242432]">
+        <div className="tgr-card p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 mb-4 border-b border-white/[0.06]">
             <div>
-              <h3 className="text-sm font-bold text-[#F5F5F7] tracking-wider">
-                BLOWOUT COMPARISON OVERLAY: POLYNOMIAL VS PHYSICAL MODEL
+              <h3 className="text-sm font-semibold text-zinc-100">
+                Blowout Comparison Overlay: Polynomial vs Physical Model
               </h3>
-              <span className="text-xs text-[#8C8C9A]">
-                UNCONSTRAINED POLYNOMIAL BLOWOUT (+10s DIVERGENCE) VS MONOTONIC PHYSICAL CONTAINMENT
+              <span className="text-xs text-zinc-400">
+                Unconstrained polynomial blowout (+10s divergence) vs monotonic physical containment
               </span>
             </div>
 
-            <div className="flex items-center gap-4 text-xs">
-              <span className="flex items-center gap-1.5 text-emerald-400">
-                <span className="w-3 h-0.5 bg-emerald-400"></span>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03] text-emerald-400">
+                <span className="w-2.5 h-0.5 bg-emerald-400"></span>
                 <span>Ground Truth Actual</span>
               </span>
-              <span className="flex items-center gap-1.5 text-[#F5F5F7]">
-                <span className="w-3 h-0.5 bg-[#F5F5F7]"></span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03] text-zinc-200">
+                <span className="w-2.5 h-0.5 bg-zinc-200"></span>
                 <span>TrackShift Physical</span>
               </span>
-              <span className="flex items-center gap-1.5 text-[#E10600]">
-                <span className="w-3 h-0.5 bg-[#E10600]"></span>
-                <span>Polynomial Extrapolation</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03] text-red-400">
+                <span className="w-2.5 h-0.5 bg-red-400"></span>
+                <span>Polynomial Baseline</span>
               </span>
             </div>
           </div>
 
           <div className="w-full h-[360px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={extrapolationData} margin={{ top: 15, right: 30, left: 10, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1E1E28" opacity={0.8} />
+              <LineChart data={extrapolationData} margin={{ top: 15, right: 25, left: 5, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
 
                 <XAxis
                   dataKey="lap"
-                  stroke="#8C8C9A"
-                  fontSize={11}
-                  fontFamily="JetBrains Mono"
+                  stroke="#6B7280"
+                  fontSize={10}
+                  fontFamily="Inter, sans-serif"
                   tickLine={false}
                   label={{
-                    value: 'EXTRAPOLATED LAP NUMBER',
+                    value: 'Extrapolated Lap Number',
                     position: 'insideBottom',
                     offset: -6,
-                    fill: '#8C8C9A',
-                    fontSize: 11,
-                    fontFamily: 'JetBrains Mono',
+                    fill: '#9CA3AF',
+                    fontSize: 10,
+                    fontFamily: 'Inter, sans-serif',
                   }}
                 />
 
                 <YAxis
-                  stroke="#8C8C9A"
-                  fontSize={11}
-                  fontFamily="JetBrains Mono"
+                  stroke="#6B7280"
+                  fontSize={10}
+                  fontFamily="JetBrains Mono, monospace"
                   domain={[80, 96]}
                   tickLine={false}
                   tickFormatter={(v) => `${v.toFixed(0)}s`}
                   label={{
-                    value: 'LAP TIME (SECONDS)',
+                    value: 'Lap Time (s)',
                     angle: -90,
                     position: 'insideLeft',
-                    fill: '#8C8C9A',
-                    fontSize: 11,
-                    fontFamily: 'JetBrains Mono',
-                    offset: 0,
+                    fill: '#9CA3AF',
+                    fontSize: 10,
+                    fontFamily: 'Inter, sans-serif',
+                    offset: 5,
                   }}
                 />
 
@@ -251,26 +259,26 @@ export const PostRaceValidationView: React.FC = () => {
                     if (active && payload && payload.length) {
                       const d = payload[0].payload;
                       return (
-                        <div className="bg-[#0E0E16] border border-[#242432] p-3 rounded-lg shadow-xl font-mono text-xs max-w-xs">
-                          <div className="font-bold text-[#F5F5F7] border-b border-[#242432] pb-1 mb-2">
-                            LAP {d.lap} EXTRAPOLATION
+                        <div className="bg-[#12151C] border border-white/[0.1] p-3 rounded-lg shadow-xl text-xs max-w-xs">
+                          <div className="font-semibold text-zinc-100 border-b border-white/[0.08] pb-1 mb-2 font-mono">
+                            Lap {d.lap} Extrapolation
                           </div>
-                          <div className="space-y-1 text-[11px] tabular-nums">
+                          <div className="space-y-1 text-[11px] font-mono tabular-nums">
                             <div className="flex justify-between text-emerald-400">
-                              <span>Actual Ground Truth:</span>
-                              <span className="font-bold">{d.actual.toFixed(3)}s</span>
+                              <span className="font-sans">Actual Ground Truth:</span>
+                              <span className="font-semibold">{d.actual.toFixed(3)}s</span>
                             </div>
-                            <div className="flex justify-between text-white">
-                              <span>TrackShift Physical:</span>
-                              <span className="font-bold">{d.trackshift.toFixed(3)}s</span>
+                            <div className="flex justify-between text-zinc-200">
+                              <span className="font-sans">TrackShift Physical:</span>
+                              <span className="font-semibold">{d.trackshift.toFixed(3)}s</span>
                             </div>
-                            <div className="flex justify-between text-[#E10600]">
-                              <span>Poly Baseline:</span>
-                              <span className="font-bold">{d.polynomial.toFixed(3)}s</span>
+                            <div className="flex justify-between text-red-400">
+                              <span className="font-sans">Poly Baseline:</span>
+                              <span className="font-semibold">{d.polynomial.toFixed(3)}s</span>
                             </div>
-                            <div className="flex justify-between pt-1 border-t border-[#242432] text-[10px] text-[#8C8C9A]">
-                              <span>Poly Blowout Error:</span>
-                              <span className="text-[#E10600] font-bold">+{Math.abs(d.polynomial - d.actual).toFixed(2)}s</span>
+                            <div className="flex justify-between pt-1 border-t border-white/[0.08] text-[10px] text-zinc-400">
+                              <span className="font-sans">Poly Blowout Error:</span>
+                              <span className="text-red-400 font-semibold">+{Math.abs(d.polynomial - d.actual).toFixed(2)}s</span>
                             </div>
                           </div>
                         </div>
@@ -279,8 +287,6 @@ export const PostRaceValidationView: React.FC = () => {
                     return null;
                   }}
                 />
-
-                <Legend />
 
                 {/* Ground Truth Actual (Emerald) */}
                 <Line
@@ -292,23 +298,23 @@ export const PostRaceValidationView: React.FC = () => {
                   dot={false}
                 />
 
-                {/* TrackShift Physical (White) */}
+                {/* TrackShift Physical (Clean White) */}
                 <Line
                   type="monotone"
                   dataKey="trackshift"
                   name="TrackShift Physical"
-                  stroke="#F5F5F7"
-                  strokeWidth={2.5}
+                  stroke="#F3F4F6"
+                  strokeWidth={2.2}
                   dot={false}
                 />
 
-                {/* Polynomial Divergent (Haas Red) */}
+                {/* Polynomial Divergent (Muted Red, dashed) */}
                 <Line
                   type="monotone"
                   dataKey="polynomial"
-                  name="Polynomial Baseline (Blowout)"
-                  stroke="#E10600"
-                  strokeWidth={2}
+                  name="Polynomial Baseline"
+                  stroke="#EF4444"
+                  strokeWidth={1.8}
                   strokeDasharray="4 4"
                   dot={false}
                 />

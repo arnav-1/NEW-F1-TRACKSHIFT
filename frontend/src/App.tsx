@@ -19,7 +19,7 @@ function DashboardContent() {
   } = useTelemetry();
 
   return (
-    <div className="min-h-screen bg-[#0B0B0E] text-[#F5F5F7] flex flex-col font-sans tgr-grid-bg">
+    <div className="min-h-screen bg-[#0D0F12] text-zinc-100 flex flex-col font-sans tgr-grid-bg">
       
       {/* 1. 2026 TGR Haas Top Navigation Bar */}
       <TopNavigation
