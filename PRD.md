@@ -259,16 +259,27 @@ dot_w_total       = dot_w_abrasion + dot_w_graining + dot_w_blistering
 Damage_D(t)       = Damage_D(t - 1) + dot_w_total * dt_laps
 ```
 
-### 5.6 Step 6: Dynamic Grip & Lap Consequence Mapping
+### 5.6 Step 6: Dynamic Grip & Lap Consequence Mapping (Engineering Surrogates)
+> [!NOTE]
+> In published literature (*West & Limebeer 2020*, *Pacejka 2012*), grip is represented by non-linear 2D surfaces $\mu(T_{\text{tread}}, w)$ within the Magic Formula. TrackShift implements a **separable reduced-order engineering surrogate** to decouple reversible thermal viscoelasticity from irreversible mechanical surface damage without requiring computationally intensive non-linear Pacejka iterations on timing data. Full derivations are documented in [`docs/MATHEMATICAL_FORMULATIONS_AND_DERIVATIONS.md`](file:///c:/Users/daksh/Projects/Trackshiftv2/docs/MATHEMATICAL_FORMULATIONS_AND_DERIVATIONS.md).
+
 ```text
+# 1. Reversible Thermal Operating Window (Parabolic Plateau)
 Half_Window     = 0.5 * T_window
 Excess_Temp     = max(0.0, |T_tread - T_opt| - Half_Window)
 Phi_thermal     = max(0.70, 1.0 - k_thermal * (Excess_Temp / Half_Window) ^ 2)
-mu_effective    = mu_base * (1.0 - lambda_wear * Damage_D) * Phi_thermal
+
+# 2. Irreversible Mechanical Wear Degradation (1st-Order Taylor Expansion)
+Psi_wear        = max(0.0, 1.0 - lambda_wear * Damage_D)
+
+# 3. Separable Effective Friction Surrogate (Tier 3)
+mu_effective    = mu_base * Psi_wear * Phi_thermal
 Grip_Drop_Ratio = max(0.0, 1.0 - (mu_effective / mu_base))
+
+# 4. Quasi-Steady-State Lap-Time Sensitivity (1st-Order Taylor Series Expansion)
 Delta_t_deg     = k_pace_loss * Grip_Drop_Ratio
 ```
-*(Plateau thermal window ensures 100% grip within +/- 7°C of T_opt, preventing artificial quadratic clamp saturation and ensuring continuous, progressive lap-by-lap degradation).*
+*(Here $k_{\text{pace\_loss}}$ is the aggregate cornering time sensitivity of the circuit, derived from $\frac{\partial T_{\text{lap}}}{\partial \mu} \approx -\frac{T_{\text{corners}}}{2\mu_0}\bar{\Gamma}_{\text{aero}}$, yielding $\approx 2.2\text{ s}$ per $10\%$ grip reduction for Circuit de Barcelona-Catalunya).*
 
 ### 5.7 Step 7: Live Lap-by-Lap Recursive State Estimator (Extended Kalman Filter)
 During the race, the system transitions into closed-loop mode, running an online Extended Kalman Filter (EKF) on the timing transponder stream:
@@ -381,11 +392,15 @@ Unlike live in-race estimation (which is tactical and reactive), post-race valid
    Slope Error     = |beta_1,pred - beta_1,actual|
    Curvature Error = |beta_2,pred - beta_2,actual|
    ```
-3. **Align Latent Tyre States Against Telemetry Performance**:
-   Validates the full physical translation chain:
-   ```text
-   D_model(a) ──► mu_effective(a) ──► Delta_t_pred(a) ──► Delta_t_observed(a)
-   ```
+3. **Align Latent Tyre States Against Telemetry Performance (Pillar 3)**:
+   Validates the physical tyre states without circular model confirmation by decoupling physical capability from lap time sensitivity:
+   - **Direct Lateral Capability Audit**: Compares predicted friction state $\mu_{\text{effective}}(a)$ against empirical cornering capability in high-speed benchmark corners (Turn 3, Turn 9 apex $a_y / g$).
+   - **Lap Time Sensitivity Residual**: Compares linearized time loss $\Delta t_{\text{pred}}(a) = k_{\text{pace loss}}(1 - \mu_{\text{eff}}/\mu_0)$ against fuel- and track-corrected timing residuals:
+     ```text
+     Practice Physics ──► mu_model(a) ──► Apex a_y/g (Direct Telemetry Validation)
+                               ↓
+                       Delta_t_pred(a) ──► Delta_t_observed(a) (Timing Residual Validation)
+     ```
 4. **Validate Compound Curves Separately**:
    Never collapses compounds into a single score. Evaluates and plots:
    ```text
