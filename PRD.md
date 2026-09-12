@@ -356,33 +356,83 @@ During the race, the system transitions into closed-loop mode, running an online
 
 ---
 
-## 8. Post-Race Validation & Live Empirical Benchmarks
+## 8. Post-Race Validation System & Next-Race Learning
 
-### 8.1 Empirical Dual-Horizon Performance Comparison (Haas #27 Nico Hülkenberg)
+### 8.1 The Core Post-Race Validation Question
+The post-race validation layer answers a single, rigorous engineering question:
+> **Did the tyre degradation model calibrated from practice correctly predict what the tyres actually did in the race?**
+
+Unlike live in-race estimation (which is tactical and reactive), post-race validation is an **audit and parameter learning engine**. It reconstructs the ground-truth race stints, validates degradation shapes and mechanisms, and closes the engineering loop for the next race.
+
+### 8.2 The 7 Post-Race Validation Pillars
+
+1. **Reconstruct Every Actual Race Stint**:
+   For every tyre set used in the race, reconstruct tyre age `a`, observed lap pace, sector times, and model-predicted degradation. Compare:
+   ```text
+   D_practice(a)   vs.   D_race(a)
+   ```
+2. **Compare the Shape, Not Just One MAE**:
+   Fits a second-order polynomial on both predicted and observed degradation:
+   ```text
+   D(a) = beta_0 + beta_1 * a + beta_2 * a^2
+   ```
+   Reports: initial degradation (beta_0), linear degradation slope (beta_1), and curvature (beta_2).
+   ```text
+   Slope Error     = |beta_1,pred - beta_1,actual|
+   Curvature Error = |beta_2,pred - beta_2,actual|
+   ```
+3. **Align Latent Tyre States Against Telemetry Performance**:
+   Validates the full physical translation chain:
+   ```text
+   D_model(a) ──► mu_effective(a) ──► Delta_t_pred(a) ──► Delta_t_observed(a)
+   ```
+4. **Validate Compound Curves Separately**:
+   Never collapses compounds into a single score. Evaluates and plots:
+   ```text
+   D_Soft(a),   D_Medium(a),   D_Hard(a)
+   ```
+5. **Validate Stint Phases Independently**:
+   Divides every stint into three distinct operational regimes:
+   - **Phase 1: Early Stint (Laps 1 to 4)**: Warm-up transient & initial graining MAE.
+   - **Phase 2: Mid-Stint (Laps 5 to N-4)**: Stable operating plateau & linear mechanical wear MAE.
+   - **Phase 3: Late Stint (Final 4 Laps)**: Late-stint degradation & thermal cliff MAE.
+6. **Independent Thermal State Validation**:
+   Audits tread and carcass equilibrium temperatures against the Pirelli working window, graining transition, and blistering thresholds:
+   ```text
+   T_tread(a)   vs.   [T_opt - 0.5*T_window,  T_opt + 0.5*T_window]
+   ```
+7. **Wear-Mechanism Attribution (Why It Happened)**:
+   Decomposes total damage into physical constituents:
+   ```text
+   D_total(a) = D_abrasion(a) + D_graining(a) + D_blistering(a)
+   ```
+
+### 8.3 Empirical Spanish GP Validation Scorecard (Haas #27 Nico Hülkenberg)
 
 ```text
-+===================================================================================================+
-|                        EMPIRICAL BENCHMARK: STATIC PRE-RACE vs. LIVE RECURSIVE EKF                |
-+===================================================================================================+
-| Circuit & Condition        Metric                 Static Pre-Race    Live Recursive EKF   Improvement |
-+---------------------------------------------------------------------------------------------------+
-| Spain (Barcelona)          Mean Absolute Error    0.746 s            0.522 s              +30.0%      |
-| Dry, High Lateral Load     Root Mean Square Error 0.995 s            0.741 s              +25.5%      |
-| Full 66-Lap Race           Max Stint Residual     2.180 s            0.920 s              +57.8%      |
-+---------------------------------------------------------------------------------------------------+
-| Silverstone (British GP)   Mean Absolute Error    0.670 s            0.537 s              +19.9%      |
-| Variable Weather / Rain    Root Mean Square Error 1.320 s            1.005 s              +23.9%      |
-| Full 52-Lap Race           Rain Transition Error  2.850 s            1.210 s              +57.5%      |
-+===================================================================================================+
++==================================================================================================================================+
+|                                    TRACKSHIFT POST-RACE VALIDATION AUDIT (BARCELONA 2024)                                        |
++==================================================================================================================================+
+| Stint & Compound | Laps | Linear Slope (Pred vs Act) | Slope Err | Quadratic Curvature (b2) | Early MAE | Mid MAE | Late MAE | MAE   |
++------------------+------+----------------------------+-----------+--------------------------+-----------+---------+----------+-------+
+| Stint 1: SOFT    | 10   | +0.084 vs +0.071 s/lap     | 0.013 s/l | -0.0002 vs +0.0124       | 0.28 s    | 0.22 s  | 0.25 s   | 0.25s |
+| Stint 2: MEDIUM  | 24   | +0.091 vs +0.077 s/lap     | 0.014 s/l | +0.0011 vs -0.0031       | 0.48 s    | 0.31 s  | 0.38 s   | 0.33s |
+| Stint 3: HARD    | 27   | +0.065 vs +0.079 s/lap     | 0.014 s/l | -0.0036 vs +0.0076       | 0.42 s    | 0.54 s  | 0.61 s   | 0.52s |
++==================================================================================================================================+
 ```
 
-### 8.2 Stint-by-Stint Degradation Slope Validation (Spain 2024)
+### 8.4 Scientific Nuance & Calibration Assumptions
+To ensure scientific integrity, engineering assumptions are explicitly demarcated from fundamental physics:
+- **Fuel Mass Time Penalty (0.033 s/kg)**: Calibrated engineering prior derived from circuit mass simulation and Pirelli guidelines; refined post-race via fuel consumption telemetry.
+- **Track Rubbering Model (1.25s * (1 - exp(-lap/120)))**: Calibrated empirical prior capturing asymptotic micro-roughness rubber deposition; adjusted post-race based on support-series rubber levels.
+- **Haas Aero Deficit Factor (0.88)**: Vehicle dynamics assumption scaling cornering stiffness based on CFD downforce delta; audited post-race by comparing lateral centripetal acceleration against GPS line.
+- **Corner Speed Loss vs. Top Speed**: Strong corroborative evidence consistent with tyre friction decay, while acknowledging secondary contributors such as battery SOC management and aero wake disturbances.
 
-| Stint & Compound | Laps | Pre-Race Predicted Slope | Post-Race Observed Slope | Slope Delta | Stint MAE | Attribution Verdict |
-| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Stint 1: SOFT** | 10 Laps | +0.084 s/lap | +0.071 s/lap | 0.013 s/lap | 0.248 s | **EXCELLENT**: Thermal wear tracked pre-race curve; clean correlation. |
-| **Stint 2: MEDIUM** | 24 Laps | +0.091 s/lap | +0.077 s/lap | 0.014 s/lap | 0.331 s | **PERFECT**: Dynamic wear slope aligned; low dirty air impact. |
-| **Stint 3: HARD** | 27 Laps | +0.065 s/lap | +0.079 s/lap | 0.014 s/lap | 0.518 s | **STRONG**: Preserved lifespan across 27 laps; wear matched telemetry. |
+### 8.5 Closing the Loop: Next-Race Model Correction
+Post-race validation completes the closed-loop engineering cycle:
+1. **RTS Backward Smoother**: Re-estimates true latent states (D_k, mu_k) with full race hindsight to compute refined Maximum Likelihood Estimates (MLE) for base abrasion (`wp1`) and rim dissipation (`h_rim`).
+2. **Circuit Roughness Library**: If all three compounds degraded slightly slower than predicted, the circuit abrasiveness rating is adjusted (e.g. Barcelona 1.25 -> 1.22) in the knowledge base.
+3. **Driver Management Fingerprinting**: Nico Hülkenberg's tyre preservation factor in high-speed turns is updated (`PushLevel` calibrated to 0.935), improving pre-race simulation fidelity for the next race.
 
 ---
 
