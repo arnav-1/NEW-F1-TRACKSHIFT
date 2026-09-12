@@ -26,10 +26,10 @@ try:
 except ImportError:
     FASTF1_AVAILABLE = False
 
-logger = logging.getLogger("testDaksh.data_loader")
+logger = logging.getLogger("core_model.data_loader")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] [DataLoader] %(message)s")
 
-CACHE_DIR = Path("testDaksh/data/cache")
+CACHE_DIR = Path("core_model/data/cache")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 

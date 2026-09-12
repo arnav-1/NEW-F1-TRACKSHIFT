@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import json
 import logging
@@ -32,15 +32,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from testDaksh.practice_degradation_inferer import PracticeDegradationInferer
-from testDaksh.stint_reconstructor import StintReconstructor
-from testDaksh.post_race_validator import PostRaceValidator
+from post_race_validation.code.practice_degradation_inferer import PracticeDegradationInferer
+from post_race_validation.code.stint_reconstructor import StintReconstructor
+from post_race_validation.code.post_race_validator import PostRaceValidator
 
-logger = logging.getLogger("testDaksh.multicircuit")
+logger = logging.getLogger("post_race_validation.multicircuit")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] [MultiCircuit] %(message)s")
 
-OUTPUT_DIR = Path("degradation_plots")
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
+DASHBOARDS_DIR = WORKSPACE_ROOT / "post_race_validation" / "dashboards"
+DASHBOARDS_DIR.mkdir(parents=True, exist_ok=True)
+RESULTS_DIR = WORKSPACE_ROOT / "post_race_validation" / "results"
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 ARTIFACTS_DIR = Path(r"C:\Users\daksh\.gemini\antigravity-ide\brain\254a53b0-3ba4-4575-88bc-154466d2fe31")
 
 
@@ -282,7 +285,7 @@ def render_multicircuit_dashboard(results: List[Dict[str, Any]]):
 
     plt.suptitle("TRACKSHIFT MULTI-CIRCUIT POST-RACE SCIENTIFIC VALIDATION\n'DOES THE PRACTICE DEGRADATION INFERENCE GENERALIZE ACROSS CIRCUITS?'", fontsize=14, fontweight="bold", color="#f0f6fc", y=0.98)
 
-    save_path = OUTPUT_DIR / "multicircuit_cross_race_validation.png"
+    save_path = DASHBOARDS_DIR / "multicircuit_cross_race_validation.png"
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close()
     shutil.copy(save_path, ARTIFACTS_DIR / "multicircuit_cross_race_validation.png")
@@ -310,7 +313,7 @@ def main():
         return
 
     # Save JSON summary
-    summary_path = OUTPUT_DIR / "multicircuit_post_race_results.json"
+    summary_path = RESULTS_DIR / "multicircuit_post_race_results.json"
     with open(summary_path, "w") as f:
         json.dump(all_results, f, indent=2)
     logger.info("Saved multi-circuit validation results to: %s", summary_path)

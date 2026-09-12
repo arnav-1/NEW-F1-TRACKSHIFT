@@ -11,13 +11,17 @@ Evaluates whether model forecasts produce correct strategic decisions on the pit
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 
-logger = logging.getLogger("testDaksh.operational")
+logger = logging.getLogger("post_race_validation.operational")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] [OperationalValidator] %(message)s")
 
 

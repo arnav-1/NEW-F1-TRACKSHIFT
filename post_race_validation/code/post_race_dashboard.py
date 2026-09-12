@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import json
 import logging
@@ -34,10 +34,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-logger = logging.getLogger("testDaksh.dashboard")
+logger = logging.getLogger("post_race_validation.dashboard")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] [Dashboard] %(message)s")
 
-OUTPUT_DIR = Path("degradation_plots")
+WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
+OUTPUT_DIR = WORKSPACE_ROOT / "post_race_validation" / "dashboards"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 ARTIFACTS_DIR = Path(r"C:\Users\daksh\.gemini\antigravity-ide\brain\254a53b0-3ba4-4575-88bc-154466d2fe31")
 
@@ -389,10 +390,10 @@ def render_scientific_validation_dashboard(
 
 
 if __name__ == "__main__":
-    from testDaksh.practice_degradation_inferer import PracticeDegradationInferer
-    from testDaksh.stint_reconstructor import StintReconstructor
-    from testDaksh.post_race_validator import PostRaceValidator
-    from testDaksh.telemetric_grip_validator import TelemetricGripValidator
+    from post_race_validation.code.practice_degradation_inferer import PracticeDegradationInferer
+    from post_race_validation.code.stint_reconstructor import StintReconstructor
+    from post_race_validation.code.post_race_validator import PostRaceValidator
+    from post_race_validation.code.telemetric_grip_validator import TelemetricGripValidator
 
     # 1. Infer from practice
     inferer = PracticeDegradationInferer()

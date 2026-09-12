@@ -18,7 +18,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 
-logger = logging.getLogger("testDaksh.physics")
+logger = logging.getLogger("core_model.physics")
 
 
 @dataclass(frozen=True)

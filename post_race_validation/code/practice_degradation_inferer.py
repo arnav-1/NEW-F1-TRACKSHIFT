@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import json
 import logging
@@ -22,15 +22,19 @@ import fastf1
 import numpy as np
 import pandas as pd
 
-from testDaksh.thermal_wear_model import COMPOUND_PARAMS, CompoundThermalParameters, PhysicalThermalWearEngine
+from core_model.code.thermal_wear_model import COMPOUND_PARAMS, CompoundThermalParameters, PhysicalThermalWearEngine
 
-logger = logging.getLogger("testDaksh.practice_inferer")
+logger = logging.getLogger("post_race_validation.practice_inferer")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] [PracticeInferer] %(message)s")
 
-CACHE_DIR = Path(r"C:\Users\daksh\AppData\Local\Temp\fastf1")
+WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
+CACHE_DIR = WORKSPACE_ROOT / "core_model" / "data" / "cache" / "fastf1"
+if not CACHE_DIR.exists():
+    CACHE_DIR = Path(r"C:\Users\daksh\AppData\Local\Temp\fastf1")
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 fastf1.Cache.enable_cache(str(CACHE_DIR))
 
-DATA_DIR = Path("testDaksh/data")
+DATA_DIR = WORKSPACE_ROOT / "core_model" / "data" / "frozen_calibrations"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 

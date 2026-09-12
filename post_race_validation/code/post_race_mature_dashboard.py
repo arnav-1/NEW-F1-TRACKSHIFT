@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import json
 import logging
@@ -41,11 +41,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-logger = logging.getLogger("testDaksh.mature_dashboards")
+logger = logging.getLogger("post_race_validation.mature_dashboards")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] [MatureDashboards] %(message)s")
 
-OUTPUT_DIR = Path("degradation_plots")
+WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
+OUTPUT_DIR = WORKSPACE_ROOT / "post_race_validation" / "dashboards"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+RESULTS_DIR = WORKSPACE_ROOT / "post_race_validation" / "results"
 ARTIFACTS_DIR = Path(r"C:\Users\daksh\.gemini\antigravity-ide\brain\254a53b0-3ba4-4575-88bc-154466d2fe31")
 
 plt.style.use("dark_background")
@@ -459,16 +461,16 @@ def render_dashboard_3_operational(results_data: Dict[str, Any]):
 
 def main():
     # Load mature results
-    results_path = OUTPUT_DIR / "mature_post_race_validation_results.json"
+    results_path = RESULTS_DIR / "mature_post_race_validation_results.json"
     if not results_path.exists():
-        logger.error("Results JSON not found. Please run run_mature_post_race_system.py first.")
+        logger.error("Results JSON not found at %s. Please run run_mature_post_race_system.py first.", results_path)
         return
 
     with open(results_path, "r") as f:
         data = json.load(f)
 
     # Load apex telemetry for Spain Stint 2
-    from testDaksh.telemetric_grip_validator import TelemetricGripValidator
+    from post_race_validation.code.telemetric_grip_validator import TelemetricGripValidator
     grip_val = TelemetricGripValidator()
     grip_df = grip_val.extract_apex_lateral_grip(2024, "Spain", "44", corner_dist_window_m=(1150.0, 1450.0), stint_number=2)
 

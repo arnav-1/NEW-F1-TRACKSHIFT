@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import logging
 from typing import Dict, List, Optional, Tuple
@@ -22,10 +22,13 @@ import fastf1
 import numpy as np
 import pandas as pd
 
-logger = logging.getLogger("testDaksh.stint_reconstructor")
+logger = logging.getLogger("post_race_validation.stint_reconstructor")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] [StintReconstructor] %(message)s")
 
-CACHE_DIR = Path(r"C:\Users\daksh\AppData\Local\Temp\fastf1")
+CACHE_DIR = Path(__file__).resolve().parents[2] / "core_model" / "data" / "cache" / "fastf1"
+if not CACHE_DIR.exists():
+    CACHE_DIR = Path(r"C:\Users\daksh\AppData\Local\Temp\fastf1")
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 fastf1.Cache.enable_cache(str(CACHE_DIR))
 
 

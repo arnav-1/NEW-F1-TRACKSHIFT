@@ -18,20 +18,24 @@ Zero Data Leakage: Sunday race observations are never used for model fitting.
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 import json
 import logging
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 
-from testDaksh.thermal_wear_model import COMPOUND_PARAMS, CompoundThermalParameters, PhysicalThermalWearEngine
+from core_model.code.thermal_wear_model import COMPOUND_PARAMS, CompoundThermalParameters, PhysicalThermalWearEngine
 
-logger = logging.getLogger("testDaksh.validator")
+logger = logging.getLogger("post_race_validation.validator")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] [PostRaceValidator] %(message)s")
 
-DATA_DIR = Path("testDaksh/data")
+WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = WORKSPACE_ROOT / "core_model" / "data" / "frozen_calibrations"
 
 
 class PostRaceValidator:

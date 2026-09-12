@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import json
 import logging
@@ -29,14 +29,15 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import pandas as pd
 
-from testDaksh.stint_reconstructor import StintReconstructor
-from testDaksh.post_race_validator import PostRaceValidator
-from testDaksh.operational_validator import OperationalValidator
+from post_race_validation.code.stint_reconstructor import StintReconstructor
+from post_race_validation.code.post_race_validator import PostRaceValidator
+from post_race_validation.code.operational_validator import OperationalValidator
 
-logger = logging.getLogger("testDaksh.mature_runner")
+logger = logging.getLogger("post_race_validation.mature_runner")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] [MatureRunner] %(message)s")
 
-OUTPUT_DIR = Path("degradation_plots")
+WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
+OUTPUT_DIR = WORKSPACE_ROOT / "post_race_validation" / "results"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 ARTIFACTS_DIR = Path(r"C:\Users\daksh\.gemini\antigravity-ide\brain\254a53b0-3ba4-4575-88bc-154466d2fe31")
 
@@ -67,9 +68,9 @@ def run_mature_validation_across_circuits() -> Dict[str, Any]:
         logger.info("==================================================")
 
         # 1. Load Frozen Practice Calibration
-        calib_file = Path(f"testDaksh/data/frozen_practice_calibration_{circuit_name.lower()}.json")
+        calib_file = WORKSPACE_ROOT / "core_model" / "data" / "frozen_calibrations" / f"frozen_practice_calibration_{circuit_name.lower()}.json"
         if not calib_file.exists():
-            logger.warning("Frozen calibration for %s not found on disk, skipping.", circuit_name)
+            logger.warning("Frozen calibration for %s not found on disk at %s, skipping.", circuit_name, calib_file)
             continue
 
         with open(calib_file, "r") as f:
