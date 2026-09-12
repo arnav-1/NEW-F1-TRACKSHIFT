@@ -1,30 +1,62 @@
 import React from 'react';
 import type { CircuitId, SessionId, TyreCompound } from '../types/telemetry';
+import { useTelemetry, type CompoundType, type SessionType } from '../context/TelemetryContext';
 import { Sliders, Flag, Wind, Droplets } from 'lucide-react';
 
 interface HeaderProps {
-  currentCircuit: CircuitId;
-  onCircuitChange: (c: CircuitId) => void;
-  currentSession: SessionId;
-  onSessionChange: (s: SessionId) => void;
-  currentCompound: TyreCompound;
-  onCompoundChange: (c: TyreCompound) => void;
-  onOpenAblation: () => void;
+  currentCircuit?: CircuitId;
+  onCircuitChange?: (c: CircuitId) => void;
+  currentSession?: SessionId;
+  onSessionChange?: (s: SessionId) => void;
+  currentCompound?: TyreCompound;
+  onCompoundChange?: (c: TyreCompound) => void;
+  onOpenAblation?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  currentCircuit,
+  currentCircuit: propCircuit,
   onCircuitChange,
-  currentSession,
+  currentSession: propSession,
   onSessionChange,
-  currentCompound,
+  currentCompound: propCompound,
   onCompoundChange,
   onOpenAblation,
 }) => {
-  const compounds: Array<{ id: TyreCompound; label: string; code: string; color: string; border: string; bg: string }> = [
-    { id: 'SOFT', label: 'SOFT', code: 'C3', color: 'text-white', border: 'border-pirelli-soft', bg: 'bg-pirelli-soft' },
-    { id: 'MEDIUM', label: 'MEDIUM', code: 'C2', color: 'text-black', border: 'border-pirelli-medium', bg: 'bg-pirelli-medium' },
-    { id: 'HARD', label: 'HARD', code: 'C1', color: 'text-black', border: 'border-pirelli-hard', bg: 'bg-pirelli-hard' },
+  // Try to use context if available
+  let contextValue: ReturnType<typeof useTelemetry> | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    contextValue = useTelemetry();
+  } catch {
+    contextValue = null;
+  }
+
+  const selectedCompound = (propCompound || contextValue?.selectedCompound || 'SOFT') as CompoundType;
+  const selectedSession = (propSession || contextValue?.selectedSession || 'FP2') as SessionType;
+  const selectedCircuit = propCircuit || contextValue?.selectedCircuit || 'barcelona';
+
+  const handleCompoundChange = (c: CompoundType) => {
+    if (contextValue) {
+      contextValue.setCompound(c);
+    }
+    if (onCompoundChange) {
+      onCompoundChange(c as TyreCompound);
+    }
+  };
+
+  const handleSessionChange = (s: SessionType) => {
+    if (contextValue) {
+      contextValue.setSession(s);
+    }
+    if (onSessionChange) {
+      onSessionChange(s as SessionId);
+    }
+  };
+
+  const compounds: Array<{ id: CompoundType; label: string; code: string; activeClass: string }> = [
+    { id: 'SOFT', label: 'SC3', code: 'C3', activeClass: 'bg-[#E10600] text-white border-[#E10600] shadow-sm shadow-red-500/40' },
+    { id: 'MEDIUM', label: 'MC2', code: 'C2', activeClass: 'bg-[#E5A823] text-black border-[#E5A823] font-bold shadow-sm shadow-yellow-500/30' },
+    { id: 'HARD', label: 'HC1', code: 'C1', activeClass: 'bg-white text-black border-white font-bold shadow-sm' },
   ];
 
   return (
@@ -74,23 +106,22 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="text-[10px] text-haas-gray font-mono mt-0.5">Car #27 | MoneyGram Haas</div>
               </div>
 
-              {/* Interactive Tyre Compound Selector Badge */}
+              {/* Interactive Tyre Compound Selector Badge: SC3, MC2, HC1 */}
               <div className="flex items-center gap-1 pl-2 border-l border-haas-border/70 ml-1">
                 {compounds.map((comp) => {
-                  const isCurrent = currentCompound === comp.id;
+                  const isCurrent = selectedCompound === comp.id;
                   return (
                     <button
                       key={comp.id}
-                      onClick={() => onCompoundChange(comp.id)}
-                      title={`Select ${comp.label} (${comp.code}) tyre compound`}
+                      onClick={() => handleCompoundChange(comp.id)}
+                      title={`Select ${comp.id} (${comp.code}) tyre compound`}
                       className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-extrabold transition-all ${
                         isCurrent
-                          ? `${comp.bg} ${comp.color} shadow-sm ring-1 ring-white/30 scale-105`
+                          ? `${comp.activeClass} ring-1 ring-white/30 scale-105`
                           : 'bg-[#151520] text-haas-gray hover:text-white border border-haas-border'
                       }`}
                     >
-                      <span>{comp.id[0]}</span>
-                      <span className="text-[8px] opacity-80">{comp.code}</span>
+                      <span>{comp.label}</span>
                     </button>
                   );
                 })}
@@ -138,8 +169,8 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-2 bg-[#0B0B0E] border border-haas-border rounded-lg px-2.5 py-1.5 shadow-sm">
             <Flag className="w-3.5 h-3.5 text-haas-red flex-shrink-0" />
             <select
-              value={currentCircuit}
-              onChange={(e) => onCircuitChange(e.target.value as CircuitId)}
+              value={selectedCircuit}
+              onChange={(e) => onCircuitChange && onCircuitChange(e.target.value as CircuitId)}
               className="bg-transparent text-xs font-semibold text-haas-white focus:outline-none cursor-pointer pr-1"
             >
               <option value="barcelona" className="bg-[#15151E] text-haas-white">
@@ -153,12 +184,12 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Session Switcher Tabs */}
           <div className="flex items-center bg-[#0B0B0E] p-1 rounded-lg border border-haas-border shadow-sm">
-            {(['FP1', 'FP2', 'FP3', 'Race'] as SessionId[]).map((sess) => {
-              const isActive = currentSession === sess;
+            {(['FP1', 'FP2', 'FP3', 'Race'] as SessionType[]).map((sess) => {
+              const isActive = selectedSession === sess;
               return (
                 <button
                   key={sess}
-                  onClick={() => onSessionChange(sess)}
+                  onClick={() => handleSessionChange(sess)}
                   className={`px-3 py-1 text-xs font-mono font-bold rounded transition-all duration-150 ${
                     isActive
                       ? 'bg-haas-red text-white shadow-sm shadow-haas-red/50'
@@ -172,14 +203,16 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Ablation Settings Drawer Trigger */}
-          <button
-            onClick={onOpenAblation}
-            className="flex items-center gap-1.5 bg-[#0B0B0E] hover:bg-[#181824] text-haas-gray hover:text-haas-white border border-haas-border hover:border-haas-red/50 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm"
-            title="Configure Vehicle Physics & Ablation Parameters"
-          >
-            <Sliders className="w-3.5 h-3.5 text-haas-red" />
-            <span className="hidden sm:inline font-mono font-bold text-haas-white">Ablation Controls</span>
-          </button>
+          {onOpenAblation && (
+            <button
+              onClick={onOpenAblation}
+              className="flex items-center gap-1.5 bg-[#0B0B0E] hover:bg-[#181824] text-haas-gray hover:text-haas-white border border-haas-border hover:border-haas-red/50 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm"
+              title="Configure Vehicle Physics & Ablation Parameters"
+            >
+              <Sliders className="w-3.5 h-3.5 text-haas-red" />
+              <span className="hidden sm:inline font-mono font-bold text-haas-white">Ablation Controls</span>
+            </button>
+          )}
         </div>
 
       </div>

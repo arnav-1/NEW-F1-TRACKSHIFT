@@ -77,7 +77,7 @@ export function generateLapTelemetry(
       basePace = circuitBasePace + 0.65; // Green track, dusty
       startFuel = 46.0;
       burnRate = 1.62;
-      totalLaps = compound === 'HARD' ? 18 : compound === 'MEDIUM' ? 16 : 14;
+      totalLaps = compound === 'SOFT' ? 12 : compound === 'MEDIUM' ? 22 : 27;
       evoScale = 1.45;
       evoDecay = 75.0;
       evoOffset = 5;
@@ -87,7 +87,7 @@ export function generateLapTelemetry(
       basePace = circuitBasePace - 0.08; // Rubbered-in track, warm (44°C)
       startFuel = 58.0;
       burnRate = 1.65;
-      totalLaps = compound === 'HARD' ? 22 : compound === 'MEDIUM' ? 18 : 16;
+      totalLaps = compound === 'SOFT' ? 12 : compound === 'MEDIUM' ? 22 : 27;
       evoScale = 0.95;
       evoDecay = 90.0;
       evoOffset = 35;
@@ -97,7 +97,7 @@ export function generateLapTelemetry(
       basePace = circuitBasePace - 0.68; // Lightweight quali trim, high mechanical grip
       startFuel = 28.0;
       burnRate = 1.70;
-      totalLaps = compound === 'HARD' ? 16 : compound === 'MEDIUM' ? 13 : 11;
+      totalLaps = compound === 'SOFT' ? 12 : compound === 'MEDIUM' ? 22 : 27;
       evoScale = 0.65;
       evoDecay = 110.0;
       evoOffset = 75;
@@ -108,7 +108,7 @@ export function generateLapTelemetry(
       basePace = circuitBasePace;
       startFuel = 102.5;
       burnRate = 1.60;
-      totalLaps = compound === 'SOFT' ? 12 : compound === 'MEDIUM' ? 20 : 27;
+      totalLaps = compound === 'SOFT' ? 12 : compound === 'MEDIUM' ? 22 : 27;
       evoScale = 1.25;
       evoDecay = 120.0;
       evoOffset = 38;

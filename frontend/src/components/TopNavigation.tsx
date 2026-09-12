@@ -1,5 +1,6 @@
 import React from 'react';
 import type { SessionId, TyreCompound } from '../types/telemetry';
+import { useTelemetry, type CompoundType, type SessionType } from '../context/TelemetryContext';
 import { Map, Activity, Disc, Award, SlidersHorizontal } from 'lucide-react';
 
 export type WorkspaceTab = 'circuit' | 'decoupling' | 'chassis' | 'validation';
@@ -7,24 +8,27 @@ export type WorkspaceTab = 'circuit' | 'decoupling' | 'chassis' | 'validation';
 interface TopNavigationProps {
   activeTab: WorkspaceTab;
   onTabChange: (tab: WorkspaceTab) => void;
-  currentSession: SessionId;
-  onSessionChange: (s: SessionId) => void;
-  currentCompound: TyreCompound;
-  onCompoundChange: (c: TyreCompound) => void;
-  tyreLifeLaps: number;
+  currentSession?: SessionId;
+  onSessionChange?: (s: SessionId) => void;
+  currentCompound?: TyreCompound;
+  onCompoundChange?: (c: TyreCompound) => void;
+  tyreLifeLaps?: number;
   onOpenPhysicsInspector: () => void;
 }
 
 export const TopNavigation: React.FC<TopNavigationProps> = ({
   activeTab,
   onTabChange,
-  currentSession,
-  onSessionChange,
-  currentCompound,
-  onCompoundChange,
-  tyreLifeLaps,
   onOpenPhysicsInspector,
 }) => {
+  const {
+    selectedCompound,
+    setCompound,
+    selectedSession,
+    setSession,
+    currentLapData,
+  } = useTelemetry();
+
   const tabs: Array<{ id: WorkspaceTab; label: string; icon: React.ComponentType<{ className?: string }> }> = [
     { id: 'circuit', label: 'Circuit & Live Telemetry', icon: Map },
     { id: 'decoupling', label: 'Signal Decoupling', icon: Activity },
@@ -32,16 +36,22 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
     { id: 'validation', label: 'Post-Race Validation', icon: Award },
   ];
 
-  const getCompoundStyle = (comp: TyreCompound) => {
+  const getCompoundStyle = (comp: CompoundType) => {
     switch (comp) {
       case 'SOFT':
         return 'bg-[#E10600] text-white border-[#E10600] shadow-sm shadow-red-500/40';
       case 'MEDIUM':
         return 'bg-[#E5A823] text-black border-[#E5A823] font-bold shadow-sm shadow-yellow-500/30';
       case 'HARD':
-        return 'bg-white text-black border-slate-300 font-bold';
+        return 'bg-white text-black border-white font-bold shadow-sm';
     }
   };
+
+  const compounds: Array<{ id: CompoundType; code: string; label: string }> = [
+    { id: 'SOFT', code: 'C3', label: 'SC3' },
+    { id: 'MEDIUM', code: 'C2', label: 'MC2' },
+    { id: 'HARD', code: 'C1', label: 'HC1' },
+  ];
 
   return (
     <header className="bg-[#101018]/95 backdrop-blur-md border-b border-[#242432] sticky top-0 z-40 px-4 lg:px-8 py-2.5 shadow-2xl">
@@ -94,27 +104,25 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 
               {/* Current Tyre Badge & Quick Compound Switcher */}
               <div className="flex items-center gap-1 pl-2.5 border-l border-[#242432]">
-                {(['SOFT', 'MEDIUM', 'HARD'] as TyreCompound[]).map((comp) => {
-                  const isCurrent = currentCompound === comp;
-                  const code = comp === 'SOFT' ? 'C3' : comp === 'MEDIUM' ? 'C2' : 'C1';
+                {compounds.map((comp) => {
+                  const isCurrent = selectedCompound === comp.id;
                   return (
                     <button
-                      key={comp}
-                      onClick={() => onCompoundChange(comp)}
-                      title={`Select ${comp} (${code})`}
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                      key={comp.id}
+                      onClick={() => setCompound(comp.id)}
+                      title={`Select ${comp.id} (${comp.code})`}
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-all ${
                         isCurrent
-                          ? `${getCompoundStyle(comp)} font-bold`
+                          ? `${getCompoundStyle(comp.id)} font-bold ring-1 ring-white/20 scale-105`
                           : 'bg-[#101018] text-[#8C8C9A] border-[#242432] hover:text-white hover:bg-[#181824]'
                       }`}
                     >
-                      <span>{comp[0]}</span>
-                      <span className="text-[9px] opacity-80 ml-0.5">{code}</span>
+                      <span>{comp.label}</span>
                     </button>
                   );
                 })}
                 <span className="text-[10px] text-[#8C8C9A] font-mono ml-1 font-semibold">
-                  (Life: {tyreLifeLaps} L)
+                  (Life: {currentLapData.tyre_life} L)
                 </span>
               </div>
             </div>
@@ -141,8 +149,8 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
             <span className="text-[#8C8C9A]">4.657 km (14 Turns)</span>
             <span className="text-[#333345]">|</span>
             <select
-              value={currentSession}
-              onChange={(e) => onSessionChange(e.target.value as SessionId)}
+              value={selectedSession}
+              onChange={(e) => setSession(e.target.value as SessionType)}
               className="bg-[#101018] border border-[#242432] text-white rounded px-2.5 py-0.5 text-xs font-bold cursor-pointer focus:outline-none focus:border-[#E10600]"
             >
               <option value="Race">Sunday Race (Held-Out)</option>
