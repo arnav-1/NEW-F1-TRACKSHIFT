@@ -77,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
 
               <div className="leading-tight">
                 <div className="flex items-center gap-1.5 font-bold text-[11px] text-haas-gray">
-                  <span>MoneyGram</span>
+                  <span>Toyota Gazoo Racing</span>
                   <span className="text-haas-red font-black tracking-wider">HAAS F1</span>
                   <span>TEAM</span>
                 </div>
@@ -103,7 +103,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <span>Nico Hülkenberg</span>
                   <span className="text-[10px] text-haas-gray font-mono bg-[#161622] px-1 rounded">VF-24</span>
                 </div>
-                <div className="text-[10px] text-haas-gray font-mono mt-0.5">Car #27 | MoneyGram Haas</div>
+                <div className="text-[10px] text-haas-gray font-mono mt-0.5">Car #27 | Toyota Gazoo Racing Haas</div>
               </div>
 
               {/* Interactive Tyre Compound Selector Badge: SC3, MC2, HC1 */}

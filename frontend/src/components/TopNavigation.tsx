@@ -98,7 +98,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                   </span>
                 </div>
                 <div className="text-[10px] text-[#8C8C9A] font-mono">
-                  Car #27 | MoneyGram TGR Haas
+                  Car #27 | Toyota Gazoo Racing Haas
                 </div>
               </div>
 
