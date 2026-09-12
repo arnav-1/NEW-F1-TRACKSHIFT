@@ -1,0 +1,161 @@
+{
+  "benchmark_results": {
+    "Baseline (Frozen Model)": {
+      "variant_id": "baseline",
+      "description": "Current TrackShift Frozen Production Model",
+      "cv_mae": 0.08088162168207208,
+      "cv_rmse": 0.1795583603968072,
+      "cv_r2": 0.9876508195349682,
+      "mean_loro_mae": 0.14708997585714986,
+      "loro_races": {
+        "Austria": 0.18159433094399036,
+        "Bahrain": 0.0817269675205926,
+        "Belgium": 0.08749588813194943,
+        "Hungary": 0.09432808397253571,
+        "Silverstone": 0.3523510927007556,
+        "Spain": 0.08504349187307532
+      },
+      "elapsed_s": 4.417714357376099
+    },
+    "Formula 1: Fieni Mass-Coupled Wear": {
+      "variant_id": "formula_1_fieni_mass_wear",
+      "description": "f_j = a_j*TW + b_j*(m_car/m_car0) + c_j (ETH 2025)",
+      "cv_mae": 0.08044341500991904,
+      "cv_rmse": 0.17872706639638553,
+      "cv_r2": 0.9877678070042398,
+      "mean_loro_mae": 0.14821226506783877,
+      "loro_races": {
+        "Austria": 0.11464121078531866,
+        "Bahrain": 0.07916618056057893,
+        "Belgium": 0.16955968754137823,
+        "Hungary": 0.0897097061499607,
+        "Silverstone": 0.3641389478632448,
+        "Spain": 0.07205785750655128
+      },
+      "elapsed_s": 5.162609100341797
+    },
+    "Formula 2: West Carcass Deflection": {
+      "variant_id": "formula_2_wl_carcass_defl",
+      "description": "Q_defl = p2 * (u_n * Fx^2 / |Fz|) (West & Limebeer 2020)",
+      "cv_mae": 0.08087660171387105,
+      "cv_rmse": 0.1795575116569579,
+      "cv_r2": 0.9876509036705838,
+      "mean_loro_mae": 0.1466365948854429,
+      "loro_races": {
+        "Austria": 0.18155995363610872,
+        "Bahrain": 0.08168086434689993,
+        "Belgium": 0.08755978453382565,
+        "Hungary": 0.0942578711486712,
+        "Silverstone": 0.3497188905810984,
+        "Spain": 0.08504220506605349
+      },
+      "elapsed_s": 3.98864483833313
+    },
+    "Formula 3: West Contact Footprint": {
+      "variant_id": "formula_3_wl_contact_area",
+      "description": "c_l = a_cp * Fz^0.7 (West & Limebeer 2020)",
+      "cv_mae": 0.08087006478592333,
+      "cv_rmse": 0.1795333304162448,
+      "cv_r2": 0.9876541694239277,
+      "mean_loro_mae": 0.1470240582271061,
+      "loro_races": {
+        "Austria": 0.1822654143513406,
+        "Bahrain": 0.08256412988742319,
+        "Belgium": 0.08718336029802586,
+        "Hungary": 0.09446712496312012,
+        "Silverstone": 0.350516783033667,
+        "Spain": 0.0851475368290597
+      },
+      "elapsed_s": 3.5973875522613525
+    },
+    "Formula 4: Farroni TRT Heat Partition": {
+      "variant_id": "formula_4_farroni_cr",
+      "description": "CR(T) = (kt/kr) * sqrt(alpha_r/alpha_t) (Farroni 2014)",
+      "cv_mae": 0.17762240922222144,
+      "cv_rmse": 0.2675035367955042,
+      "cv_r2": 0.9729921700018114,
+      "mean_loro_mae": 0.40788910990321453,
+      "loro_races": {
+        "Austria": 0.2938439424399448,
+        "Bahrain": 0.25253063513839713,
+        "Belgium": 0.4885279897349713,
+        "Hungary": 0.22617093235734942,
+        "Silverstone": 1.0127874981876703,
+        "Spain": 0.17347366156095426
+      },
+      "elapsed_s": 3.6038408279418945
+    },
+    "Formula 5: Fieni Inlap/Outlap Maps": {
+      "variant_id": "formula_5_inlap_outlap",
+      "description": "T_inlap (+11.5s), T_outlap (+15.1s) (ETH 2025)",
+      "cv_mae": 0.9040934578062494,
+      "cv_rmse": 2.105042480891629,
+      "cv_r2": 0.38873688563135794,
+      "mean_loro_mae": 1.1816625677617167,
+      "loro_races": {
+        "Austria": 0.684045021204003,
+        "Bahrain": 0.8322548049049246,
+        "Belgium": 1.9191843177190075,
+        "Hungary": 0.8809616910821236,
+        "Silverstone": 1.7920437916405276,
+        "Spain": 0.9814857800197128
+      },
+      "elapsed_s": 5.203649282455444
+    },
+    "Formula 6: Todd Telemetry Weights": {
+      "variant_id": "formula_6_todd_telemetry",
+      "description": "Steering, Speed & Brake Telemetry Weighted Q_frict (Mercedes 2025)",
+      "cv_mae": 0.06727454867144105,
+      "cv_rmse": 0.1503582740231834,
+      "cv_r2": 0.9914192539977446,
+      "mean_loro_mae": 0.13335823987225046,
+      "loro_races": {
+        "Austria": 0.08141285416246949,
+        "Bahrain": 0.09877871556860365,
+        "Belgium": 0.27836945973137234,
+        "Hungary": 0.07722567239342278,
+        "Silverstone": 0.19532002102989618,
+        "Spain": 0.06904271634773827
+      },
+      "elapsed_s": 4.908753156661987
+    }
+  },
+  "decisions": {
+    "Formula 1: Fieni Mass-Coupled Wear": {
+      "decision": "ADD",
+      "reason": "Physical first-principles upgrade with neutral error impact (Delta LORO = +0.0011s).",
+      "delta_cv": -0.0004382066721530381,
+      "delta_loro": 0.0011222892106889093
+    },
+    "Formula 2: West Carcass Deflection": {
+      "decision": "ADD",
+      "reason": "Improves/preserves physical fidelity with zero regression (Delta LORO = -0.0005s).",
+      "delta_cv": -5.019968201028235e-06,
+      "delta_loro": -0.0004533809717069681
+    },
+    "Formula 3: West Contact Footprint": {
+      "decision": "ADD",
+      "reason": "Improves/preserves physical fidelity with zero regression (Delta LORO = -0.0001s).",
+      "delta_cv": -1.155689614874833e-05,
+      "delta_loro": -6.591763004376583e-05
+    },
+    "Formula 4: Farroni TRT Heat Partition": {
+      "decision": "REJECT",
+      "reason": "Causes generalization degradation across unseen circuits (Delta LORO = +0.2608s).",
+      "delta_cv": 0.09674078754014936,
+      "delta_loro": 0.2607991340460647
+    },
+    "Formula 5: Fieni Inlap/Outlap Maps": {
+      "decision": "REJECT",
+      "reason": "Causes generalization degradation across unseen circuits (Delta LORO = +1.0346s).",
+      "delta_cv": 0.8232118361241774,
+      "delta_loro": 1.034572591904567
+    },
+    "Formula 6: Todd Telemetry Weights": {
+      "decision": "ADD",
+      "reason": "Improves/preserves physical fidelity with zero regression (Delta LORO = -0.0137s).",
+      "delta_cv": -0.013607073010631035,
+      "delta_loro": -0.013731735984899407
+    }
+  }
+}
