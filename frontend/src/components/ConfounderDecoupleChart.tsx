@@ -33,8 +33,8 @@ export const ConfounderDecoupleChart: React.FC<ConfounderDecoupleChartProps> = (
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-haas-border/70 pb-3 mb-3">
         <div className="flex items-center gap-2">
           <LineChart className="w-4 h-4 text-haas-red" />
-          <h2 className="text-sm font-bold tracking-tight text-haas-white font-mono uppercase">
-            Panel 2: Observational Confounder Decoupling (PIP & IEP)
+          <h2 className="text-sm font-bold text-haas-white font-mono">
+            Panel 2: Confounder Decoupling & Track Evolution (PIP)
           </h2>
         </div>
 
@@ -232,7 +232,7 @@ export const ConfounderDecoupleChart: React.FC<ConfounderDecoupleChartProps> = (
                 yAxisId="right"
                 type="monotone"
                 dataKey={(d: LapTelemetryRecord) => -d.track_evolution_s}
-                name="Series 3: Track Rubbering Gain (1.25s·(1-e^-n/120))"
+                name="Series 3: Track Rubbering Gain (1.25s * (1-e^-n/120))"
                 stroke="#00E5FF"
                 strokeWidth={2}
                 strokeDasharray="4 4"

@@ -39,7 +39,7 @@ export const ValidationBenchmarkTable: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-haas-border/70 pb-3 mb-3">
         <div className="flex items-center gap-2">
           <Award className="w-4 h-4 text-haas-red" />
-          <h2 className="text-sm font-bold tracking-tight text-haas-white font-mono uppercase">
+          <h2 className="text-sm font-bold text-haas-white font-mono">
             Panel 4: Post-Race Sunday Benchmark Validation (CMP)
           </h2>
         </div>
@@ -72,7 +72,7 @@ export const ValidationBenchmarkTable: React.FC = () => {
         <div className="overflow-x-auto my-auto">
           <table className="w-full text-left font-mono text-xs">
             <thead>
-              <tr className="border-b border-haas-border text-haas-gray text-[10px] uppercase">
+              <tr className="border-b border-haas-border text-haas-gray text-[10px]">
                 <th className="pb-2.5 font-bold">Stint & Compound</th>
                 <th className="pb-2.5 font-bold text-center">Laps</th>
                 <th className="pb-2.5 font-bold text-right">Baseline Poly MAE</th>
@@ -240,7 +240,7 @@ export const ValidationBenchmarkTable: React.FC = () => {
 
       {/* Benchmarking Footer Callout */}
       <div className="mt-2 pt-2 border-t border-haas-border/70 flex flex-wrap items-center justify-between text-[11px] font-mono text-haas-gray gap-2">
-        <span className="text-haas-white font-medium">Nico Hülkenberg Car #27 • Official Race Data Validation</span>
+        <span className="text-haas-white font-medium">Nico Hülkenberg Car #27 | Official Race Data Validation</span>
         <span className="text-emerald-400 font-bold flex items-center gap-1">
           <TrendingDown className="w-3.5 h-3.5" />
           <span>78% MAE Error Reduction & Monotonic Physical Containment</span>

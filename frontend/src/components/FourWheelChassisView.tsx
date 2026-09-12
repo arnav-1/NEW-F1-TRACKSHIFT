@@ -154,7 +154,7 @@ export const FourWheelChassisView: React.FC<FourWheelChassisViewProps> = ({
         <div className="xl:col-span-4 tgr-card p-6 flex flex-col items-center justify-center relative bg-[#0E0E14] min-h-[380px] border border-[#242432]">
           
           <div className="text-center mb-2">
-            <span className="text-[10px] font-mono font-bold text-[#8C8C9A] uppercase tracking-wider bg-[#181824] px-3 py-1 rounded-full border border-[#242432]">
+            <span className="text-[10px] font-mono font-bold text-[#8C8C9A] bg-[#181824] px-3 py-1 rounded-full border border-[#242432]">
               VF-26 Chassis Load Dynamics
             </span>
           </div>
@@ -248,7 +248,7 @@ export const FourWheelChassisView: React.FC<FourWheelChassisViewProps> = ({
       <div className="tgr-card p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-[#242432]">
           <div>
-            <h3 className="text-sm font-black text-[#F5F5F7] uppercase tracking-wide font-mono flex items-center gap-2">
+            <h3 className="text-sm font-black text-[#F5F5F7] font-mono flex items-center gap-2">
               <Flame className="w-4 h-4 text-[#E10600]" />
               <span>Tri-Mechanism Wear Decomposition & Cliff Forecaster</span>
             </h3>

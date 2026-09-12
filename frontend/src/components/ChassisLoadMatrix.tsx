@@ -138,7 +138,7 @@ export const ChassisLoadMatrix: React.FC<ChassisLoadMatrixProps> = ({ corners })
       <div className="flex items-center justify-between border-b border-haas-border/70 pb-3 mb-3">
         <div className="flex items-center gap-2">
           <Zap className="w-4 h-4 text-haas-red" />
-          <h2 className="text-sm font-bold tracking-tight text-haas-white font-mono uppercase">
+          <h2 className="text-sm font-bold text-haas-white font-mono">
             Panel 1: 4-Wheel Asymmetric Workload Matrix
           </h2>
         </div>
@@ -167,7 +167,7 @@ export const ChassisLoadMatrix: React.FC<ChassisLoadMatrixProps> = ({ corners })
 
           {/* Top Chassis Label */}
           <div className="absolute top-2 left-0 right-0 text-center">
-            <span className="text-[9px] font-mono font-bold text-haas-gray tracking-wider uppercase bg-[#12121c] px-2 py-0.5 rounded border border-haas-border">
+            <span className="text-[9px] font-mono font-bold text-haas-gray bg-[#12121c] px-2 py-0.5 rounded border border-haas-border">
               VF-24 Top-Down Chassis
             </span>
           </div>
@@ -257,7 +257,7 @@ export const ChassisLoadMatrix: React.FC<ChassisLoadMatrixProps> = ({ corners })
             <ArrowUp className="w-4 h-4 text-haas-cyan" />
           </div>
           <div>
-            <div className="text-[10px] text-haas-gray uppercase font-bold flex items-center gap-1.5">
+            <div className="text-[10px] text-haas-gray font-bold flex items-center gap-1.5">
               <span>Longitudinal Pitch Transfer</span>
               <span className="text-haas-cyan font-mono">(Braking Axle)</span>
             </div>
@@ -272,7 +272,7 @@ export const ChassisLoadMatrix: React.FC<ChassisLoadMatrixProps> = ({ corners })
             <ArrowRight className="w-4 h-4 text-haas-red" />
           </div>
           <div>
-            <div className="text-[10px] text-haas-gray uppercase font-bold flex items-center gap-1.5">
+            <div className="text-[10px] text-haas-gray font-bold flex items-center gap-1.5">
               <span>Centripetal Roll Transfer</span>
               <span className="text-haas-red font-mono">(T3 / T9 Lateral)</span>
             </div>

@@ -94,7 +94,7 @@ export const PostRaceValidationView: React.FC = () => {
       {!showFailureCurve ? (
         <div className="tgr-card p-6">
           <div className="pb-4 mb-4 border-b border-[#242432]">
-            <h3 className="text-sm font-black text-[#F5F5F7] uppercase tracking-wide font-mono">
+            <h3 className="text-sm font-black text-[#F5F5F7] font-mono">
               Race Stint Benchmark Matrix: Polynomial vs Physical Model
             </h3>
             <span className="text-xs text-[#8C8C9A] font-mono">
@@ -105,7 +105,7 @@ export const PostRaceValidationView: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left font-mono text-xs">
               <thead>
-                <tr className="border-b border-[#242432] text-[#8C8C9A] text-[11px] uppercase">
+                <tr className="border-b border-[#242432] text-[#8C8C9A] text-[11px]">
                   <th className="py-3 font-bold">Stint & Compound</th>
                   <th className="py-3 font-bold text-center">Actual Laps</th>
                   <th className="py-3 font-bold text-right">Baseline Poly MAE</th>
@@ -188,7 +188,7 @@ export const PostRaceValidationView: React.FC = () => {
         /* Visual Extrapolation Failure Plot */
         <div className="tgr-card p-6">
           <div className="pb-4 mb-4 border-b border-[#242432]">
-            <h3 className="text-sm font-black text-[#F5F5F7] uppercase tracking-wide font-mono flex items-center gap-2">
+            <h3 className="text-sm font-black text-[#F5F5F7] font-mono flex items-center gap-2">
               <AlertOctagon className="w-4 h-4 text-[#E10600]" />
               <span>Polynomial Extrapolation Blowout vs Physical Monotonicity</span>
             </h3>

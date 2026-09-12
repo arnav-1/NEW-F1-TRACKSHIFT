@@ -37,7 +37,7 @@ export const AblationDrawer: React.FC<AblationDrawerProps> = ({
             <div className="flex items-center gap-2.5">
               <SlidersHorizontal className="w-5 h-5 text-[#E10600]" />
               <div>
-                <h3 className="text-base font-black text-[#F5F5F7] font-mono uppercase tracking-tight">
+                <h3 className="text-base font-black text-[#F5F5F7] font-mono">
                   Physics Specifications & Ablation
                 </h3>
                 <p className="text-xs text-[#8C8C9A] font-mono">

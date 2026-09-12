@@ -145,7 +145,7 @@ export const ConfounderDecouplingView: React.FC<ConfounderDecouplingViewProps> =
         {/* Chart Header & Interactive Series Toggles */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-[#242432]">
           <div>
-            <h3 className="text-sm font-black text-[#F5F5F7] uppercase tracking-wide font-mono">
+            <h3 className="text-sm font-black text-[#F5F5F7] font-mono">
               Signal Separation: Observed Pace vs Confounder Residuals
             </h3>
             <span className="text-xs text-[#8C8C9A] font-mono">

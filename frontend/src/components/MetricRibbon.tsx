@@ -18,9 +18,9 @@ export const MetricRibbon: React.FC<MetricRibbonProps> = ({ currentLapData }) =>
     <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
       
       {/* 1. Dynamic Fuel Penalty */}
-      <div className="pitwall-panel p-3.5 relative overflow-hidden group hover:border-haas-border/90 transition-all">
+      <div className="pitwall-panel p-3.5 relative overflow-hidden group">
         <div className="flex items-center justify-between text-haas-gray mb-1">
-          <span className="text-[11px] font-mono tracking-wider uppercase font-bold flex items-center gap-1.5 text-haas-white">
+          <span className="text-[11px] font-mono font-bold flex items-center gap-1.5 text-haas-white">
             <Fuel className="w-3.5 h-3.5 text-haas-red" />
             Fuel Mass Penalty
           </span>
@@ -39,9 +39,9 @@ export const MetricRibbon: React.FC<MetricRibbonProps> = ({ currentLapData }) =>
       </div>
 
       {/* 2. Track Evolution Grip Gain */}
-      <div className="pitwall-panel p-3.5 relative overflow-hidden group hover:border-haas-cyan/40 transition-all">
+      <div className="pitwall-panel p-3.5 relative overflow-hidden group">
         <div className="flex items-center justify-between text-haas-gray mb-1">
-          <span className="text-[11px] font-mono tracking-wider uppercase font-bold flex items-center gap-1.5 text-haas-cyan">
+          <span className="text-[11px] font-mono font-bold flex items-center gap-1.5 text-haas-cyan">
             <TrendingUp className="w-3.5 h-3.5 text-haas-cyan" />
             Track Evolution Gain
           </span>
@@ -60,9 +60,9 @@ export const MetricRibbon: React.FC<MetricRibbonProps> = ({ currentLapData }) =>
       </div>
 
       {/* 3. Track & Ambient Thermals */}
-      <div className="pitwall-panel p-3.5 relative overflow-hidden group hover:border-haas-amber/40 transition-all">
+      <div className="pitwall-panel p-3.5 relative overflow-hidden group">
         <div className="flex items-center justify-between text-haas-gray mb-1">
-          <span className="text-[11px] font-mono tracking-wider uppercase font-bold flex items-center gap-1.5 text-haas-amber">
+          <span className="text-[11px] font-mono font-bold flex items-center gap-1.5 text-haas-amber">
             <Thermometer className="w-3.5 h-3.5 text-haas-amber" />
             Track & Ambient Thermals
           </span>
@@ -82,9 +82,9 @@ export const MetricRibbon: React.FC<MetricRibbonProps> = ({ currentLapData }) =>
       </div>
 
       {/* 4. Limiting Corner Flagged Haas Red */}
-      <div className="pitwall-panel p-3.5 relative overflow-hidden group border-haas-red/60 bg-gradient-to-br from-[#15151E] to-[#220d11] shadow-haas-red transition-all">
+      <div className="pitwall-panel p-3.5 relative overflow-hidden group border-haas-red/60 bg-gradient-to-br from-[#15151E] to-[#220d11]">
         <div className="flex items-center justify-between text-haas-red mb-1">
-          <span className="text-[11px] font-mono tracking-wider uppercase font-black flex items-center gap-1.5 text-haas-red">
+          <span className="text-[11px] font-mono font-black flex items-center gap-1.5 text-haas-red">
             <Crosshair className="w-3.5 h-3.5 text-haas-red animate-pulse" />
             Limiting Corner
           </span>
@@ -107,9 +107,9 @@ export const MetricRibbon: React.FC<MetricRibbonProps> = ({ currentLapData }) =>
       </div>
 
       {/* 5. Analytical Stint Cliff */}
-      <div className="pitwall-panel p-3.5 relative overflow-hidden group col-span-2 md:col-span-1 hover:border-purple-500/40 transition-all">
+      <div className="pitwall-panel p-3.5 relative overflow-hidden group col-span-2 md:col-span-1">
         <div className="flex items-center justify-between text-haas-gray mb-1">
-          <span className="text-[11px] font-mono tracking-wider uppercase font-bold flex items-center gap-1.5 text-haas-white">
+          <span className="text-[11px] font-mono font-bold flex items-center gap-1.5 text-haas-white">
             <AlertTriangle className="w-3.5 h-3.5 text-purple-400" />
             Analytical Stint Cliff
           </span>

@@ -48,7 +48,7 @@ export const TriMechanismWearChart: React.FC<TriMechanismWearChartProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-haas-border/70 pb-3 mb-3">
         <div className="flex items-center gap-2">
           <Flame className="w-4 h-4 text-haas-red" />
-          <h2 className="text-sm font-bold tracking-tight text-haas-white font-mono uppercase">
+          <h2 className="text-sm font-bold text-haas-white font-mono">
             Panel 3: Tri-Mechanism Wear Breakdown & Thermal ODEs (DEP)
           </h2>
         </div>
@@ -77,7 +77,7 @@ export const TriMechanismWearChart: React.FC<TriMechanismWearChartProps> = ({
             <Thermometer className="w-3.5 h-3.5 text-haas-red" />
           </div>
           <div className="text-[10px] font-mono">
-            <span className="text-haas-gray uppercase font-semibold">T_tread ODE:</span>
+            <span className="text-haas-gray font-semibold">T_tread ODE:</span>
             <div className="text-haas-white font-black text-xs">{latestPoint.tread_temp}°C</div>
           </div>
         </div>
@@ -87,7 +87,7 @@ export const TriMechanismWearChart: React.FC<TriMechanismWearChartProps> = ({
             <Thermometer className="w-3.5 h-3.5 text-haas-cyan" />
           </div>
           <div className="text-[10px] font-mono">
-            <span className="text-haas-gray uppercase font-semibold">T_carcass ODE:</span>
+            <span className="text-haas-gray font-semibold">T_carcass ODE:</span>
             <div className="text-haas-cyan font-black text-xs">{latestPoint.carcass_temp}°C</div>
           </div>
         </div>
@@ -97,7 +97,7 @@ export const TriMechanismWearChart: React.FC<TriMechanismWearChartProps> = ({
             <Cpu className="w-3.5 h-3.5 text-purple-400" />
           </div>
           <div className="text-[10px] font-mono">
-            <span className="text-haas-gray uppercase font-semibold">Cumulative D(t):</span>
+            <span className="text-haas-gray font-semibold">Cumulative D(t):</span>
             <div className="text-purple-300 font-black text-xs">{latestPoint.cumulative_d}% Life Expended</div>
           </div>
         </div>

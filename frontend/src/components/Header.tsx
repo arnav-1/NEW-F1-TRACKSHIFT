@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               <div className="leading-tight">
-                <div className="flex items-center gap-1.5 font-bold tracking-widest text-[11px] text-haas-gray uppercase">
+                <div className="flex items-center gap-1.5 font-bold text-[11px] text-haas-gray">
                   <span>MoneyGram</span>
                   <span className="text-haas-red font-black tracking-wider">HAAS F1</span>
                   <span>TEAM</span>
@@ -71,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <span>Nico Hülkenberg</span>
                   <span className="text-[10px] text-haas-gray font-mono bg-[#161622] px-1 rounded">VF-24</span>
                 </div>
-                <div className="text-[10px] text-haas-gray font-mono mt-0.5">Car #27 • MoneyGram Haas</div>
+                <div className="text-[10px] text-haas-gray font-mono mt-0.5">Car #27 | MoneyGram Haas</div>
               </div>
 
               {/* Interactive Tyre Compound Selector Badge */}
@@ -117,17 +117,17 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-haas-amber font-bold">42.8°C</span>
               <span className="text-[10px]">Track</span>
             </div>
-            <span className="text-haas-border">•</span>
+            <span className="text-haas-border">|</span>
             <div className="flex items-center gap-1">
               <span className="text-haas-white font-bold">28.1°C</span>
               <span className="text-[10px]">Air</span>
             </div>
-            <span className="text-haas-border">•</span>
+            <span className="text-haas-border">|</span>
             <div className="flex items-center gap-1">
               <Droplets className="w-3 h-3 text-haas-cyan" />
               <span className="text-haas-white font-bold">48%</span>
             </div>
-            <span className="text-haas-border">•</span>
+            <span className="text-haas-border">|</span>
             <div className="flex items-center gap-1">
               <Wind className="w-3 h-3 text-slate-300" />
               <span className="text-haas-white font-bold">2.8 m/s</span>

@@ -166,8 +166,8 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
             {/* Subtle Grid Watermark */}
             <div className="absolute inset-0 bg-[radial-gradient(#1E1E2E_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none"></div>
 
-            <div className="absolute top-4 left-4 text-xs font-mono text-[#8C8C9A]/50 font-bold uppercase tracking-widest pointer-events-none">
-              TGR HAAS PIT-WALL TRACKSHIFT
+            <div className="absolute top-4 left-4 text-xs font-mono text-[#8C8C9A]/50 font-bold pointer-events-none">
+              TGR Haas Pit-Wall TrackShift
             </div>
 
             <svg
@@ -446,7 +446,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
 
           {/* Circuit Archetype Parameters */}
           <div className="tgr-card p-4 text-xs font-mono">
-            <h4 className="font-black text-[#F5F5F7] uppercase text-[11px] tracking-wider mb-2">
+            <h4 className="font-black text-[#F5F5F7] text-[11px] mb-2">
               Circuit Archetype Parameters
             </h4>
             <div className="space-y-1.5 text-[#8C8C9A]">
