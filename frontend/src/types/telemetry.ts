@@ -22,6 +22,7 @@ export interface LapTelemetryRecord {
   predicted_pace_s: number;
   is_outlier: boolean;
   outlier_reason?: string | null;
+  pip_filter_tag?: 'PASS_GREEN' | 'REJECTED_TRAFFIC_SPIKE' | 'REJECTED_VSC_DELTA' | 'REJECTED_YELLOW_FLAG' | 'OUT_LAP';
   corners: Record<'FL' | 'FR' | 'RL' | 'RR', TyreCornerMetrics>;
 }
 

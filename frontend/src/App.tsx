@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { TopNavigation, type WorkspaceTab } from './components/TopNavigation';
-import { CircuitMap } from './components/CircuitMap';
-import { ConfounderDecouplingView } from './components/ConfounderDecouplingView';
-import { FourWheelChassisView } from './components/FourWheelChassisView';
+import { CircuitTelemetryView } from './components/CircuitTelemetryView';
+import { SignalDecouplingView } from './components/SignalDecouplingView';
+import { FourWheelDynamicsView } from './components/FourWheelDynamicsView';
 import { PostRaceValidationView } from './components/PostRaceValidationView';
 import { AblationDrawer } from './components/AblationDrawer';
 import { generateLapTelemetry } from './data/mockTelemetry';
@@ -72,7 +72,7 @@ export function App() {
       {/* 2. Main Content Viewport: Renders the Active Workspace */}
       <main className="flex-1 max-w-[1800px] w-full mx-auto p-4 sm:p-6 lg:p-8">
         {activeTab === 'circuit' && (
-          <CircuitMap
+          <CircuitTelemetryView
             currentLap={currentLap}
             totalLaps={telemetryData.length}
             currentLapIndex={safeLapIndex}
@@ -83,11 +83,11 @@ export function App() {
         )}
 
         {activeTab === 'decoupling' && (
-          <ConfounderDecouplingView telemetryData={telemetryData} />
+          <SignalDecouplingView telemetryData={telemetryData} />
         )}
 
         {activeTab === 'chassis' && (
-          <FourWheelChassisView
+          <FourWheelDynamicsView
             corners={currentLap.corners}
             telemetryData={telemetryData}
           />

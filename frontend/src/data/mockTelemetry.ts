@@ -46,6 +46,12 @@ export const STINT_BENCHMARKS: StintBenchmark[] = [
   },
 ];
 
+function getSessionNoise(session: SessionId, lap: number): number {
+  const seed = session === 'FP1' ? 101 : session === 'FP2' ? 203 : session === 'FP3' ? 307 : 409;
+  const hash = Math.sin(lap * 9301 + seed * 49297) * 233280;
+  return ((hash - Math.floor(hash)) - 0.5) * 0.18;
+}
+
 export function generateLapTelemetry(
   circuit: CircuitId,
   session: SessionId,
@@ -55,21 +61,61 @@ export function generateLapTelemetry(
   pushLevel: number = 0.94
 ): LapTelemetryRecord[] {
   const isBarcelona = circuit === 'barcelona';
-  const basePace = isBarcelona ? 80.2 : 90.5;
+  const circuitBasePace = isBarcelona ? 80.2 : 90.5;
 
-  // Stint length depending on compound and session
-  let totalLaps = 18;
-  if (session === 'Race') {
-    if (compound === 'SOFT') totalLaps = 12;
-    else if (compound === 'MEDIUM') totalLaps = 20;
-    else totalLaps = 27;
-  } else {
-    totalLaps = compound === 'HARD' ? 22 : 14;
+  // Session-specific telemetry parameters
+  let basePace = circuitBasePace;
+  let startFuel = 36.0;
+  let burnRate = 1.60;
+  let totalLaps = 14;
+  let evoScale = 1.25;
+  let evoDecay = 120.0;
+  let evoOffset = 0;
+
+  switch (session) {
+    case 'FP1':
+      basePace = circuitBasePace + 0.65; // Green track, dusty
+      startFuel = 46.0;
+      burnRate = 1.62;
+      totalLaps = compound === 'HARD' ? 18 : compound === 'MEDIUM' ? 16 : 14;
+      evoScale = 1.45;
+      evoDecay = 75.0;
+      evoOffset = 5;
+      break;
+
+    case 'FP2':
+      basePace = circuitBasePace - 0.08; // Rubbered-in track, warm (44°C)
+      startFuel = 58.0;
+      burnRate = 1.65;
+      totalLaps = compound === 'HARD' ? 22 : compound === 'MEDIUM' ? 18 : 16;
+      evoScale = 0.95;
+      evoDecay = 90.0;
+      evoOffset = 35;
+      break;
+
+    case 'FP3':
+      basePace = circuitBasePace - 0.68; // Lightweight quali trim, high mechanical grip
+      startFuel = 28.0;
+      burnRate = 1.70;
+      totalLaps = compound === 'HARD' ? 16 : compound === 'MEDIUM' ? 13 : 11;
+      evoScale = 0.65;
+      evoDecay = 110.0;
+      evoOffset = 75;
+      break;
+
+    case 'Race':
+    default:
+      basePace = circuitBasePace;
+      startFuel = 102.5;
+      burnRate = 1.60;
+      totalLaps = compound === 'SOFT' ? 12 : compound === 'MEDIUM' ? 20 : 27;
+      evoScale = 1.25;
+      evoDecay = 120.0;
+      evoOffset = 38;
+      break;
   }
 
   const points: LapTelemetryRecord[] = [];
-  const startFuel = session === 'Race' ? 102.5 : 36.0;
-  const burnRate = 1.60;
 
   // Extra thermal penalty from aero deficit (default 0.88 downforce -> +4.8°C extra heat)
   const aeroHeatDelta = (1.0 - aeroDeficit) * 40.0; // ~4.8°C
@@ -82,8 +128,8 @@ export function generateLapTelemetry(
   for (let lap = 1; lap <= totalLaps; lap++) {
     const fuelRemaining = Math.max(4.0, startFuel - (lap - 1) * burnRate);
     const fuelPenalty = 0.033 * fuelRemaining;
-    const sessionLapOffset = session === 'Race' ? lap + 38 : lap;
-    const trackEvo = 1.25 * (1.0 - Math.exp(-sessionLapOffset / 120.0));
+    const sessionLapOffset = lap + evoOffset;
+    const trackEvo = evoScale * (1.0 - Math.exp(-sessionLapOffset / evoDecay));
 
     const massFactor = massScaling ? Math.pow(fuelRemaining / 35.0, 0.4) : 1.0;
     const tyreAge = lap;
@@ -108,19 +154,60 @@ export function generateLapTelemetry(
 
     const paceCorrected = basePace + wearPaceLoss;
 
-    // Deterministic timing noise and domain filter outliers
-    let noise = ((lap * 41) % 19 - 9) * 0.022;
+    // Deterministic timing noise and domain filter outliers per session
+    let noise = getSessionNoise(session, lap);
     let isOutlier = false;
     let outlierReason: string | null = null;
+    let pipTag: 'PASS_GREEN' | 'REJECTED_TRAFFIC_SPIKE' | 'REJECTED_VSC_DELTA' | 'REJECTED_YELLOW_FLAG' | 'OUT_LAP' = 'PASS_GREEN';
 
-    if (lap === 5 && session === 'Race') {
-      noise += 2.85;
-      isOutlier = true;
-      outlierReason = 'Traffic Spike (+2.85s behind Bottas)';
-    } else if (lap === 10 && session === 'Race' && totalLaps >= 14) {
-      noise += 3.20;
-      isOutlier = true;
-      outlierReason = 'Yellow Flag Slowdown (+3.20s Sector 2)';
+    if (session === 'FP1') {
+      if (lap === 3) {
+        noise += 1.85;
+        isOutlier = true;
+        outlierReason = 'Out-Lap Pace Delta (+1.85s)';
+        pipTag = 'OUT_LAP';
+      } else if (lap === 8) {
+        noise += 2.40;
+        isOutlier = true;
+        outlierReason = 'Lockup & Run-off Turn 1 (+2.40s)';
+        pipTag = 'REJECTED_TRAFFIC_SPIKE';
+      }
+    } else if (session === 'FP2') {
+      if (lap === 6) {
+        noise += 2.15;
+        isOutlier = true;
+        outlierReason = 'Traffic Behind Alpine Turn 10 (+2.15s)';
+        pipTag = 'REJECTED_TRAFFIC_SPIKE';
+      } else if (lap === 12) {
+        noise += 3.30;
+        isOutlier = true;
+        outlierReason = 'VSC Mini-Sector Delta (+3.30s)';
+        pipTag = 'REJECTED_VSC_DELTA';
+      }
+    } else if (session === 'FP3') {
+      if (lap === 4) {
+        noise += 2.65;
+        isOutlier = true;
+        outlierReason = 'Traffic Congestion Sector 1 (+2.65s)';
+        pipTag = 'REJECTED_TRAFFIC_SPIKE';
+      } else if (lap === 9) {
+        noise += 4.20;
+        isOutlier = true;
+        outlierReason = 'Aborted Push Lap / Cool-Down (+4.20s)';
+        pipTag = 'OUT_LAP';
+      }
+    } else if (session === 'Race') {
+      if (lap === 5) {
+        noise += 2.85;
+        isOutlier = true;
+        outlierReason = 'Traffic Spike Behind Bottas (+2.85s)';
+        pipTag = 'REJECTED_TRAFFIC_SPIKE';
+      } else if (lap === 10 && totalLaps >= 14) {
+        noise += 3.20;
+        isOutlier = true;
+        outlierReason = 'Yellow Flag Sector 2 Slowdown (+3.20s)';
+        pipTag = 'REJECTED_YELLOW_FLAG';
+      }
     }
 
     const rawLapTime = paceCorrected + fuelPenalty - trackEvo + noise;
@@ -179,6 +266,7 @@ export function generateLapTelemetry(
       predicted_pace_s: Number(predictedPace.toFixed(3)),
       is_outlier: isOutlier,
       outlier_reason: outlierReason,
+      pip_filter_tag: pipTag,
       corners,
     });
   }
