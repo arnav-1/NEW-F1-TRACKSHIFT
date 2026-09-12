@@ -69,11 +69,11 @@ FEATURE_SETS = {
             "frictional_heat_power", "mechanical_wear_rate",
             "graining_wear_rate", "blistering_wear_rate", "cumulative_wear_state",
             "effective_grip_coefficient", "grip_drop_ratio", "thermal_excess_temp",
-            "fuel_mass_remaining", "track_rubber_evolution", "driver_push_level",
+            "fuel_mass_remaining", "driver_push_level",
             "stint_number", "rainfall"
         ],
         "cat": ["tyre_compound", "circuit", "driver", "team"],
-        "desc": "All 26 Candidate Features (Unpruned, Collinear)",
+        "desc": "All 25 Candidate Features (Unpruned, Collinear)",
         "color": "#f85149",
     },
     "Frozen Production Model": {
@@ -83,7 +83,7 @@ FEATURE_SETS = {
             "frictional_heat_power", "mechanical_wear_rate",
             "cumulative_wear_state", "effective_grip_coefficient",
             "graining_wear_rate", "blistering_wear_rate",
-            "fuel_mass_remaining", "track_rubber_evolution"
+            "fuel_mass_remaining"
         ],
         "cat": ["tyre_compound", "circuit", "driver", "team"],
         "desc": "TrackShift Frozen Feature Set (11 Core + Conditionals)",

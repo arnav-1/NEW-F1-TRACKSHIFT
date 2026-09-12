@@ -145,12 +145,9 @@ class HaasDegradationPipeline:
         df["remaining_fuel_kg"] = np.clip(initial_fuel - (df["tyre_life"] - 1.0) * fuel_burn_per_lap, 0.0, initial_fuel)
         df["fuel_time_penalty_s"] = 0.033 * df["remaining_fuel_kg"]
 
-        # Track evolution saturation (1.5s max over weekend)
-        session_laps = df["lap_number"].astype(float)
-        df["track_evolution_s"] = 1.25 * (1.0 - np.exp(-session_laps / 120.0))
-
-        # Fully corrected observational pace residual
-        df["pace_corrected_s"] = df["lap_time_s"] - df["fuel_time_penalty_s"] + df["track_evolution_s"]
+        # Fully fuel-corrected observational pace
+        # Note: Track evolution is unmodelled and absorbed into residual epsilon(k)
+        df["pace_corrected_s"] = df["lap_time_s"] - df["fuel_time_penalty_s"]
 
         return df
 

@@ -138,7 +138,6 @@ def compute_candidate_features(df_all, engine: PhysicalThermalWearEngine):
     excess_temp_list = []
     deg_target_list = []
     fuel_remaining_list = []
-    track_rubber_list = []
     driver_push_list = []
 
     # Process grouped by driver and stint
@@ -177,11 +176,9 @@ def compute_candidate_features(df_all, engine: PhysicalThermalWearEngine):
             fuel_rem = max(5.0, 105.0 - fuel_burn_rate * lap_no)
             fuel_correction = 0.033 * (105.0 - fuel_rem)
 
-            # Track evolution
-            track_evolution = 1.25 * (1.0 - np.exp(-lap_no / 120.0))
-
-            # Isolated tyre degradation target: delta t
-            target_deg = lap_time - base_pace + fuel_correction + track_evolution
+            # Isolated tyre degradation target: delta t_tyre
+            # Track evolution is unmodelled and absorbed into observation residual epsilon(k)
+            target_deg = lap_time - base_pace + fuel_correction
             target_deg = max(-0.5, min(8.0, target_deg))
 
             # Driver push level proxy
@@ -239,7 +236,6 @@ def compute_candidate_features(df_all, engine: PhysicalThermalWearEngine):
             excess_temp_list.append(excess_t)
             deg_target_list.append(target_deg)
             fuel_remaining_list.append(fuel_rem)
-            track_rubber_list.append(track_evolution)
             driver_push_list.append(push_level)
 
         df_processed_list.append(stint_df)
@@ -264,12 +260,11 @@ def compute_candidate_features(df_all, engine: PhysicalThermalWearEngine):
     df_out["thermal_excess_temp"] = excess_temp_list
     df_out["target_degradation"] = deg_target_list
     df_out["fuel_mass_remaining"] = fuel_remaining_list
-    df_out["track_rubber_evolution"] = track_rubber_list
     df_out["driver_push_level"] = driver_push_list
     # Tyre pressure candidate (Pirelli starting technical directive vs live telemetry availability)
     df_out["tyre_pressure"] = np.nan  # Telemetry live pressure is proprietary / unavailable in timing data
 
-    print(f"[INFO] Processed dataset ready: {len(df_out)} laps with 28 candidate features.")
+    print(f"[INFO] Processed dataset ready: {len(df_out)} laps with 27 candidate features.")
     return df_out
 
 
@@ -305,7 +300,6 @@ def run_all_validation_tests(df: pd.DataFrame):
         "grip_drop_ratio": {"def": "Fractional grip loss: 1 - mu_eff / mu_0", "source": "Linearized Pace Loss Surrogate", "tier": "Tier 3", "type": "numerical"},
         "thermal_excess_temp": {"def": "Delta temperature outside optimal plateau window", "source": "Pirelli Thermal Plateau Prior", "tier": "Tier 3", "type": "numerical"},
         "fuel_mass_remaining": {"def": "Estimated instantaneous fuel mass onboard (kg)", "source": "Linear Fuel Burn Prior", "tier": "Tier 3", "type": "numerical"},
-        "track_rubber_evolution": {"def": "Track surface rubbering saturation state", "source": "Asymptotic Saturation Prior", "tier": "Tier 3", "type": "numerical"},
         "driver_push_level": {"def": "Driver pacing / tyre management factor P", "source": "Delta Pace Heuristic Prior", "tier": "Tier 3", "type": "numerical"},
     }
 
@@ -478,7 +472,7 @@ def run_all_validation_tests(df: pd.DataFrame):
         elif feat_name in ["thermal_excess_temp"]:
             row_res["decision"] = "DROP"
             row_res["reason"] = "Subsumed within non-monotonic thermal state representation; redundant with T_tread."
-        elif feat_name in ["stint_number", "fuel_mass_remaining", "track_rubber_evolution"]:
+        elif feat_name in ["stint_number", "fuel_mass_remaining"]:
             row_res["decision"] = "CONDITIONAL"
             row_res["reason"] = "Valid confounder correction variables; retained for pace normalization, not direct tyre states."
         elif feat_name in ["graining_wear_rate", "blistering_wear_rate"]:

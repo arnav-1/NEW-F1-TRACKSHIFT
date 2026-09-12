@@ -31,8 +31,8 @@ To maintain uncompromising scientific integrity, every formula is explicitly cat
 | **§6.1** | Published Grip Function | $\mu = f(T_{\text{tread}}, D, \text{compound})$ | **Tier 2 (Literature Surface)**| West & Limebeer (2020), Farroni (2014), Pacejka (2012) |
 | **§6.2** | Separable Grip Surrogate | $\mu_{\text{eff}} = \mu_0 (1 - \lambda D) \Phi_{\text{thermal}}$ | **Tier 3 (Engineering Surrogate)**| Phenomenological Decoupling / Taylor Series Expansion |
 | **§7.1** | Lap Time Pace Sensitivity | $\Delta t_{\text{pred}} = k_{\text{pace loss}} \left(1 - \frac{\mu_{\text{eff}}}{\mu_0}\right)$ | **Tier 3 (Linearized Surrogate)**| 1st-Order Taylor Series of Quasi-Steady-State Cornering |
-| **§8.1** | Fuel Mass Correction | $\Delta t_{\text{fuel}} = -\beta_{\text{fuel}} \dot{m}_{\text{fuel}} k$ ($\beta_{\text{fuel}} = 0.033$) | **Tier 3 (Calibrated Prior)** | Historical Circuit Sensitivity / Engineering Prior |
-| **§8.2** | Track Evolution Saturation | $\Delta t_{\text{track}} = -\Delta t_{\max}(1 - e^{-k/\tau})$ | **Tier 3 (Calibrated Prior)** | Support Series Rubber Saturation Model |
+| **§8.1** | Fuel Mass Correction | $\Delta t_{\text{fuel}} = -\beta_{\text{fuel}} \dot{m}_{\text{fuel}} k$ ($\beta_{\text{fuel}} = 0.033$) | **Tier 3 (Calibrated Prior)** | Historical Circuit Sensitivity / Milliken (1995) |
+| **§8.2** | Unmodelled Track Evolution | $\epsilon_{\text{track}} \subset \epsilon(k)$ (Absorbed into Residual) | **Unmodelled Residual** | Excluded from Production Features (Unobservable) |
 | **§9.1** | EKF State Transition & Update | $\hat{\mathbf{x}}_{k\|k} = \hat{\mathbf{x}}_{k\|k-1} + K_k \tilde{y}_k$ | **Tier 1 (Estimation Theory)** | Kalman (1960), Gelb (1974) Applied Optimal Estimation |
 | **§10.1**| Stint Polynomial Representation | $D(a) = \beta_0 + \beta_1 a + \beta_2 a^2$ | **Tier 3 (Comparison Metric)** | Orthogonal Polynomial Decomposition |
 
@@ -232,20 +232,26 @@ A common misconception is that this formula is arbitrary. It is in fact the **an
 ### §8. Confounder Decoupling & Timing Observation Equation
 
 * **Classification**: **Tier 3 (Calibrated Observation Equation)**
-* **Equation**:
-  $$t_{\text{lap}}(k) = t_{\text{base}} + \Delta t_{\text{tyre}}(k) + \Delta t_{\text{fuel}}(k) + \Delta t_{\text{track}}(k) + \Delta t_{\text{traffic}}(k) + \epsilon(k)$$
+* **Conceptual Observation Model**:
+  $$t_{\text{lap}}(k) = t_{\text{base}} + \Delta t_{\text{tyre}}(k) + \Delta t_{\text{fuel}}(k) + \Delta t_{\text{other}}(k) + \epsilon(k)$$
 
-#### 8.1 Fuel Mass Correction ($\Delta t_{\text{fuel}}$)
+#### 8.1 Fuel Mass Confounder Decoupling ($\Delta t_{\text{fuel}}$)
 * **Equation**:
-  $$\Delta t_{\text{fuel}}(k) = -\beta_{\text{fuel}} \cdot \dot{m}_{\text{fuel}} \cdot k, \quad \beta_{\text{fuel}} = 0.033\text{ s/kg}$$
-* **Derivation**:
-  Vehicle mass reduces linearly with fuel burn ($\approx 1.6\text{ kg/lap}$ in Spain). Reduced mass improves both longitudinal acceleration ($a = F/m$) and lateral cornering limit ($a_y \propto F_z / m$). Vehicle dynamics sensitivity simulations indicate $\frac{\partial T_{\text{lap}}}{\partial m} \approx 0.030\text{--}0.036\text{ s/kg}$. TrackShift adopts $0.033\text{ s/kg}$ as a calibrated prior.
+  $$\Delta t_{\text{fuel}}(k) = -\beta_{\text{fuel}} \cdot \dot{m}_{\text{fuel}} \cdot k = -\beta_{\text{fuel}} (m_{\text{fuel,init}} - m_{\text{fuel}}(k)), \quad \beta_{\text{fuel}} = 0.033\text{ s/kg}$$
+* **Derivation & Provenance**:
+  Vehicle mass reduces linearly with fuel consumption ($\approx 1.6\text{ kg/lap}$ in Spain). Reduced mass improves both longitudinal acceleration ($a = F/m$) and lateral cornering limit ($a_y \propto F_z / m$). Vehicle dynamics sensitivity simulations indicate $\frac{\partial T_{\text{lap}}}{\partial m} \approx 0.030\text{--}0.036\text{ s/kg}$ (Milliken & Milliken 1995). TrackShift adopts $0.033\text{ s/kg}$ as a calibrated prior.
+* **Separation from Tyre State**:
+  Fuel mass is an external vehicle mass state confounder, NOT a tyre condition state. It is decoupled in the timing observation layer before tyre degradation parameter estimation.
 
-#### 8.2 Track Evolution Saturation ($\Delta t_{\text{track}}$)
-* **Equation**:
-  $$\Delta t_{\text{track}}(k) = -\Delta t_{\max} \left(1 - e^{-k / \tau_{\text{track}}}\right), \quad \Delta t_{\max} = 1.25\text{ s}, \quad \tau_{\text{track}} = 120\text{ laps}$$
-* **Physical Origin**:
-  Deposition of rubber in the braking zones and racing line fills asphalt micro-cavities, increasing contact area and grip. This follows an asymptotic saturation curve calibrated from historical support race sessions.
+#### 8.2 Treatment of Unmodelled Track Evolution ($\epsilon_{\text{track}} \subset \epsilon(k)$)
+> [!IMPORTANT]
+> **Track evolution is not modelled as an explicit production feature because its state is not directly observable from the available telemetry. It is therefore absorbed into the observation residual rather than estimated through an unsupported proxy.**
+
+While track rubber deposition is physically real, available timing and broadcast telemetry streams do not measure asphalt macro/micro-texture rubber fill directly. Ad-hoc formulations such as:
+$$\Delta t_{\text{track}}(k) = -\Delta t_{\max} \left(1 - e^{-k / \tau_{\text{track}}}\right)$$
+with calibrated parameters $\Delta t_{\max}$ and $\tau_{\text{track}}$ represent heuristic engineering priors rather than validated physical models. 
+
+Treating track evolution as an explicit feature without direct observation risks introducing spurious collinear feedback into tyre degradation estimation. In the TrackShift production architecture, unmodelled track rubbering is treated strictly as an unobserved component of the composite residual term $\epsilon(k) + \Delta t_{\text{other}}(k)$, preserving absolute physical integrity across all estimation layers.
 
 ---
 

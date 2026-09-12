@@ -82,7 +82,7 @@ CORE_NUM_COLS = [
     "frictional_heat_power", "mechanical_wear_rate",
     "cumulative_wear_state", "effective_grip_coefficient",
     "graining_wear_rate", "blistering_wear_rate",
-    "fuel_mass_remaining", "track_rubber_evolution"
+    "fuel_mass_remaining"
 ]
 CORE_CAT_COLS = ["compound", "circuit", "driver", "team"]
 
@@ -123,7 +123,6 @@ def generate_variant_dataset(df_raw, engine, variant_name="baseline"):
         mu_eff_list = []
         deg_target_list = []
         fuel_remaining_list = []
-        track_rubber_list = []
 
         for _, row in stint_df.iterrows():
             lap_no = row["lap_number"]
@@ -135,12 +134,12 @@ def generate_variant_dataset(df_raw, engine, variant_name="baseline"):
             fuel_rem = max(5.0, 105.0 - fuel_burn_rate * lap_no)
             mass_ratio = (798.0 + fuel_rem) / (798.0 + 105.0)
 
-            # Fuel & Track evolution corrections
+            # Fuel correction
             fuel_correction = 0.033 * (105.0 - fuel_rem)
-            track_evolution = 1.25 * (1.0 - np.exp(-lap_no / 120.0))
 
-            # Target degradation
-            target_deg = lap_time - base_pace + fuel_correction + track_evolution
+            # Target degradation: delta t_tyre
+            # Track evolution is unmodelled and absorbed into residual epsilon(k)
+            target_deg = lap_time - base_pace + fuel_correction
             target_deg = max(-0.5, min(8.0, target_deg))
 
             # -------------------------------------------------------------
@@ -270,7 +269,6 @@ def generate_variant_dataset(df_raw, engine, variant_name="baseline"):
             mu_eff_list.append(wear_state.effective_mu)
             deg_target_list.append(target_deg)
             fuel_remaining_list.append(fuel_rem)
-            track_rubber_list.append(track_evolution)
 
         stint_df["tread_temperature"] = t_tread_list
         stint_df["carcass_temperature"] = t_carc_list
@@ -282,7 +280,6 @@ def generate_variant_dataset(df_raw, engine, variant_name="baseline"):
         stint_df["effective_grip_coefficient"] = mu_eff_list
         stint_df["target_degradation"] = deg_target_list
         stint_df["fuel_mass_remaining"] = fuel_remaining_list
-        stint_df["track_rubber_evolution"] = track_rubber_list
         df_processed_list.append(stint_df)
 
     df_out = pd.concat(df_processed_list, ignore_index=True)
