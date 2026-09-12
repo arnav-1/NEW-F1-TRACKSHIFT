@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest
+.pytest_cache/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+.env
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# FastF1 / API Transient Caches (raw downloads & sqlite db)
+data/cache/fastf1/
+data/cache/openf1/
+data/cache/openmeteo/
+*.sqlite
+*.ff1pkl
+
+# Retain pre-processed parquet datasets for offline pipeline execution
+!data/cache/processed/
