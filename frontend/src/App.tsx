@@ -49,7 +49,7 @@ export function App() {
   }, [isPlaying, telemetryData.length]);
 
   return (
-    <div className="min-h-screen bg-[#F4F5F8] text-[#111116] flex flex-col font-sans tgr-grid-bg">
+    <div className="min-h-screen bg-[#0B0B0E] text-[#F5F5F7] flex flex-col font-sans tgr-grid-bg">
       
       {/* 1. 2026 TGR Haas Top Navigation Bar */}
       <TopNavigation

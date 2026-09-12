@@ -4,25 +4,25 @@
 
 @layer base {
   body {
-    background-color: #F4F5F8;
-    color: #111116;
+    background-color: #0B0B0E;
+    color: #F5F5F7;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 }
 
-/* Custom modern scrollbars */
+/* Custom modern telemetry scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F4F5F8;
+  background: #0B0B0E;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD0DC;
+  background: #242432;
   border-radius: 3px;
 }
 
@@ -30,25 +30,25 @@
   background: #E10600;
 }
 
-/* Pristine TGR Grid Pattern */
+/* Subtle Carbon Grid Background */
 .tgr-grid-bg {
-  background-color: #F4F5F8;
-  background-image: radial-gradient(#E2E4E9 1.2px, transparent 1.2px);
+  background-color: #0B0B0E;
+  background-image: radial-gradient(#1F1F2C 1.2px, transparent 1.2px);
   background-size: 24px 24px;
 }
 
-/* 2026 TGR Livery Card Surface */
+/* Sleek Pit-Wall Panel Card */
 .tgr-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E2E4E9;
+  background-color: #15151E;
+  border: 1px solid #242432;
   border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
   transition: all 0.15s ease-in-out;
 }
 
 .tgr-card:hover {
-  border-color: #CBD0DC;
-  box-shadow: 0 4px 12px -2px rgba(17, 17, 22, 0.06);
+  border-color: #38384D;
+  box-shadow: 0 6px 24px -2px rgba(0, 0, 0, 0.65), 0 0 15px -3px rgba(225, 6, 0, 0.15);
 }
 
 .telemetry-tabular {
