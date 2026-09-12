@@ -119,22 +119,23 @@ class PhysicalThermalWearEngine:
         m_carc: float = 6.8,             # Carcass mass per corner (kg)
         c_carc: float = 1500.0,          # Carcass specific heat capacity (J / kg / K)
         h_track: float = 120.0,          # Conductive heat transfer coeff to track (W / m^2 / K)
-        h_air_0: float = 25.0,           # Convective base cooling to air (W / m^2 / K)
-        h_air_v: float = 1.6,            # Speed-dependent convective cooling factor
+        h_air_0: float = 32.0,           # Convective base cooling to air (W / m^2 / K)
+        h_air_v: float = 3.2,            # Speed-dependent convective cooling factor
         a_contact: float = 0.045,        # Contact patch area (m^2)
         a_exposed: float = 0.55,         # Exposed tyre surface area (m^2)
         k_tread_carc: float = 85.0,      # Conduction between tread and carcass (W / K)
         # Tri-mechanism wear parameters (Tremlett & Limebeer -> West & Limebeer)
-        wp1: float = 1.2e-4,             # Abrasion base rate
-        wp2: float = 1.15,               # Abrasion load exponent
-        wg1: float = 4.5e-5,             # Graining base rate
+        wg1: float = 2.0e-5,             # Graining base rate
         wg2: float = 1.4,                # Graining thermal deficit exponent
-        wb1: float = 8.0e-5,             # Blistering base rate
+        wb1: float = 5.0e-5,             # Blistering base rate
         wb2: float = 1.7,                # Blistering thermal excess exponent
-        q_ref: float = 1200.0,           # Normalizing reference power (Watts)
-        lambda_wear: float = 0.18,       # Sensitivity of grip to cumulative damage D
+        q_ref: float = 15000.0,          # Normalizing reference sliding power (Watts)
+        wp1: float = 0.035,              # Progressive mechanical abrasion factor
+        wp2: float = 1.15,               # Sliding power exponent
+        lambda_wear: float = 0.25,       # Sensitivity of grip to cumulative damage D
         k_thermal_grip: float = 0.35,    # Sensitivity of grip to temperature off-window
-        k_pace_loss: float = 3.5,        # Seconds of lap time lost per 10% grip drop
+        k_pace_loss: float = 6.5,        # Seconds of lap time lost per grip loss ratio
+        h_rim: float = 12.0,             # Wheel rim & internal cavity convective cooling (W/K)
     ):
         self.m_tread = m_tread
         self.c_tread = c_tread
@@ -146,6 +147,7 @@ class PhysicalThermalWearEngine:
         self.a_contact = a_contact
         self.a_exposed = a_exposed
         self.k_tread_carc = k_tread_carc
+        self.h_rim = h_rim
 
         self.wp1 = wp1
         self.wp2 = wp2
@@ -203,43 +205,49 @@ class PhysicalThermalWearEngine:
         t_track_c: float,
         t_ambient_c: float,
         dt_s: float = 85.0,
+        n_substeps: int = 10,
+        corner_duty_cycle: float = 0.32,
     ) -> TyreThermalState:
         """
-        Integrates the coupled thermal ODE over a time step dt (e.g. 1 lap ~ 85 seconds).
+        Integrates the coupled thermal ODE using stable sub-stepping over dt_s.
+        Accounts for cornering duty cycle (~32% cornering, 68% straights).
         """
         v_ms = max(1.0, speed_kmh / 3.6)
+        dt_sub = dt_s / max(1, n_substeps)
 
-        # Conduction to track asphalt
-        q_cond_track = self.h_track * self.a_contact * (t_tread_c - t_track_c)
+        # Average lap sliding heat flux (applied during cornering phase)
+        q_effective = q_frict_w * corner_duty_cycle
 
-        # Convective cooling to ambient air (speed-dependent)
+        # Convective cooling coefficient (higher on straights at high speed)
         h_air = self.h_air_0 + self.h_air_v * (v_ms ** 0.8)
-        q_conv_air = h_air * self.a_exposed * (t_tread_c - t_ambient_c)
 
-        # Conduction between tread and carcass
-        q_tread_to_carc = self.k_tread_carc * (t_tread_c - t_carc_c)
-
-        # Deflection heating in carcass
-        q_deflection = 0.02 * q_frict_w
-
-        # Net thermal derivatives
         c_tread_total = self.m_tread * self.c_tread
         c_carc_total = self.m_carc * self.c_carc
 
-        d_tread_dt = (q_frict_w - q_cond_track - q_conv_air - q_tread_to_carc) / c_tread_total
-        d_carc_dt = (q_tread_to_carc + q_deflection) / c_carc_total
+        cur_t_tread = t_tread_c
+        cur_t_carc = t_carc_c
 
-        # Euler step with physical damping
-        new_t_tread = np.clip(t_tread_c + d_tread_dt * dt_s, t_ambient_c, 160.0)
-        new_t_carc = np.clip(t_carc_c + d_carc_dt * dt_s, t_ambient_c, 150.0)
+        for _ in range(n_substeps):
+            # Heat fluxes
+            q_cond = self.h_track * self.a_contact * (cur_t_tread - t_track_c)
+            q_conv = h_air * self.a_exposed * (cur_t_tread - t_ambient_c)
+            q_internal = self.k_tread_carc * (cur_t_tread - cur_t_carc)
+            q_deflect = 0.02 * q_effective
+            q_rim = self.h_rim * (cur_t_carc - t_ambient_c)
+
+            d_tread = (q_effective - q_cond - q_conv - q_internal) / c_tread_total
+            d_carc = (q_internal + q_deflect - q_rim) / c_carc_total
+
+            cur_t_tread = np.clip(cur_t_tread + d_tread * dt_sub, t_ambient_c, 145.0)
+            cur_t_carc = np.clip(cur_t_carc + d_carc * dt_sub, t_ambient_c, 135.0)
 
         return TyreThermalState(
-            t_tread_c=float(new_t_tread),
-            t_carcass_c=float(new_t_carc),
-            q_frict_w=float(q_frict_w),
-            q_cond_track_w=float(q_cond_track),
-            q_conv_air_w=float(q_conv_air),
-            q_tread_to_carc_w=float(q_tread_to_carc),
+            t_tread_c=float(cur_t_tread),
+            t_carcass_c=float(cur_t_carc),
+            q_frict_w=float(q_effective),
+            q_cond_track_w=float(self.h_track * self.a_contact * (cur_t_tread - t_track_c)),
+            q_conv_air_w=float(h_air * self.a_exposed * (cur_t_tread - t_ambient_c)),
+            q_tread_to_carc_w=float(self.k_tread_carc * (cur_t_tread - cur_t_carc)),
         )
 
     def compute_wear_step(
@@ -270,9 +278,10 @@ class PhysicalThermalWearEngine:
         dot_w_total = dot_w_p + dot_w_g + dot_w_b
         new_damage_d = current_damage_d + dot_w_total * dt_laps
 
-        # 4. Thermal parabolic grip window
-        t_delta_opt = abs(t_tread_c - compound_params.t_opt)
-        phi_thermal = max(0.60, 1.0 - self.k_thermal_grip * ((t_delta_opt / compound_params.t_window) ** 2))
+        # 4. Thermal plateau grip window (optimal grip within +/- 0.5 * t_window)
+        half_window = 0.5 * compound_params.t_window
+        excess_temp = max(0.0, abs(t_tread_c - compound_params.t_opt) - half_window)
+        phi_thermal = max(0.70, 1.0 - self.k_thermal_grip * ((excess_temp / half_window) ** 2))
 
         # 5. Irreversible wear grip penalty
         wear_penalty = max(0.0, 1.0 - self.lambda_wear * new_damage_d)

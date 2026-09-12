@@ -207,9 +207,9 @@ class HaasDegradationPipeline:
         mean_t_track = float(race_stint_df.get("track_temp_c", pd.Series(40.0)).mean())
         mean_t_air = float(race_stint_df.get("air_temp_c", pd.Series(26.0)).mean())
 
-        # Forward Physical Simulation
-        t_tread = mean_t_track + 10.0  # Initial scrubbed temperature
-        t_carc = mean_t_track + 5.0
+        # Forward Physical Simulation (Scrubbed blanket temperature entering race lap)
+        t_tread = comp_params.t_opt - 8.0
+        t_carc = comp_params.t_opt - 12.0
         d_accum = 0.0
 
         predicted_deg_deltas = []
@@ -246,13 +246,14 @@ class HaasDegradationPipeline:
                 c_alpha_front=comp_params.c_alpha_front,
                 aero_downforce_factor=aero_factor,
             )
-            q_frict *= mass_scaling
+            # Corner load transfer: outside front tyre carries ~30% of total vehicle sliding power
+            q_frict_wheel = q_frict * mass_scaling * 0.30
 
             # Thermal ODE step
             thermal_state = self.engine.step_thermal_ode(
                 t_tread_c=t_tread,
                 t_carc_c=t_carc,
-                q_frict_w=q_frict,
+                q_frict_w=q_frict_wheel,
                 speed_kmh=speed_kmh,
                 t_track_c=mean_t_track,
                 t_ambient_c=mean_t_air,
@@ -264,7 +265,7 @@ class HaasDegradationPipeline:
 
             # Wear & Grip step
             wear_state = self.engine.compute_wear_step(
-                q_frict_w=q_frict,
+                q_frict_w=q_frict_wheel,
                 t_tread_c=t_tread,
                 current_damage_d=d_accum,
                 compound_params=comp_params,
