@@ -1,0 +1,56 @@
+{
+  "Baseline Model": {
+    "cv_mae": 1.1384697773424122,
+    "cv_rmse": 1.483608279962994,
+    "cv_r2": 0.17284065734513537,
+    "condition_number": 8.60775519737041,
+    "feature_count": 7,
+    "raw_feature_count": 4,
+    "elapsed_ms": 42.42682456970215,
+    "loro_race_maes": {
+      "Austria": 0.9207924406383058,
+      "Bahrain": 1.0427873223756454,
+      "Belgium": 1.134848605626831,
+      "Hungary": 1.2985987511178727,
+      "Silverstone": 1.8038584268328346,
+      "Spain": 0.95644000900308
+    },
+    "mean_loro_mae": 1.192887592599095
+  },
+  "Full Unpruned Model": {
+    "cv_mae": 0.0839443288175172,
+    "cv_rmse": 0.17361373078909018,
+    "cv_r2": 0.9884552016585921,
+    "condition_number": 230696784091081.12,
+    "feature_count": 61,
+    "raw_feature_count": 25,
+    "elapsed_ms": 67.1381950378418,
+    "loro_race_maes": {
+      "Austria": 0.0720404425549587,
+      "Bahrain": 0.08831777113089449,
+      "Belgium": 0.39915251646458244,
+      "Hungary": 0.11079007226140761,
+      "Silverstone": 0.3409345393403086,
+      "Spain": 0.07612237015441842
+    },
+    "mean_loro_mae": 0.18122628531776172
+  },
+  "Frozen Production Model": {
+    "cv_mae": 0.08455886696000135,
+    "cv_rmse": 0.17740315114225452,
+    "cv_r2": 0.9879572645052794,
+    "condition_number": 183144806828454.78,
+    "feature_count": 53,
+    "raw_feature_count": 17,
+    "elapsed_ms": 60.16349792480469,
+    "loro_race_maes": {
+      "Austria": 0.13968302130555502,
+      "Bahrain": 0.08904545022830115,
+      "Belgium": 0.13412199187341842,
+      "Hungary": 0.09598672441508786,
+      "Silverstone": 0.35203377658098806,
+      "Spain": 0.09446236921462976
+    },
+    "mean_loro_mae": 0.15088888893633004
+  }
+}
