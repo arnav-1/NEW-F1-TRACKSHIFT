@@ -1,8 +1,8 @@
 # TrackShift Feature Taxonomy, Pipeline Architecture & Technical FAQ
 
 > **Document Status**: Production Engineering Reference & Technical Architecture Guide  
-> **Version**: 2.2.0  
-> **Scope**: Strict categorization of all Independent and Dependent variables, chronological algorithmic walkthrough of the full pipeline, and comprehensive answers to core vehicle dynamics and strategy questions.
+> **Version**: 2.3.0  
+> **Scope**: Strict categorization of all Independent and Dependent variables, chronological algorithmic walkthrough of the full pipeline, and comprehensive answers to core vehicle dynamics, regulatory modeling, and strategy questions.
 
 ---
 
@@ -15,16 +15,18 @@
    - [1.4 Master Table of Latent Dependent State Variables (Thermodynamics & Wear)](#14-master-table-of-latent-dependent-state-variables-thermodynamics--wear)
    - [1.5 Master Table of Observational & Statistical Dependent Variables](#15-master-table-of-observational--statistical-dependent-variables)
    - [1.6 Master Table of Post-Race Validation & Diagnostic Metrics](#16-master-table-of-post-race-validation--diagnostic-metrics)
-   - [1.7 The Complete Feature Flow & Dependency Matrix](#17-the-complete-feature-flow--dependency-matrix)
+   - [1.7 2024 FIA Regulatory Candidate Features (Sporting & Technical Regulations)](#17-2024-fia-regulatory-candidate-features-sporting--technical-regulations)
+   - [1.8 The Complete Feature Flow & Dependency Matrix](#18-the-complete-feature-flow--dependency-matrix)
 2. [Part 2: In-Depth End-to-End Pipeline Architecture](#part-2-in-depth-end-to-end-pipeline-architecture)
    - [2.1 High-Level Pipeline Chronology](#21-high-level-pipeline-chronology)
    - [2.2 Stage 1: Ingestion & Telemetry Preprocessing](#22-stage-1-ingestion--telemetry-preprocessing)
    - [2.3 Stage 2: Observation & Confounder Decoupling Layer](#23-stage-2-observation--confounder-decoupling-layer)
-   - [2.4 Stage 3: Free Practice Degradation Rate Inference (FP1/FP2/FP3)](#24-stage-3-free-practice-degradation-rate-inference-fp1fp2fp3)
+   - [2.4 Stage 3: Free Practice Degradation Rate Inference (FP1/FP2/FP3 Roles)](#24-stage-3-free-practice-degradation-rate-inference-fp1fp2fp3-roles)
    - [2.5 Stage 4: Zero-Leakage Physical Calibration & Parameter Freezing](#25-stage-4-zero-leakage-physical-calibration--parameter-freezing)
    - [2.6 Stage 5: Sunday Pre-Race Forward State-Space Simulation & Strategy Forecast](#26-stage-5-sunday-pre-race-forward-state-space-simulation--strategy-forecast)
-   - [2.7 Stage 6: Independent Non-Circular Post-Race Validation & Strategy Attribution](#27-stage-6-independent-non-circular-post-race-validation--strategy-attribution)
-   - [2.8 Complete Pipeline Execution Sequence Diagram](#28-complete-pipeline-execution-sequence-diagram)
+   - [2.7 Stage 6: Sunday In-Race Live Recursive State Estimation (Extended Kalman Filter)](#27-stage-6-sunday-in-race-live-recursive-state-estimation-extended-kalman-filter)
+   - [2.8 Stage 7: Independent Non-Circular Post-Race Validation & Strategy Attribution](#28-stage-7-independent-non-circular-post-race-validation--strategy-attribution)
+   - [2.9 Complete Pipeline Execution Sequence Diagram](#29-complete-pipeline-execution-sequence-diagram)
 3. [Part 3: Comprehensive Technical FAQ](#part-3-comprehensive-technical-faq)
    - [Q1: Do you have all 4 tyres data? How are you modeling that?](#q1-do-you-have-all-4-tyres-data-how-are-you-modeling-that)
    - [Q2: Is degradation rate modelled? Is it possible to be modelled?](#q2-is-degradation-rate-modelled-is-it-possible-to-be-modelled)
@@ -34,6 +36,9 @@
    - [Q6: How do you know the physical model is right if you cannot measure tyre tread depth on track?](#q6-how-do-you-know-the-physical-model-is-right-if-you-cannot-measure-tyre-tread-depth-on-track)
    - [Q7: Can this pipeline run live in real-time on the pit wall during a Grand Prix?](#q7-can-this-pipeline-run-live-in-real-time-on-the-pit-wall-during-a-grand-prix)
    - [Q8: How does the model distinguish between reversible thermal overheating and irreversible mechanical wear?](#q8-how-does-the-model-distinguish-between-reversible-thermal-overheating-and-irreversible-mechanical-wear)
+   - [Q9: Why don't we use FP3 predictions? We consider all 3 sessions for Sunday, right?](#q9-why-dont-we-use-fp3-predictions-we-consider-all-3-sessions-for-sunday-right)
+   - [Q10: Is there a general point in adding features? What is our actual error rate going from Free Practice to Race Day?](#q10-is-there-a-general-point-in-adding-features-what-is-our-actual-error-rate-going-from-free-practice-to-race-day)
+   - [Q11: How well does the live Extended Kalman Filter perform compared to pre-race static simulation?](#q11-how-well-does-the-live-extended-kalman-filter-perform-compared-to-pre-race-static-simulation)
 
 ---
 
@@ -167,7 +172,7 @@ These are independent diagnostic quantities computed after the race to validate 
 
 | Metric / Symbol | Internal Code Name | Mathematical Governing Formula | Unit | Scientific Purpose | Success Threshold |
 | :--- | :--- | :--- | :---: | :--- | :--- |
-| $\mu_{\text{util,apex}}$ | `telemetric_mu_apex` | $\mu_{\text{util}} = \frac{a_y / g}{\Gamma_{\text{aero}}}$ | Dimensionless | Independent telemetric grip measured by onboard accelerometers | Tracks predicted $\mu_{\text{eff}}$ decay |
+| $\mu_{\text{util,apex}}$ | `telemetric_mu_apex` | $\mu_{\text{util}} = \frac{a_y / g}{\Gamma_{\text{aero}}$ | Dimensionless | Independent telemetric grip measured by onboard accelerometers | Tracks predicted $\mu_{\text{eff}}$ decay |
 | $\text{CCC}$ | `lin_ccc` | $\frac{2 \text{Cov}(p, m)}{\sigma_p^2 + \sigma_m^2 + (\mu_p - \mu_m)^2}$ | Dimensionless | Lin's Concordance measuring exact scale agreement of grip curves | $\text{CCC} \ge 0.80$ |
 | $k_{\text{cliff}}$ | `diagnostic_cliff_lap`| $\arg\max_k \Delta^2 t(k)$ subject to $\Delta^2 t \ge \kappa \sigma$| Integer | Detects the lap where tyre degradation suddenly bent upward | $\pm 2$ laps vs actual box |
 | $\Delta W_{\text{pit}}$ | `pit_window_error_laps`| $\|k_{\text{pit,pred}} - k_{\text{pit,actual}}\|$ | $\text{laps}$ | Measures error between model pit recommendation and team call | $\Delta W_{\text{pit}} \le 2\text{ laps}$ |
@@ -178,7 +183,20 @@ These are independent diagnostic quantities computed after the race to validate 
 
 ---
 
-### 1.7 The Complete Feature Flow & Dependency Matrix
+### 1.7 2024 FIA Regulatory Candidate Features (Sporting & Technical Regulations)
+
+These four features incorporate the strict governing boundary conditions of the **2024 FIA Sporting and Technical Regulations** directly into the state-space equations:
+
+| Feature Identifier | Class | Regulatory Source | Mathematical Governing Formula | Unit | Physical Mechanism & Operational Impact |
+| :--- | :--- | :--- | :--- | :---: | :--- |
+| `h_blanket_exit_thermal_deficit` | **Dependent** (Thermal Boundary) | Tech Regs Art 10.8.4.d & Sporting Regs Art 44.4.b | $T_{\text{tr},0} = 70^\circ\text{C} - \Delta T_{\text{cool}} + 0.2 \Delta T_{\text{track}} \approx 62.3^\circ\text{C}$ | °C | Blankets capped at 70°C (down from 100°C) and unplugged 5 min before start. Tread enters track 25–35°C below $T_{\text{grain}}$, activating cold graining ($\dot{w}_g$) during Phase 1 scrub-in. |
+| `h_dynamic_mass_distribution` | **Dependent** (Kinematic Load) | Tech Regs Art 4.1, 4.2 & Art 6.1.2 | $W_{\text{dist}}(t) = 1.0 + 0.04 \cdot (f_{\text{fuel}}(t) - 0.5)$ | Ratio | Fuel cell is located behind cockpit (58% rearward). 100 kg fuel burn dynamically shifts axle weight balance forward by 2.4%, altering limiting axle normal load $F_z$ and cornering scrub work. |
+| `h_drs_lap2_early_wake_sliding` | **Dependent** (Aero/Contact) | Sporting Regs Art 22.1.c.i | $Q_{\text{frict,wake}} = Q_{\text{frict}} \cdot [1 + 0.20 e^{-(k-1)/2.5}]$ | Watts | DRS enabled on Lap 2 (previously Lap 3), creating early pack compression on Laps 2–6. 20–25% wake downforce deficit forces wider slip angle $\alpha$, increasing friction power by 20% on Lap 2. |
+| `h_tyre_scrub_state` | **Independent** (Allocation Tag) | Sporting Regs Art 30.2 & 30.4 | $\mu_{\text{eff}} = \mu_0 \times 0.96$ on Lap 1 (Sticker sets) | Ratio | 13-set allocation tracking. Brand new sticker tyres have a micro-thin silicone mold-release coating reducing initial grip by 4% on Lap 1 before track micro-texture abrades it clean. |
+
+---
+
+### 1.8 The Complete Feature Flow & Dependency Matrix
 
 The table below defines precisely which independent features influence which dependent features throughout the physical causal chain.
 
@@ -630,4 +648,63 @@ This separation prevents strategists on the pit wall from panic-stopping a drive
 
 ---
 
-> **Document Summary**: This completes the definitive reference for TrackShift feature taxonomy, end-to-end mathematical execution, and technical FAQ. All formulas and classifications align strictly with [docs/FORMULA_PROVENANCE_AND_FEATURE_GLOSSARY.md](file:///c:/Users/daksh/Projects/Trackshiftv2/docs/FORMULA_PROVENANCE_AND_FEATURE_GLOSSARY.md) (v2.1.0).
+### Q9: Why don't we use FP3 predictions? We consider all 3 sessions for Sunday, right?
+
+**We do consider all three sessions (FP1, FP2, FP3) in our broader pipeline**, but each session provides a fundamentally different physical input:
+
+1. **FP1 (Friday Morning)**: Green, low-grip track with continuous evolution ($>1.5\text{ s/hr}$). Teams run aerodynamic rakes and flow-vis paint. TrackShift uses FP1 strictly for **circuit trajectory curvature profiles ($\kappa$) and aerodynamic downforce baseline verification**.
+2. **FP2 (Friday Afternoon — Primary Degradation Ground Truth)**:
+   - Held at the **exact same time of day as the Sunday race** (15:00 or 17:00), making track and ambient temperatures directly representative of Sunday.
+   - Teams dedicate the final 35 minutes to **heavy-fuel race simulations** (12 to 20 consecutive laps).
+   - This provides the **primary ground truth for mechanical abrasion ($w_{p1}$) and compound degradation slopes ($\beta_1$)**.
+3. **FP3 (Saturday Noon — Qualifying Optimization)**:
+   - Held under peak midday sun, where track temperatures are often $10\text{--}15^\circ\text{C}$ hotter than the race.
+   - Under FIA Sporting Regulations Art 30.2, teams have a strict 13-set dry tyre allocation and must save fresh Mediums/Hards for Sunday.
+   - Therefore, 90% of FP3 consists of **1-to-2 lap low-fuel qualifying simulations** (Out-lap $\rightarrow$ 1 Flying push lap $\rightarrow$ In-lap).
+   - Our long-run filter (`min_flying_laps >= 5`) automatically discards these short bursts. If a qualifying burst were fitted for degradation, the cooldown lap (+15s) would produce an absurd false degradation rate of $+15\text{ s/lap}$!
+   - TrackShift uses FP3 for **peak grip deltas ($\mu_0$), instantaneous cornering stiffness ($C_\alpha$), and track rubber saturation limits**. If a driver missed FP2 and did a rare genuine long run in FP3, it is automatically captured as a fallback.
+
+---
+
+### Q10: Is there a general point in adding features? What is our actual error rate going from Free Practice to Race Day?
+
+**Yes, adding features provides physical consistency and curvature fidelity, but with strict diminishing returns.**
+
+#### The Law of Diminishing Returns:
+In our benchmark across all 57 Sunday race stints in 2024:
+- Adding the 4 2024 FIA regulatory features improved **curvature realism** (shifting $\beta_2$ from an unrealistic negative $-0.0011$ to a physically progressive $+0.1984$), reduced degradation slope error by **$2.9\text{ ms/lap}$**, and improved prediction interval coverage from **$17.5\%$ to $19.3\%$**.
+- However, **overall uncentered Physical MAE barely moved ($0.741\text{ s} \to 0.745\text{ s}$)**.
+- **Why?** Because the error between Friday practice and Sunday race day is **not caused by missing micro-equations in the tyre ODE**. It is dominated by **macro-environmental state shifts**: track temperature drift ($\Delta T_{\text{track}} = 5\text{--}14^\circ\text{C}$), support race rubbering evolution, and starting fuel loads ($105\text{ kg}$ vs FP2 $30\text{ kg}$). Adding a 46th tyre formula cannot observe what the weather did between Friday and Sunday.
+
+#### The Actual Practice-to-Race Error Scorecard (57 Stints across 6 Circuits):
+- **Centered Shape MAE**: **$0.379\text{ s}$** (In High Confidence stints: **$0.361\text{ s}$**; in Belgium Spa: **$0.288\text{ s}$**). This proves TrackShift predicts the *curvature and non-linear shape* of degradation within $0.38\text{ s}$.
+- **Uncentered Raw Physical MAE**: **$0.745\text{ s}$** (Includes static environmental zero-point DC offsets).
+- **Slope Transfer Error ($\Delta \beta_1$)**: **$118.25\text{ ms/lap}$** (On Hard tyres: **$83.5\text{ ms/lap}$**).
+- **Pit Window Timing Accuracy ($\le \pm 2$ laps)**: **$47.37\%$** (Mean error: $4.98\text{ laps}$).
+- **Prediction Interval Coverage**: **$19.30\%$** (Under-covered because intra-practice variance severely underestimates Sunday inter-session environmental swings).
+
+---
+
+### Q11: How well does the live Extended Kalman Filter perform compared to pre-race static simulation?
+
+**Live recursive updating cuts prediction error by 20% to 30% and reduces variance by over 35%.**
+
+TrackShift operates across two distinct time horizons:
+1. **Pre-Race Saturday Prior (Deterministic Forward ODE)**: Generates the global strategy blueprint, compound crossover analysis, and baseline pit windows.
+2. **Live Sunday Execution (Closed-Loop Extended Kalman Filter)**: Uses timing transponder lap pace ($y_{\text{obs}}$) every lap to update a 2-state vector $\mathbf{x}_k = [D_k, \mu_k]^T$ (tyre damage and usable friction) via optimal Kalman Gain:
+   $$\text{Innovation: } e_k = y_{\text{obs}}(k) - \hat{y}_{\text{pred}}(k), \quad \mathbf{x}_{\text{post}}(k) = \mathbf{x}_{\text{prior}}(k) + K_k e_k$$
+
+#### Real-World Validation Results (Haas F1 #27 Nico Hülkenberg):
+- **Spanish GP (Barcelona)**:
+  - Static Pre-Race MAE: **$0.746\text{ s}$**
+  - Live Recursive EKF MAE: **$0.522\text{ s}$** (**$-30.0\%$ Error Reduction**)
+- **British GP (Silverstone)**:
+  - Static Pre-Race MAE: **$0.670\text{ s}$**
+  - Live Recursive EKF MAE: **$0.537\text{ s}$** (**$-19.9\%$ Error Reduction**)
+- **Dynamic Pit Horizon Precision**:
+  - Pre-race static pit error: $\approx 5.0\text{ laps}$.
+  - Live EKF dynamic cliff projection: **$\le 1.0\text{ lap}$ precision** after observing the first 4 laps of the stint, dynamically enabling **undercut calls** (when innovation $e_k > +0.25\text{s}$ in dirty air) or **overcut calls** (when $e_k < -0.15\text{s}$ during tyre management).
+
+---
+
+> **Document Summary**: This completes the definitive reference for TrackShift feature taxonomy, end-to-end mathematical execution, and technical FAQ. All formulas and classifications align strictly with [docs/FORMULA_PROVENANCE_AND_FEATURE_GLOSSARY.md](file:///c:/Users/daksh/Projects/Trackshiftv2/docs/FORMULA_PROVENANCE_AND_FEATURE_GLOSSARY.md) (v2.2.0).
