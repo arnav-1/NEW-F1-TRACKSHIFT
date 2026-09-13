@@ -2,6 +2,7 @@ import React from 'react';
 import { BARCELONA_TURNS, BARCELONA_SECTORS, BARCELONA_SVG_PATH, type TurnMarkerData } from '../data/barcelonaTrackData';
 import { useTelemetry } from '../context/TelemetryContext';
 import { Play, Pause, SkipBack, SkipForward, Navigation } from 'lucide-react';
+import { MetricCard, MetricBadge, DataListRow } from './shared/F1DataComponents';
 
 export { BARCELONA_TURNS, BARCELONA_SECTORS, BARCELONA_SVG_PATH };
 export type { TurnMarkerData };
@@ -17,6 +18,7 @@ export const CircuitMap: React.FC = () => {
     setIsPlaying,
     setActiveTurn,
     currentLapData,
+    compoundMetadata,
   } = useTelemetry();
 
   const activeTurnData: TurnMarkerData =
@@ -51,109 +53,73 @@ export const CircuitMap: React.FC = () => {
   return (
     <div className="space-y-5">
       
-      {/* Top Telemetry KPI Metric Strip */}
+      {/* Top Telemetry KPI Metric Strip in Standardized F1 MetricCard System */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         
-        {/* Metric 1: Fuel Mass Penalty */}
-        <div className="tgr-card p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-[10px] font-medium tracking-wider uppercase text-zinc-400">
-              Fuel Penalty Delta
-            </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-white/[0.08] bg-white/[0.04] text-zinc-400">
-              0.033 s/kg
-            </span>
-          </div>
-          <div className="text-2xl font-bold font-mono tabular-nums text-zinc-100">
-            +{currentLapData?.fuel_penalty_s?.toFixed(3) ?? '0.000'}s
-          </div>
-          <div className="text-xs text-zinc-400 mt-2 flex justify-between tabular-nums">
-            <span>Mass on board:</span>
-            <span className="font-semibold text-zinc-200">{currentLapData?.fuel_remaining_kg?.toFixed(1) ?? '33.3'} kg</span>
-          </div>
-        </div>
+        {/* Metric 1: Fuel Penalty Delta */}
+        <MetricCard
+          label="Fuel Penalty Delta"
+          badge={{ text: "0.033 s/kg", type: "neutral" }}
+          value={`+${currentLapData?.fuel_penalty_s?.toFixed(3) ?? '0.000'}s`}
+          valueClassName="text-white"
+          secondaryLabel="Mass on board:"
+          secondaryValue={`${currentLapData?.fuel_remaining_kg?.toFixed(1) ?? '33.3'} kg`}
+        />
 
         {/* Metric 2: Track Evolution Grip Gain */}
-        <div className="tgr-card p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-[10px] font-medium tracking-wider uppercase text-zinc-400">
-              Track Evolution
-            </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-sky-800/30 bg-sky-950/30 text-sky-400">
-              1.25s Max
-            </span>
-          </div>
-          <div className="text-2xl font-bold font-mono tabular-nums text-sky-400">
-            -{currentLapData?.track_evolution_s?.toFixed(3) ?? '0.000'}s
-          </div>
-          <div className="text-xs text-zinc-400 mt-2 flex justify-between tabular-nums">
-            <span>Grip saturation:</span>
-            <span className="font-semibold text-zinc-200">
-              {(((currentLapData?.track_evolution_s ?? 0) / 1.25) * 100).toFixed(0)}% saturated
-            </span>
-          </div>
-        </div>
+        <MetricCard
+          label="Track Evolution"
+          badge={{ text: "1.25s Max", type: "neutral" }}
+          value={`-${currentLapData?.track_evolution_s?.toFixed(3) ?? '0.000'}s`}
+          valueClassName="text-sky-400"
+          secondaryLabel="Grip saturation:"
+          secondaryValue={`${(((currentLapData?.track_evolution_s ?? 0) / 1.25) * 100).toFixed(0)}% saturated`}
+        />
 
         {/* Metric 3: Microclimate Temperatures */}
-        <div className="tgr-card p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-[10px] font-medium tracking-wider uppercase text-zinc-400">
-              Microclimate Temps
-            </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-amber-800/30 bg-amber-950/30 text-amber-400">
-              IR Sensor
-            </span>
-          </div>
-          <div className="text-2xl font-bold font-mono tabular-nums text-zinc-100 flex items-baseline gap-2">
-            <span>42.8°C</span>
-            <span className="text-xs text-zinc-400 font-normal">Track</span>
-          </div>
-          <div className="text-xs text-zinc-400 mt-2 flex justify-between tabular-nums">
-            <span>Ambient air:</span>
-            <span className="font-semibold text-zinc-200">28.1°C (Dry)</span>
-          </div>
-        </div>
+        <MetricCard
+          label="Microclimate Temps"
+          badge={{ text: "IR Sensor", type: "tag" }}
+          value={
+            <div className="flex items-baseline gap-2">
+              <span>42.8°C</span>
+              <span className="text-xs text-zinc-400 font-normal">Track</span>
+            </div>
+          }
+          valueClassName="text-white"
+          secondaryLabel="Ambient air:"
+          secondaryValue="28.1°C (Dry)"
+        />
 
         {/* Metric 4: Primary Limiting Tyre (FL) */}
-        <div className="tgr-card p-4 flex flex-col justify-between border-rose-900/30 bg-gradient-to-br from-[#14171F] to-[#1C1417]">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-[10px] font-medium tracking-wider uppercase text-rose-300">
-              Limiting Tyre
-            </span>
-            <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full border border-rose-800/40 bg-rose-950/50 text-rose-300">
-              CRITICAL
-            </span>
-          </div>
-          <div className="text-2xl font-bold font-mono tabular-nums text-red-400">
-            FRONT-LEFT (FL)
-          </div>
-          <div className="text-xs text-zinc-400 mt-2 flex justify-between tabular-nums">
-            <span>Sliding share:</span>
-            <span className="font-semibold text-zinc-200">36.2% Workload</span>
-          </div>
-        </div>
+        <MetricCard
+          label="Limiting Tyre"
+          badge={{ text: "CRITICAL", type: "alert" }}
+          value={`${compoundMetadata?.limiting_corner ?? 'FL'} (${compoundMetadata?.limiting_corner === 'FL' ? 'FRONT-LEFT' : 'FRONT-RIGHT'})`}
+          valueClassName="text-[#FF3B30]"
+          secondaryLabel="Sliding share:"
+          secondaryValue={`${compoundMetadata?.limiting_workload_pct?.toFixed(1) ?? '36.2'}% Workload`}
+          secondaryValueClassName="font-semibold text-red-300"
+        />
 
         {/* Metric 5: Analytical Stint Cliff */}
-        <div className="tgr-card p-4 flex flex-col justify-between col-span-2 md:col-span-1">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-[10px] font-medium tracking-wider uppercase text-zinc-400">
-              Predicted Cliff
-            </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-purple-800/30 bg-purple-950/30 text-purple-300">
-              &gt;0.25s / lap
-            </span>
-          </div>
-          <div className="text-2xl font-bold font-mono tabular-nums text-zinc-100 flex items-baseline gap-1.5">
-            <span>LAP {selectedCompound === 'SOFT' ? '10.0' : selectedCompound === 'MEDIUM' ? '18.0' : '25.0'}</span>
-            <span className="text-xs text-red-400 font-semibold font-mono">±0.5 Laps</span>
-          </div>
-          <div className="text-xs text-zinc-400 mt-2 flex justify-between tabular-nums">
-            <span>Target window:</span>
-            <span className="font-semibold text-purple-300">
-              {selectedCompound === 'SOFT' ? 'Lap 9 – 11' : selectedCompound === 'MEDIUM' ? 'Lap 17 – 19' : 'Lap 24 – 26'}
-            </span>
-          </div>
-        </div>
+        <MetricCard
+          label="Predicted Cliff"
+          badge={{ text: ">0.25s / lap", type: "neutral" }}
+          value={
+            <div className="flex items-baseline gap-1.5">
+              <span>LAP {compoundMetadata?.predicted_cliff_lap ? compoundMetadata.predicted_cliff_lap.toFixed(1) : (selectedCompound === 'SOFT' ? '19.4' : selectedCompound === 'MEDIUM' ? '28.0' : '38.0')}</span>
+              <span className="text-xs text-[#FF3B30] font-semibold font-mono">±0.5 Laps</span>
+            </div>
+          }
+          valueClassName="text-white"
+          secondaryLabel="Target window:"
+          secondaryValue={
+            selectedCompound === 'SOFT' ? 'Lap 18 – 20' : selectedCompound === 'MEDIUM' ? 'Lap 26 – 29' : 'Lap 36 – 40'
+          }
+          secondaryValueClassName="font-semibold text-purple-300"
+          className="col-span-2 md:col-span-1"
+        />
 
       </div>
 
@@ -466,94 +432,113 @@ export const CircuitMap: React.FC = () => {
         {/* Right 4 Cols: Corner Telemetry Data Block */}
         <div className="lg:col-span-4 space-y-4">
           
-          <div className="tgr-card p-4">
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/[0.06]">
-              <div className="flex items-center gap-2">
-                <span className="w-7 h-7 rounded-md bg-red-500/10 border border-red-500/25 text-red-400 font-mono font-bold text-xs flex items-center justify-center">
+          <div className="f1-card p-4">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/[0.08]">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-full bg-[#E10600]/15 border border-[#E10600]/35 text-[#FF3B30] font-display font-black text-sm flex items-center justify-center">
                   T{activeTurnData.id}
                 </span>
                 <div>
-                  <div className="text-xs font-semibold text-zinc-100">
+                  <div className="f1-display text-sm tracking-wide text-white font-bold">
                     {activeTurnData.name}
                   </div>
-                  <div className="text-[10px] text-zinc-400 font-sans">
+                  <div className="text-[10px] text-zinc-400 font-sans tracking-wide uppercase">
                     Micro-Sector Channel Log
                   </div>
                 </div>
               </div>
 
               {activeTurnData.type === 'peak_scrub' && (
-                <span className="text-[9px] bg-red-950/50 text-red-300 border border-red-800/40 px-2 py-0.5 rounded-full font-medium">
-                  Peak FL Scrub
-                </span>
+                <MetricBadge text="Peak FL Scrub" type="tag" />
               )}
               {activeTurnData.type === 'heavy_braking' && (
-                <span className="text-[9px] bg-amber-950/50 text-amber-300 border border-amber-800/40 px-2 py-0.5 rounded-full font-medium">
-                  Braking Zone
-                </span>
+                <MetricBadge text="Braking Zone" type="tag" />
               )}
             </div>
 
-            {/* Clean Key-Value List with Subtle Dividers & Tabular Numbers */}
+            {/* Official F1 Standings/Results Table Pattern */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-white/[0.06] text-zinc-500 text-[10px] tracking-wider uppercase font-medium">
-                    <th className="py-2 font-medium">Channel</th>
-                    <th className="py-2 text-right font-medium">Value</th>
-                    <th className="py-2 text-right font-medium">Unit</th>
+                  <tr className="border-b border-white/[0.08] text-zinc-500 text-[10px] font-display uppercase tracking-wider font-semibold">
+                    <th className="py-2.5 px-2 font-medium">Channel</th>
+                    <th className="py-2.5 px-2 text-right font-medium">Value</th>
+                    <th className="py-2.5 px-2 text-right font-medium">Unit</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.04]">
                   <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-2 text-zinc-400 font-sans">Lateral Accel</td>
-                    <td className="py-2 text-right font-semibold font-mono tabular-nums text-zinc-100">{activeTurnData.lateral_g.toFixed(2)}</td>
-                    <td className="py-2 text-right text-zinc-500 text-[10px]">g</td>
+                    <td className="py-2.5 px-2 text-zinc-300 font-sans flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E10600] shrink-0" />
+                      <span>Lateral Accel</span>
+                    </td>
+                    <td className="py-2.5 px-2 text-right font-semibold font-mono tabular-nums text-white text-xs">{activeTurnData.lateral_g.toFixed(2)}</td>
+                    <td className="py-2.5 px-2 text-right text-zinc-500 font-mono text-[10px]">g</td>
                   </tr>
                   <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-2 text-zinc-400 font-sans">Roll Transfer</td>
-                    <td className="py-2 text-right font-semibold font-mono tabular-nums text-sky-400">{activeTurnData.roll_transfer.toFixed(1)}</td>
-                    <td className="py-2 text-right text-zinc-500 text-[10px]">% [Outer L]</td>
+                    <td className="py-2.5 px-2 text-zinc-300 font-sans flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0" />
+                      <span>Roll Transfer</span>
+                    </td>
+                    <td className="py-2.5 px-2 text-right font-semibold font-mono tabular-nums text-sky-400 text-xs">{activeTurnData.roll_transfer.toFixed(1)}</td>
+                    <td className="py-2.5 px-2 text-right text-zinc-500 font-mono text-[10px]">% [Outer L]</td>
                   </tr>
                   <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-2 text-zinc-400 font-sans">Pitch Bias</td>
-                    <td className="py-2 text-right font-semibold font-mono tabular-nums text-amber-400">{activeTurnData.pitch_bias.toFixed(1)}</td>
-                    <td className="py-2 text-right text-zinc-500 text-[10px]">% [Front]</td>
+                    <td className="py-2.5 px-2 text-zinc-300 font-sans flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                      <span>Pitch Bias</span>
+                    </td>
+                    <td className="py-2.5 px-2 text-right font-semibold font-mono tabular-nums text-amber-400 text-xs">{activeTurnData.pitch_bias.toFixed(1)}</td>
+                    <td className="py-2.5 px-2 text-right text-zinc-500 font-mono text-[10px]">% [Front]</td>
                   </tr>
                   <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-2 text-zinc-400 font-sans">Apex Speed</td>
-                    <td className="py-2 text-right font-semibold font-mono tabular-nums text-zinc-100">{activeTurnData.apex_speed_kmh.toFixed(1)}</td>
-                    <td className="py-2 text-right text-zinc-500 text-[10px]">km/h</td>
+                    <td className="py-2.5 px-2 text-zinc-300 font-sans flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                      <span>Apex Speed</span>
+                    </td>
+                    <td className="py-2.5 px-2 text-right font-semibold font-mono tabular-nums text-white text-xs">{activeTurnData.apex_speed_kmh.toFixed(1)}</td>
+                    <td className="py-2.5 px-2 text-right text-zinc-500 font-mono text-[10px]">km/h</td>
                   </tr>
                   <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-2 text-zinc-400 font-sans">Limiting Corner</td>
-                    <td className="py-2 text-right font-semibold font-mono tabular-nums text-red-400">{activeTurnData.limiting_tyre}</td>
-                    <td className="py-2 text-right text-zinc-500 text-[10px]">36.2% Load</td>
+                    <td className="py-2.5 px-2 text-zinc-300 font-sans flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B30] shrink-0" />
+                      <span>Limiting Corner</span>
+                    </td>
+                    <td className="py-2.5 px-2 text-right font-semibold font-mono tabular-nums text-[#FF3B30] text-xs">{activeTurnData.limiting_tyre}</td>
+                    <td className="py-2.5 px-2 text-right text-zinc-500 font-mono text-[10px]">36.2% Load</td>
                   </tr>
                   <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-2 text-zinc-400 font-sans">Heat Flux Density</td>
-                    <td className="py-2 text-right font-semibold font-mono tabular-nums text-zinc-100">{activeTurnData.heat_flux_kw.toFixed(1)}</td>
-                    <td className="py-2 text-right text-zinc-500 text-[10px]">kW/m²</td>
+                    <td className="py-2.5 px-2 text-zinc-300 font-sans flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                      <span>Heat Flux Density</span>
+                    </td>
+                    <td className="py-2.5 px-2 text-right font-semibold font-mono tabular-nums text-white text-xs">{activeTurnData.heat_flux_kw.toFixed(1)}</td>
+                    <td className="py-2.5 px-2 text-right text-zinc-500 font-mono text-[10px]">kW/m²</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
             {/* Circuit Archetype Parameters */}
-            <div className="mt-4 pt-3 border-t border-white/[0.06] space-y-1.5 text-xs">
-              <div className="text-zinc-500 text-[10px] font-medium tracking-wider uppercase">Circuit Archetype</div>
-              <div className="flex justify-between text-zinc-400">
-                <span>Macro Category:</span>
-                <span className="text-zinc-200 font-medium">High Downforce / Severe Scrub</span>
+            <div className="mt-4 pt-3 border-t border-white/[0.08] space-y-1">
+              <div className="text-zinc-500 text-[10px] font-display uppercase tracking-wider font-semibold mb-1">
+                Circuit Archetype
               </div>
-              <div className="flex justify-between text-zinc-400">
-                <span>Asymmetric Ratio:</span>
-                <span className="text-zinc-200 font-medium font-mono tabular-nums">65% R / 35% L</span>
-              </div>
-              <div className="flex justify-between text-zinc-400">
-                <span>Limiting Corner:</span>
-                <span className="text-red-400 font-medium">Front-Left (36.2% Share)</span>
-              </div>
+              <DataListRow
+                label="Macro Category:"
+                value="High Downforce / Severe Scrub"
+                valueClassName="text-zinc-200 font-medium font-sans"
+              />
+              <DataListRow
+                label="Asymmetric Ratio:"
+                value="65% R / 35% L"
+                valueClassName="text-zinc-200 font-medium font-mono"
+              />
+              <DataListRow
+                label="Limiting Corner:"
+                value="Front-Left (36.2% Share)"
+                valueClassName="text-[#FF3B30] font-semibold font-sans"
+              />
             </div>
 
           </div>

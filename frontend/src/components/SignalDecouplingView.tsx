@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import type { LapTelemetryRecord } from '../types/telemetry';
 import { Filter, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { MetricBadge } from './shared/F1DataComponents';
 
 interface SignalDecouplingViewProps {
   telemetryData: LapTelemetryRecord[];
@@ -47,73 +48,75 @@ export const SignalDecouplingView: React.FC<SignalDecouplingViewProps> = ({
     <div className="space-y-5 font-sans">
       
       {/* Top Telemetry Filter Status Banner */}
-      <div className="tgr-card p-5">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/[0.06]">
+      <div className="f1-card p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
           <div>
-            <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-              <Filter className="w-4 h-4 text-red-500" />
-              <span>Workspace 2: Signal Decoupling Engine</span>
+            <h2 className="f1-display text-base tracking-wider text-white flex items-center gap-2">
+              <Filter className="w-4 h-4 text-[#E10600]" />
+              <span>WORKSPACE 2: SIGNAL DECOUPLING ENGINE</span>
             </h2>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <p className="text-xs text-zinc-400 mt-0.5 font-sans">
               Isolation of true tyre degradation from fuel mass penalty and track evolution gain
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-zinc-400">
-            <span>Filtered Outliers:</span>
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-950/40 border border-amber-800/40 text-amber-300 font-semibold text-[10px]">
-              {outliers.length} Laps Purged
-            </span>
+          <div className="flex items-center gap-2 text-xs text-zinc-400 font-sans">
+            <span className="font-display uppercase tracking-wider font-bold">Filtered Outliers:</span>
+            <MetricBadge
+              text={`${outliers.length} LAPS PURGED`}
+              type="tag"
+              className="bg-amber-950/50 text-amber-300 border-amber-800/50"
+            />
           </div>
         </div>
 
         {/* 7 Stage Domain Filter Status Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 mt-4 text-xs">
-          <div className="bg-[#0A0C0F] p-2.5 rounded-lg border border-white/[0.06]">
-            <div className="text-zinc-500 text-[10px] tracking-wider uppercase font-medium">Stage 1: Flag</div>
-            <div className="font-semibold text-emerald-400 flex items-center gap-1.5 mt-1 text-[11px]">
+          <div className="bg-[#0A0A0C] p-2.5 rounded-lg border border-white/[0.06]">
+            <div className="text-zinc-400 text-[10px] font-display tracking-widest uppercase font-bold">Stage 1: Flag</div>
+            <div className="font-semibold text-emerald-400 flex items-center gap-1.5 mt-1 text-[11px] font-sans">
               <CheckCircle2 className="w-3.5 h-3.5" /> Green Flag
             </div>
           </div>
 
-          <div className="bg-[#0A0C0F] p-2.5 rounded-lg border border-white/[0.06]">
-            <div className="text-zinc-500 text-[10px] tracking-wider uppercase font-medium">Stage 2: Limits</div>
-            <div className="font-semibold text-emerald-400 flex items-center gap-1.5 mt-1 text-[11px]">
+          <div className="bg-[#0A0A0C] p-2.5 rounded-lg border border-white/[0.06]">
+            <div className="text-zinc-400 text-[10px] font-display tracking-widest uppercase font-bold">Stage 2: Limits</div>
+            <div className="font-semibold text-emerald-400 flex items-center gap-1.5 mt-1 text-[11px] font-sans">
               <CheckCircle2 className="w-3.5 h-3.5" /> Track Limits
             </div>
           </div>
 
-          <div className="bg-[#0A0C0F] p-2.5 rounded-lg border border-white/[0.06]">
-            <div className="text-zinc-500 text-[10px] tracking-wider uppercase font-medium">Stage 3: In/Out</div>
-            <div className="font-semibold text-emerald-400 flex items-center gap-1.5 mt-1 text-[11px]">
+          <div className="bg-[#0A0A0C] p-2.5 rounded-lg border border-white/[0.06]">
+            <div className="text-zinc-400 text-[10px] font-display tracking-widest uppercase font-bold">Stage 3: In/Out</div>
+            <div className="font-semibold text-emerald-400 flex items-center gap-1.5 mt-1 text-[11px] font-sans">
               <CheckCircle2 className="w-3.5 h-3.5" /> Pit Purged
             </div>
           </div>
 
-          <div className="bg-[#0A0C0F] p-2.5 rounded-lg border border-white/[0.06]">
-            <div className="text-zinc-500 text-[10px] tracking-wider uppercase font-medium">Stage 4: SC/VSC</div>
-            <div className="font-semibold text-emerald-400 flex items-center gap-1.5 mt-1 text-[11px]">
+          <div className="bg-[#0A0A0C] p-2.5 rounded-lg border border-white/[0.06]">
+            <div className="text-zinc-400 text-[10px] font-display tracking-widest uppercase font-bold">Stage 4: SC/VSC</div>
+            <div className="font-semibold text-emerald-400 flex items-center gap-1.5 mt-1 text-[11px] font-sans">
               <CheckCircle2 className="w-3.5 h-3.5" /> Delta Excluded
             </div>
           </div>
 
-          <div className="bg-[#0A0C0F] p-2.5 rounded-lg border border-white/[0.06]">
-            <div className="text-zinc-500 text-[10px] tracking-wider uppercase font-medium">Stage 5: Traffic</div>
-            <div className="font-semibold text-amber-400 flex items-center gap-1.5 mt-1 text-[11px]">
+          <div className="bg-[#0A0A0C] p-2.5 rounded-lg border border-white/[0.06]">
+            <div className="text-zinc-400 text-[10px] font-display tracking-widest uppercase font-bold">Stage 5: Traffic</div>
+            <div className="font-semibold text-amber-400 flex items-center gap-1.5 mt-1 text-[11px] font-sans">
               <AlertTriangle className="w-3.5 h-3.5" /> &gt;1.5s Wake
             </div>
           </div>
 
-          <div className="bg-[#0A0C0F] p-2.5 rounded-lg border border-white/[0.06]">
-            <div className="text-zinc-500 text-[10px] tracking-wider uppercase font-medium">Stage 6: Delta</div>
-            <div className="font-semibold text-amber-400 flex items-center gap-1.5 mt-1 text-[11px]">
+          <div className="bg-[#0A0A0C] p-2.5 rounded-lg border border-white/[0.06]">
+            <div className="text-zinc-400 text-[10px] font-display tracking-widest uppercase font-bold">Stage 6: Delta</div>
+            <div className="font-semibold text-amber-400 flex items-center gap-1.5 mt-1 text-[11px] font-sans">
               <AlertTriangle className="w-3.5 h-3.5" /> {outliers.length} Purged
             </div>
           </div>
 
-          <div className="bg-[#0A0C0F] p-2.5 rounded-lg border border-white/[0.06]">
-            <div className="text-zinc-500 text-[10px] tracking-wider uppercase font-medium">Stage 7: Weather</div>
-            <div className="font-semibold text-emerald-400 flex items-center gap-1.5 mt-1 text-[11px]">
+          <div className="bg-[#0A0A0C] p-2.5 rounded-lg border border-white/[0.06]">
+            <div className="text-zinc-400 text-[10px] font-display tracking-widest uppercase font-bold">Stage 7: Weather</div>
+            <div className="font-semibold text-emerald-400 flex items-center gap-1.5 mt-1 text-[11px] font-sans">
               <CheckCircle2 className="w-3.5 h-3.5" /> 0.0mm Dry
             </div>
           </div>
@@ -121,15 +124,15 @@ export const SignalDecouplingView: React.FC<SignalDecouplingViewProps> = ({
       </div>
 
       {/* Full-Width Analytical Line Graph */}
-      <div className="tgr-card p-5">
+      <div className="f1-card p-5">
         
         {/* Chart Header & Interactive Series Toggles */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 mb-4 border-b border-white/[0.06]">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 mb-4 border-b border-white/[0.08]">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-100">
+            <h3 className="f1-display text-sm tracking-wide text-white">
               Signal Decoupling: Observed Pace vs Confounder Residuals
             </h3>
-            <span className="text-xs text-zinc-400">
+            <span className="text-xs text-zinc-400 font-sans">
               Left: Lap Pace (Seconds) | Right: Confounder Corrections (Delta Seconds)
             </span>
           </div>
@@ -138,46 +141,43 @@ export const SignalDecouplingView: React.FC<SignalDecouplingViewProps> = ({
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <button
               onClick={() => setShowRaw(!showRaw)}
-              className={`px-2.5 py-1 rounded-md border text-xs font-medium transition-all ${
+              className={`f1-pill px-3 py-1 rounded-full border transition-all text-xs ${
                 showRaw
-                  ? 'bg-white/[0.08] text-zinc-200 border-white/[0.15]'
-                  : 'text-zinc-500 border-dashed border-white/[0.08] line-through'
+                  ? 'bg-zinc-800/80 text-white border-zinc-500'
+                  : 'bg-transparent text-zinc-500 border-white/[0.08]'
               }`}
             >
-              Raw Lap Time
+              Raw Pace (Laps)
             </button>
-
             <button
               onClick={() => setShowFuel(!showFuel)}
-              className={`px-2.5 py-1 rounded-md border text-xs font-medium transition-all ${
+              className={`f1-pill px-3 py-1 rounded-full border transition-all text-xs ${
                 showFuel
-                  ? 'bg-red-950/40 text-red-400 border-red-800/50'
-                  : 'text-zinc-500 border-dashed border-white/[0.08] line-through'
+                  ? 'bg-red-950/60 text-red-300 border-red-700/60'
+                  : 'bg-transparent text-zinc-500 border-white/[0.08]'
               }`}
             >
-              Fuel Mass Penalty (-0.033 s/kg)
+              Fuel Penalty
             </button>
-
             <button
               onClick={() => setShowTrackEvo(!showTrackEvo)}
-              className={`px-2.5 py-1 rounded-md border text-xs font-medium transition-all ${
+              className={`f1-pill px-3 py-1 rounded-full border transition-all text-xs ${
                 showTrackEvo
-                  ? 'bg-sky-950/40 text-sky-400 border-sky-800/50'
-                  : 'text-zinc-500 border-dashed border-white/[0.08] line-through'
+                  ? 'bg-sky-950/60 text-sky-300 border-sky-700/60'
+                  : 'bg-transparent text-zinc-500 border-white/[0.08]'
               }`}
             >
-              Track Evolution Gain
+              Track Evo
             </button>
-
             <button
               onClick={() => setShowCleaned(!showCleaned)}
-              className={`px-2.5 py-1 rounded-md border text-xs font-medium transition-all ${
+              className={`f1-pill px-3 py-1 rounded-full border transition-all text-xs ${
                 showCleaned
-                  ? 'bg-[#1E232F] text-zinc-100 border-white/[0.2] font-semibold'
-                  : 'text-zinc-500 border-dashed border-white/[0.08] line-through'
+                  ? 'bg-white text-black font-bold border-white'
+                  : 'bg-transparent text-zinc-500 border-white/[0.08]'
               }`}
             >
-              Decoupled Signal (True Wear)
+              Decoupled Signal
             </button>
           </div>
         </div>
@@ -366,31 +366,31 @@ export const SignalDecouplingView: React.FC<SignalDecouplingViewProps> = ({
       </div>
 
       {/* Filtered Laps & PIP Audit Table */}
-      <div className="tgr-card p-5">
-        <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/[0.06]">
+      <div className="f1-card p-5">
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/[0.08]">
           <div>
-            <h3 className="text-xs font-semibold text-zinc-200 tracking-wider uppercase">
+            <h3 className="f1-display text-sm tracking-wide text-white">
               Filtered Laps & Domain Audit Table
             </h3>
-            <span className="text-[11px] text-zinc-400">
+            <span className="text-xs text-zinc-400 font-sans">
               7-stage domain sanitization log (observed raw time vs decoupled true signal)
             </span>
           </div>
           <span className="text-xs text-zinc-400 font-sans">
-            Total Stint Laps: <strong className="text-zinc-200 font-mono tabular-nums">{telemetryData.length}</strong>
+            Total Stint Laps: <strong className="text-white font-mono tabular-nums">{telemetryData.length}</strong>
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-white/[0.06] text-zinc-500 text-[10px] tracking-wider uppercase font-medium">
-                <th className="py-2 px-3 font-medium">Lap</th>
-                <th className="py-2 px-3 font-medium">Raw Time</th>
-                <th className="py-2 px-3 font-medium">Fuel Delta</th>
-                <th className="py-2 px-3 font-medium">Evo Delta</th>
-                <th className="py-2 px-3 font-medium">Clean Pace</th>
-                <th className="py-2 px-3 text-right font-medium">PIP Filter Tag</th>
+              <tr className="border-b border-white/[0.08] text-zinc-500 text-[10px] font-display uppercase tracking-wider font-semibold">
+                <th className="py-2.5 px-3 font-medium">Lap</th>
+                <th className="py-2.5 px-3 font-medium">Raw Time</th>
+                <th className="py-2.5 px-3 font-medium">Fuel Delta</th>
+                <th className="py-2.5 px-3 font-medium">Evo Delta</th>
+                <th className="py-2.5 px-3 font-medium">Clean Pace</th>
+                <th className="py-2.5 px-3 text-right font-medium">PIP Filter Tag</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.04] tabular-nums font-mono">
@@ -403,17 +403,20 @@ export const SignalDecouplingView: React.FC<SignalDecouplingViewProps> = ({
                       isOutlier ? 'bg-amber-950/20 hover:bg-amber-950/30' : 'hover:bg-white/[0.02]'
                     }`}
                   >
-                    <td className="py-2 px-3 font-semibold text-zinc-200">
-                      {String(d.lap_number).padStart(2, '0')}
+                    <td className="py-2.5 px-3 font-semibold text-white font-sans flex items-center gap-2">
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isOutlier ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+                      <span>Lap {String(d.lap_number).padStart(2, '0')}</span>
                     </td>
-                    <td className="py-2 px-3 text-zinc-400">{d.raw_lap_time.toFixed(3)}s</td>
-                    <td className="py-2 px-3 text-red-400">+{d.fuel_penalty_s.toFixed(3)}s</td>
-                    <td className="py-2 px-3 text-sky-400">-{d.track_evolution_s.toFixed(3)}s</td>
-                    <td className="py-2 px-3 font-semibold text-zinc-100">{d.pace_corrected_s.toFixed(3)}s</td>
-                    <td className="py-2 px-3 text-right font-sans">
-                      <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] border ${getTagBadgeClass(d.pip_filter_tag)}`}>
-                        {d.pip_filter_tag || 'PASS_GREEN'}
-                      </span>
+                    <td className="py-2.5 px-3 text-zinc-400">{d.raw_lap_time.toFixed(3)}s</td>
+                    <td className="py-2.5 px-3 text-red-400">+{d.fuel_penalty_s.toFixed(3)}s</td>
+                    <td className="py-2.5 px-3 text-sky-400">-{d.track_evolution_s.toFixed(3)}s</td>
+                    <td className="py-2.5 px-3 font-semibold text-white">{d.pace_corrected_s.toFixed(3)}s</td>
+                    <td className="py-2.5 px-3 text-right font-sans">
+                      <MetricBadge
+                        text={d.pip_filter_tag || 'PASS_GREEN'}
+                        type="tag"
+                        className={getTagBadgeClass(d.pip_filter_tag)}
+                      />
                     </td>
                   </tr>
                 );

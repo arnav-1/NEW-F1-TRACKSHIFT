@@ -55,40 +55,40 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
 
     return (
       <div
-        className={`tgr-card p-4 relative font-sans transition-colors ${
+        className={`f1-card p-4 relative font-sans transition-colors ${
           isLimiting
-            ? 'border-rose-900/40 bg-gradient-to-br from-[#14171F] to-[#1A1216]'
-            : ''
+            ? 'border-red-900/60 bg-gradient-to-br from-[#16181D] via-[#1E1619] to-[#251418] shadow-[0_4px_24px_rgba(225,6,0,0.15)]'
+            : 'hover:border-white/[0.15]'
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-white/[0.06]">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-white/[0.08]">
+          <div className="flex items-center gap-2.5">
             <span
-              className={`w-6 h-6 rounded-md text-xs font-bold font-mono flex items-center justify-center ${
+              className={`w-7 h-7 rounded-full text-xs font-bold font-display flex items-center justify-center ${
                 isLimiting
-                  ? 'bg-red-500/10 text-red-400 border border-red-500/25'
-                  : 'bg-white/[0.04] text-zinc-400 border border-white/[0.08]'
+                  ? 'bg-[#E10600] text-white shadow-[0_0_10px_rgba(225,6,0,0.6)]'
+                  : 'bg-white/[0.06] text-zinc-300 border border-white/[0.1]'
               }`}
             >
               {cornerKey}
             </span>
             <div>
-              <div className="text-xs font-semibold text-zinc-100">
+              <div className="f1-display text-xs tracking-wider text-white font-bold">
                 {positionName}
               </div>
-              <div className="text-[10px] text-zinc-400">
+              <div className="text-[10px] text-zinc-400 font-sans">
                 Node {cornerKey} Telemetry
               </div>
             </div>
           </div>
 
           {isLimiting ? (
-            <span className="text-[9px] bg-red-950/50 text-red-300 border border-red-800/40 px-2 py-0.5 rounded-full font-semibold">
+            <span className="f1-pill text-[9px] bg-red-950/60 text-red-300 border border-red-800/50 px-2.5 py-0.5 rounded-full font-bold">
               Limiting Tyre (FL)
             </span>
           ) : (
-            <span className={`text-[9px] px-2 py-0.5 rounded-full border ${statusClass}`}>
+            <span className={`f1-pill text-[9px] px-2.5 py-0.5 rounded-full border font-bold ${statusClass}`}>
               {status}
             </span>
           )}
@@ -255,29 +255,29 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
       </div>
 
       {/* Tri-Mechanism Wear Stacked Area Chart */}
-      <div className="tgr-card p-5">
+      <div className="f1-card p-5">
         
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 mb-4 border-b border-white/[0.06]">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 mb-4 border-b border-white/[0.08]">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-100">
+            <h3 className="f1-display text-sm tracking-wide text-white font-bold">
               Tri-Mechanism Wear Superposition [D(t)]
             </h3>
-            <span className="text-xs text-zinc-400">
+            <span className="text-xs text-zinc-400 font-sans">
               Cumulative damage breakdown across stint laps
             </span>
           </div>
 
           <div className="flex items-center gap-3 text-xs">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03] text-zinc-300">
-              <span className="w-2.5 h-2.5 rounded-sm bg-[#94A3B8]"></span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.04] text-zinc-300 font-sans">
+              <span className="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
               <span>Mechanical Abrasion</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03] text-zinc-300">
-              <span className="w-2.5 h-2.5 rounded-sm bg-[#D97706]"></span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.04] text-zinc-300 font-sans">
+              <span className="w-2 h-2 rounded-full bg-[#D97706]"></span>
               <span>Cold Graining (&lt;85°C)</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03] text-zinc-300">
-              <span className="w-2.5 h-2.5 rounded-sm bg-[#DC2626]"></span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.04] text-zinc-300 font-sans">
+              <span className="w-2 h-2 rounded-full bg-[#E10600]"></span>
               <span>Thermal Blistering (&gt;118°C)</span>
             </span>
           </div>
