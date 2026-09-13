@@ -1,0 +1,54 @@
+[
+  {
+    "circuit": "Belgium",
+    "circuit_type": "elevation_cooling",
+    "mean_track_t": 31.0,
+    "total_stints": 11,
+    "mean_centered_shape_mae_s": 0.28761840248175424,
+    "mean_physical_mae_s": 0.4146783447452407,
+    "mean_linear_mae_s": 0.3670396188088585,
+    "mean_improvement_pct": -23.3751230799602,
+    "mean_pit_window_error_laps": 3.1818181818181817,
+    "pit_accuracy_2l_pct": 63.63636363636363,
+    "prediction_interval_coverage_pct": 27.27272727272727
+  },
+  {
+    "circuit": "Spain",
+    "circuit_type": "high_lateral",
+    "mean_track_t": 42.0,
+    "total_stints": 9,
+    "mean_centered_shape_mae_s": 0.3310953953189919,
+    "mean_physical_mae_s": 0.8317976223064403,
+    "mean_linear_mae_s": 0.681181141484622,
+    "mean_improvement_pct": -32.851261303957976,
+    "mean_pit_window_error_laps": 6.888888888888889,
+    "pit_accuracy_2l_pct": 33.33333333333333,
+    "prediction_interval_coverage_pct": 22.22222222222222
+  },
+  {
+    "circuit": "Silverstone",
+    "circuit_type": "high_speed",
+    "mean_track_t": 24.0,
+    "total_stints": 5,
+    "mean_centered_shape_mae_s": 0.34508413982132957,
+    "mean_physical_mae_s": 0.769073283083565,
+    "mean_linear_mae_s": 0.3236649073261412,
+    "mean_improvement_pct": -142.47781955143304,
+    "mean_pit_window_error_laps": 1.4,
+    "pit_accuracy_2l_pct": 60.0,
+    "prediction_interval_coverage_pct": 0.0
+  },
+  {
+    "circuit": "Bahrain",
+    "circuit_type": "thermal_abrasive",
+    "mean_track_t": 36.0,
+    "total_stints": 12,
+    "mean_centered_shape_mae_s": 0.35285467634650386,
+    "mean_physical_mae_s": 0.8004497576260969,
+    "mean_linear_mae_s": 0.4931159040405248,
+    "mean_improvement_pct": -82.36841151244687,
+    "mean_pit_window_error_laps": 2.4166666666666665,
+    "pit_accuracy_2l_pct": 75.0,
+    "prediction_interval_coverage_pct": 25.0
+  }
+]
