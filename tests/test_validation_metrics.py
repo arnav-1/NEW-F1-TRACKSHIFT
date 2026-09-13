@@ -6,7 +6,7 @@ Validates Centered Shape MAE, Physical MAE, Slope Error, and Pit Accuracy.
 import numpy as np
 import pytest
 
-from testDaksh.post_race_validator import PostRaceValidator
+from backend.post_race_validator import PostRaceValidator
 
 
 @pytest.fixture

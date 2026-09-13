@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from testDaksh.practice_degradation_inferer import PracticeDegradationInferer
-from testDaksh.stint_reconstructor import StintReconstructor
+from backend.practice_degradation_inferer import PracticeDegradationInferer
+from backend.stint_reconstructor import StintReconstructor
 
 
 def test_stint_age_normalization():

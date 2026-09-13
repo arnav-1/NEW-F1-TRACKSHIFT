@@ -7,7 +7,7 @@ import math
 import numpy as np
 import pytest
 
-from testDaksh.physical_tyre_model import PhysicalTyreModel
+from backend.physical_tyre_model import PhysicalTyreModel
 
 
 @pytest.fixture

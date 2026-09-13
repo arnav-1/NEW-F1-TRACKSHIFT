@@ -7,17 +7,17 @@ import json
 import numpy as np
 import pytest
 
-from testDaksh.parameter_calibrator import ParameterCalibrator
-from testDaksh.parameter_fusion import ParameterFusion
-from testDaksh.physical_tyre_model import PhysicalTyreModel
-from testDaksh.pre_race_forecaster import PreRaceForecaster
-from testDaksh.strategy_optimizer import StrategyOptimizer
+from backend.parameter_calibrator import ParameterCalibrator
+from backend.parameter_fusion import ParameterFusion
+from backend.physical_tyre_model import PhysicalTyreModel
+from backend.pre_race_forecaster import PreRaceForecaster
+from backend.strategy_optimizer import StrategyOptimizer
 
 
 def test_physical_simulation_determinism():
     """Verifies that simulating 20 laps twice yields identical values to floating point precision."""
     model = PhysicalTyreModel()
-    from testDaksh.physical_tyre_model import DEFAULT_COMPOUND_PARAMS
+    from backend.physical_tyre_model import DEFAULT_COMPOUND_PARAMS
     comp = DEFAULT_COMPOUND_PARAMS["MEDIUM"]
 
     run1_damages = []

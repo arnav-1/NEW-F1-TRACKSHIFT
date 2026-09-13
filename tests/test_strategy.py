@@ -4,13 +4,13 @@ Validates FIA two-compound constraints, lap partitioning, and pit window bounds.
 """
 
 import pytest
-from testDaksh.numerical_schemas import (
+from backend.numerical_schemas import (
     FrozenCalibrationRecord,
     RacePredictionRecord,
     StrategyOptimizationRecord,
 )
-from testDaksh.pre_race_forecaster import PreRaceForecaster
-from testDaksh.strategy_optimizer import StrategyOptimizer
+from backend.pre_race_forecaster import PreRaceForecaster
+from backend.strategy_optimizer import StrategyOptimizer
 
 
 @pytest.fixture

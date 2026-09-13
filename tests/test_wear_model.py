@@ -4,7 +4,7 @@ Validates mechanical abrasion, cold graining, thermal blistering, and damage int
 """
 
 import pytest
-from testDaksh.physical_tyre_model import DEFAULT_COMPOUND_PARAMS, PhysicalTyreModel
+from backend.physical_tyre_model import DEFAULT_COMPOUND_PARAMS, PhysicalTyreModel
 
 
 @pytest.fixture

@@ -4,13 +4,13 @@ Validates the second continual learning loop, evidence thresholds, and step size
 """
 
 import pytest
-from testDaksh.learning_acceptance import LearningAcceptanceGatekeeper
-from testDaksh.numerical_schemas import (
+from backend.learning_acceptance import LearningAcceptanceGatekeeper
+from backend.numerical_schemas import (
     LearningStatus,
     ParameterLearningUpdateRecord,
     PostRaceScorecardRecord,
 )
-from testDaksh.post_race_learner import PostRaceLearner
+from backend.post_race_learner import PostRaceLearner
 
 
 @pytest.fixture

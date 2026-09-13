@@ -4,9 +4,9 @@ Validates quality weighting, bounded parameter updates, and physical wear calibr
 """
 
 import pytest
-from testDaksh.physical_tyre_model import DEFAULT_COMPOUND_PARAMS
-from testDaksh.parameter_calibrator import ParameterCalibrator
-from testDaksh.parameter_fusion import ParameterFusion
+from backend.physical_tyre_model import DEFAULT_COMPOUND_PARAMS
+from backend.parameter_calibrator import ParameterCalibrator
+from backend.parameter_fusion import ParameterFusion
 
 
 def test_session_quality_computation():

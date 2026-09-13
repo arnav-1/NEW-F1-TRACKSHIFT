@@ -4,7 +4,7 @@ Validates non-circular lateral grip extraction and aerodynamic downforce normali
 """
 
 import pytest
-from testDaksh.telemetric_grip_validator import TelemetricGripValidator
+from backend.telemetric_grip_validator import TelemetricGripValidator
 
 
 @pytest.fixture

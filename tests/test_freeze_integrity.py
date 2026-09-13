@@ -7,9 +7,9 @@ import json
 from pathlib import Path
 import pytest
 
-from testDaksh.numerical_schemas import FrozenCalibrationRecord
-from testDaksh.parameter_calibrator import ParameterCalibrator
-from testDaksh.pre_race_forecaster import PreRaceForecaster
+from backend.numerical_schemas import FrozenCalibrationRecord
+from backend.parameter_calibrator import ParameterCalibrator
+from backend.pre_race_forecaster import PreRaceForecaster
 
 
 @pytest.fixture
