@@ -42,9 +42,10 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 ARTIFACTS_DIR = Path(r"C:\Users\daksh\.gemini\antigravity-ide\brain\254a53b0-3ba4-4575-88bc-154466d2fe31")
 
 
-def run_mature_validation_across_circuits() -> Dict[str, Any]:
+def run_mature_validation_across_circuits(enable_2024_regulations: bool = True) -> Dict[str, Any]:
     """
     Executes the 10-pillar mature post-race validation pipeline across all target circuits.
+    Incorporates 2024 FIA Sporting & Technical Regulatory physics by default.
     """
     circuits = [
         ("Spain", ["44", "63", "27"], "high_lateral", 42.0),
@@ -56,7 +57,12 @@ def run_mature_validation_across_circuits() -> Dict[str, Any]:
     ]
 
     reconstructor = StintReconstructor()
-    validator = PostRaceValidator()
+    validator = PostRaceValidator(
+        enable_2024_blanket_deficit=enable_2024_regulations,
+        enable_2024_mass_distribution=enable_2024_regulations,
+        enable_2024_drs_lap2_wake=enable_2024_regulations,
+        enable_2024_tyre_scrub_state=enable_2024_regulations,
+    )
     op_validator = OperationalValidator()
 
     all_circuit_records = []
@@ -93,10 +99,13 @@ def run_mature_validation_across_circuits() -> Dict[str, Any]:
             track_t = s["track_temp_c"].iloc[0]
             air_t = s["air_temp_c"].iloc[0]
             fuel_init = s["fuel_mass_remaining"].iloc[0]
+            stint_num = int(s["stint_number"].iloc[0])
 
-            # Forward simulation from practice calibration (initialized at Pirelli blanket temperatures)
+            # Forward simulation from practice calibration (incorporating 2024 regulations)
             pred_stint = validator.simulate_stint_from_practice(
-                frozen_calib, comp, n_laps, track_t, air_t, fuel_init, base_p
+                frozen_calib, comp, n_laps, track_t, air_t, fuel_init, base_p,
+                stint_number=stint_num,
+                is_sticker_tyre=(stint_num == 1),
             )
 
             # Independent Sunday race inference

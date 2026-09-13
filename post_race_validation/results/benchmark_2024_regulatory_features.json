@@ -1,0 +1,476 @@
+{
+  "Baseline (Legacy)": {
+    "config_name": "Baseline (Legacy)",
+    "total_stints": 57,
+    "mean_physical_mae_s": 0.7411706255616106,
+    "mean_centered_shape_mae_s": 0.37847152281949487,
+    "mean_phase1_mae_s": 0.3688334124847324,
+    "mean_phase2_mae_s": 0.7181237148269161,
+    "mean_phase3_mae_s": 1.1649972749565982,
+    "mean_slope_error_lap_ms": 120.61920990227253,
+    "mean_linear_mae_s": 0.5456453069374717,
+    "physical_improvement_vs_linear_pct": -48.87841252586329,
+    "prediction_interval_coverage_pct": 17.543859649122805,
+    "mean_pit_window_error_laps": 4.982456140350878,
+    "pit_window_accuracy_2l_pct": 47.368421052631575,
+    "taxonomy_counts": {
+      "THERMAL_OPERATING_WINDOW_EXCURSION": 57
+    },
+    "compound_breakdown": {
+      "HARD": {
+        "stints": 24,
+        "physical_mae_s": 0.7587035986430063,
+        "centered_shape_mae_s": 0.45574242257885295,
+        "phase1_mae_s": 0.3511279407142059,
+        "pit_err_laps": 6.708333333333333
+      },
+      "MEDIUM": {
+        "stints": 22,
+        "physical_mae_s": 0.6440106862820474,
+        "centered_shape_mae_s": 0.3292446506931003,
+        "phase1_mae_s": 0.31984351784305265,
+        "pit_err_laps": 4.5
+      },
+      "SOFT": {
+        "stints": 11,
+        "physical_mae_s": 0.8972367446704198,
+        "centered_shape_mae_s": 0.3083342130518662,
+        "phase1_mae_s": 0.5054433219946953,
+        "pit_err_laps": 2.1818181818181817
+      }
+    },
+    "circuit_type_breakdown": {
+      "elevation_cooling": {
+        "stints": 11,
+        "physical_mae_s": 0.404847457819624,
+        "centered_shape_mae_s": 0.29127370019043614,
+        "pit_err_laps": 3.1818181818181817
+      },
+      "high_lateral": {
+        "stints": 9,
+        "physical_mae_s": 0.8348588271558114,
+        "centered_shape_mae_s": 0.3302022798466383,
+        "pit_err_laps": 6.888888888888889
+      },
+      "high_speed": {
+        "stints": 5,
+        "physical_mae_s": 0.7690366157070386,
+        "centered_shape_mae_s": 0.3409982124797167,
+        "pit_err_laps": 1.4
+      },
+      "rear_traction": {
+        "stints": 12,
+        "physical_mae_s": 0.8464679816415059,
+        "centered_shape_mae_s": 0.47619487290115775,
+        "pit_err_laps": 6.333333333333333
+      },
+      "thermal_abrasive": {
+        "stints": 12,
+        "physical_mae_s": 0.7972621465085337,
+        "centered_shape_mae_s": 0.34941401761684765,
+        "pit_err_laps": 2.4166666666666665
+      },
+      "tight_continuous": {
+        "stints": 8,
+        "physical_mae_s": 0.838716195032247,
+        "centered_shape_mae_s": 0.4730934789227519,
+        "pit_err_laps": 9.375
+      }
+    }
+  },
+  "Feature 1 Only (Blanket Deficit)": {
+    "config_name": "Feature 1 Only (Blanket Deficit)",
+    "total_stints": 57,
+    "mean_physical_mae_s": 0.7391689247019617,
+    "mean_centered_shape_mae_s": 0.3782175266946567,
+    "mean_phase1_mae_s": 0.36787864760131495,
+    "mean_phase2_mae_s": 0.7159825274148961,
+    "mean_phase3_mae_s": 1.162333324065328,
+    "mean_slope_error_lap_ms": 120.57947962552203,
+    "mean_linear_mae_s": 0.5456453069374717,
+    "physical_improvement_vs_linear_pct": -48.43274653432089,
+    "prediction_interval_coverage_pct": 17.543859649122805,
+    "mean_pit_window_error_laps": 4.982456140350878,
+    "pit_window_accuracy_2l_pct": 47.368421052631575,
+    "taxonomy_counts": {
+      "THERMAL_OPERATING_WINDOW_EXCURSION": 57
+    },
+    "compound_breakdown": {
+      "HARD": {
+        "stints": 24,
+        "physical_mae_s": 0.7575691969268834,
+        "centered_shape_mae_s": 0.45571559807374634,
+        "phase1_mae_s": 0.35007780217981593,
+        "pit_err_laps": 6.708333333333333
+      },
+      "MEDIUM": {
+        "stints": 22,
+        "physical_mae_s": 0.6414901121397333,
+        "centered_shape_mae_s": 0.32884103671065473,
+        "phase1_mae_s": 0.31902074136038705,
+        "pit_err_laps": 4.5
+      },
+      "SOFT": {
+        "stints": 11,
+        "physical_mae_s": 0.8943805013356801,
+        "centered_shape_mae_s": 0.3078838054719197,
+        "phase1_mae_s": 0.5044326682755319,
+        "pit_err_laps": 2.1818181818181817
+      }
+    },
+    "circuit_type_breakdown": {
+      "elevation_cooling": {
+        "stints": 11,
+        "physical_mae_s": 0.4041497919642657,
+        "centered_shape_mae_s": 0.29131535177920537,
+        "pit_err_laps": 3.1818181818181817
+      },
+      "high_lateral": {
+        "stints": 9,
+        "physical_mae_s": 0.831516254856916,
+        "centered_shape_mae_s": 0.3298569650056279,
+        "pit_err_laps": 6.888888888888889
+      },
+      "high_speed": {
+        "stints": 5,
+        "physical_mae_s": 0.7656839175879774,
+        "centered_shape_mae_s": 0.3407433593286888,
+        "pit_err_laps": 1.4
+      },
+      "rear_traction": {
+        "stints": 12,
+        "physical_mae_s": 0.8457646860068038,
+        "centered_shape_mae_s": 0.4759818981567359,
+        "pit_err_laps": 6.333333333333333
+      },
+      "thermal_abrasive": {
+        "stints": 12,
+        "physical_mae_s": 0.794487633583771,
+        "centered_shape_mae_s": 0.34889813603958797,
+        "pit_err_laps": 2.4166666666666665
+      },
+      "tight_continuous": {
+        "stints": 8,
+        "physical_mae_s": 0.8364859099582339,
+        "centered_shape_mae_s": 0.4728675324967739,
+        "pit_err_laps": 9.375
+      }
+    }
+  },
+  "Feature 2 Only (Dynamic Mass Dist)": {
+    "config_name": "Feature 2 Only (Dynamic Mass Dist)",
+    "total_stints": 57,
+    "mean_physical_mae_s": 0.7407886048364886,
+    "mean_centered_shape_mae_s": 0.37858212444131834,
+    "mean_phase1_mae_s": 0.36837335186166786,
+    "mean_phase2_mae_s": 0.7179242327481783,
+    "mean_phase3_mae_s": 1.1642284805412542,
+    "mean_slope_error_lap_ms": 120.87906821123697,
+    "mean_linear_mae_s": 0.5456453069374717,
+    "physical_improvement_vs_linear_pct": -48.73989956863447,
+    "prediction_interval_coverage_pct": 17.543859649122805,
+    "mean_pit_window_error_laps": 4.982456140350878,
+    "pit_window_accuracy_2l_pct": 47.368421052631575,
+    "taxonomy_counts": {
+      "THERMAL_OPERATING_WINDOW_EXCURSION": 57
+    },
+    "compound_breakdown": {
+      "HARD": {
+        "stints": 24,
+        "physical_mae_s": 0.7614160455161025,
+        "centered_shape_mae_s": 0.456940592020672,
+        "phase1_mae_s": 0.3507101204120279,
+        "pit_err_laps": 6.708333333333333
+      },
+      "MEDIUM": {
+        "stints": 22,
+        "physical_mae_s": 0.6410406538837816,
+        "centered_shape_mae_s": 0.32849526627885733,
+        "phase1_mae_s": 0.319322956467871,
+        "pit_err_laps": 4.5
+      },
+      "SOFT": {
+        "stints": 11,
+        "physical_mae_s": 0.895279181622744,
+        "centered_shape_mae_s": 0.307791911502196,
+        "phase1_mae_s": 0.5050121021757487,
+        "pit_err_laps": 2.1818181818181817
+      }
+    },
+    "circuit_type_breakdown": {
+      "elevation_cooling": {
+        "stints": 11,
+        "physical_mae_s": 0.40333448308604614,
+        "centered_shape_mae_s": 0.2915537237897388,
+        "pit_err_laps": 3.1818181818181817
+      },
+      "high_lateral": {
+        "stints": 9,
+        "physical_mae_s": 0.8312754822317718,
+        "centered_shape_mae_s": 0.3298960134190739,
+        "pit_err_laps": 6.888888888888889
+      },
+      "high_speed": {
+        "stints": 5,
+        "physical_mae_s": 0.7691483127412486,
+        "centered_shape_mae_s": 0.34104972848382387,
+        "pit_err_laps": 1.4
+      },
+      "rear_traction": {
+        "stints": 12,
+        "physical_mae_s": 0.8506513857056367,
+        "centered_shape_mae_s": 0.4771226059865101,
+        "pit_err_laps": 6.333333333333333
+      },
+      "thermal_abrasive": {
+        "stints": 12,
+        "physical_mae_s": 0.7954446668566645,
+        "centered_shape_mae_s": 0.3488782594632396,
+        "pit_err_laps": 2.4166666666666665
+      },
+      "tight_continuous": {
+        "stints": 8,
+        "physical_mae_s": 0.8384872033991914,
+        "centered_shape_mae_s": 0.4732208728600297,
+        "pit_err_laps": 9.375
+      }
+    }
+  },
+  "Feature 3 Only (Lap 2 DRS Wake)": {
+    "config_name": "Feature 3 Only (Lap 2 DRS Wake)",
+    "total_stints": 57,
+    "mean_physical_mae_s": 0.7380835075740737,
+    "mean_centered_shape_mae_s": 0.37841187623468703,
+    "mean_phase1_mae_s": 0.3681100465709034,
+    "mean_phase2_mae_s": 0.7151990951983601,
+    "mean_phase3_mae_s": 1.1590109043925958,
+    "mean_slope_error_lap_ms": 121.97102126458998,
+    "mean_linear_mae_s": 0.5456453069374717,
+    "physical_improvement_vs_linear_pct": -47.94751133420456,
+    "prediction_interval_coverage_pct": 15.789473684210526,
+    "mean_pit_window_error_laps": 4.982456140350878,
+    "pit_window_accuracy_2l_pct": 47.368421052631575,
+    "taxonomy_counts": {
+      "THERMAL_OPERATING_WINDOW_EXCURSION": 57
+    },
+    "compound_breakdown": {
+      "HARD": {
+        "stints": 24,
+        "physical_mae_s": 0.7587035986430063,
+        "centered_shape_mae_s": 0.45574242257885295,
+        "phase1_mae_s": 0.3511279407142059,
+        "pit_err_laps": 6.708333333333333
+      },
+      "MEDIUM": {
+        "stints": 22,
+        "physical_mae_s": 0.6394175964347467,
+        "centered_shape_mae_s": 0.3297878532926219,
+        "phase1_mae_s": 0.3192621133780716,
+        "pit_err_laps": 4.5
+      },
+      "SOFT": {
+        "stints": 11,
+        "physical_mae_s": 0.8904260402477843,
+        "centered_shape_mae_s": 0.3069387300951827,
+        "phase1_mae_s": 0.5028577802802707,
+        "pit_err_laps": 2.1818181818181817
+      }
+    },
+    "circuit_type_breakdown": {
+      "elevation_cooling": {
+        "stints": 11,
+        "physical_mae_s": 0.39952416970305155,
+        "centered_shape_mae_s": 0.2924743361696826,
+        "pit_err_laps": 3.1818181818181817
+      },
+      "high_lateral": {
+        "stints": 9,
+        "physical_mae_s": 0.8318784863086515,
+        "centered_shape_mae_s": 0.32981089504473965,
+        "pit_err_laps": 6.888888888888889
+      },
+      "high_speed": {
+        "stints": 5,
+        "physical_mae_s": 0.7692661327343234,
+        "centered_shape_mae_s": 0.34108910558078,
+        "pit_err_laps": 1.4
+      },
+      "rear_traction": {
+        "stints": 12,
+        "physical_mae_s": 0.8388596770871132,
+        "centered_shape_mae_s": 0.47514571759881014,
+        "pit_err_laps": 6.333333333333333
+      },
+      "thermal_abrasive": {
+        "stints": 12,
+        "physical_mae_s": 0.7932542564231543,
+        "centered_shape_mae_s": 0.3484283635079783,
+        "pit_err_laps": 2.4166666666666665
+      },
+      "tight_continuous": {
+        "stints": 8,
+        "physical_mae_s": 0.8446737278019932,
+        "centered_shape_mae_s": 0.47445333636532927,
+        "pit_err_laps": 9.375
+      }
+    }
+  },
+  "Feature 4 Only (Tyre Scrub State)": {
+    "config_name": "Feature 4 Only (Tyre Scrub State)",
+    "total_stints": 57,
+    "mean_physical_mae_s": 0.7497337966454256,
+    "mean_centered_shape_mae_s": 0.3795576046955046,
+    "mean_phase1_mae_s": 0.37339501467630504,
+    "mean_phase2_mae_s": 0.7267914993786471,
+    "mean_phase3_mae_s": 1.1772176371726746,
+    "mean_slope_error_lap_ms": 117.71582596922076,
+    "mean_linear_mae_s": 0.5456453069374717,
+    "physical_improvement_vs_linear_pct": -51.59257723077874,
+    "prediction_interval_coverage_pct": 19.298245614035086,
+    "mean_pit_window_error_laps": 4.982456140350878,
+    "pit_window_accuracy_2l_pct": 47.368421052631575,
+    "taxonomy_counts": {
+      "THERMAL_OPERATING_WINDOW_EXCURSION": 57
+    },
+    "compound_breakdown": {
+      "HARD": {
+        "stints": 24,
+        "physical_mae_s": 0.7587035986430063,
+        "centered_shape_mae_s": 0.45574242257885295,
+        "phase1_mae_s": 0.351127940714206,
+        "pit_err_laps": 6.708333333333333
+      },
+      "MEDIUM": {
+        "stints": 22,
+        "physical_mae_s": 0.6587396493107408,
+        "centered_shape_mae_s": 0.3282598423049116,
+        "phase1_mae_s": 0.3280108236588995,
+        "pit_err_laps": 4.5
+      },
+      "SOFT": {
+        "stints": 11,
+        "physical_mae_s": 0.9121516142291647,
+        "centered_shape_mae_s": 0.31593170864029435,
+        "phase1_mae_s": 0.5127461035375139,
+        "pit_err_laps": 2.1818181818181817
+      }
+    },
+    "circuit_type_breakdown": {
+      "elevation_cooling": {
+        "stints": 11,
+        "physical_mae_s": 0.4218766831880371,
+        "centered_shape_mae_s": 0.2871475418596555,
+        "pit_err_laps": 3.1818181818181817
+      },
+      "high_lateral": {
+        "stints": 9,
+        "physical_mae_s": 0.8397971539473883,
+        "centered_shape_mae_s": 0.33214079952112785,
+        "pit_err_laps": 6.888888888888889
+      },
+      "high_speed": {
+        "stints": 5,
+        "physical_mae_s": 0.7712465437381638,
+        "centered_shape_mae_s": 0.3452069765483988,
+        "pit_err_laps": 1.4
+      },
+      "rear_traction": {
+        "stints": 12,
+        "physical_mae_s": 0.8623982606673571,
+        "centered_shape_mae_s": 0.4785809547453472,
+        "pit_err_laps": 6.333333333333333
+      },
+      "thermal_abrasive": {
+        "stints": 12,
+        "physical_mae_s": 0.8072303651770335,
+        "centered_shape_mae_s": 0.35492449881703947,
+        "pit_err_laps": 2.4166666666666665
+      },
+      "tight_continuous": {
+        "stints": 8,
+        "physical_mae_s": 0.8305290349213565,
+        "centered_shape_mae_s": 0.46984912325084593,
+        "pit_err_laps": 9.375
+      }
+    }
+  },
+  "All 4 Combined (2024 Regulations)": {
+    "config_name": "All 4 Combined (2024 Regulations)",
+    "total_stints": 57,
+    "mean_physical_mae_s": 0.7453107052801976,
+    "mean_centered_shape_mae_s": 0.3791351060811528,
+    "mean_phase1_mae_s": 0.3723157819878212,
+    "mean_phase2_mae_s": 0.7222259879841754,
+    "mean_phase3_mae_s": 1.169920875515096,
+    "mean_slope_error_lap_ms": 118.24812880690367,
+    "mean_linear_mae_s": 0.5456453069374717,
+    "physical_improvement_vs_linear_pct": -50.338501054004155,
+    "prediction_interval_coverage_pct": 19.298245614035086,
+    "mean_pit_window_error_laps": 4.982456140350878,
+    "pit_window_accuracy_2l_pct": 47.368421052631575,
+    "taxonomy_counts": {
+      "THERMAL_OPERATING_WINDOW_EXCURSION": 57
+    },
+    "compound_breakdown": {
+      "HARD": {
+        "stints": 24,
+        "physical_mae_s": 0.7603002658940433,
+        "centered_shape_mae_s": 0.4569138710032505,
+        "phase1_mae_s": 0.3496632558075287,
+        "pit_err_laps": 6.708333333333333
+      },
+      "MEDIUM": {
+        "stints": 22,
+        "physical_mae_s": 0.6495825221155633,
+        "centered_shape_mae_s": 0.3271006928573997,
+        "phase1_mae_s": 0.3274752149672983,
+        "pit_err_laps": 4.5
+      },
+      "SOFT": {
+        "stints": 11,
+        "physical_mae_s": 0.9040625757247119,
+        "centered_shape_mae_s": 0.31350480906226397,
+        "phase1_mae_s": 0.5114206095131416,
+        "pit_err_laps": 2.1818181818181817
+      }
+    },
+    "circuit_type_breakdown": {
+      "elevation_cooling": {
+        "stints": 11,
+        "physical_mae_s": 0.4146783447452407,
+        "centered_shape_mae_s": 0.28761840248175424,
+        "pit_err_laps": 3.1818181818181817
+      },
+      "high_lateral": {
+        "stints": 9,
+        "physical_mae_s": 0.8317976223064403,
+        "centered_shape_mae_s": 0.3310953953189919,
+        "pit_err_laps": 6.888888888888889
+      },
+      "high_speed": {
+        "stints": 5,
+        "physical_mae_s": 0.769073283083565,
+        "centered_shape_mae_s": 0.34508413982132957,
+        "pit_err_laps": 1.4
+      },
+      "rear_traction": {
+        "stints": 12,
+        "physical_mae_s": 0.8619657581118821,
+        "centered_shape_mae_s": 0.4782296072354178,
+        "pit_err_laps": 6.333333333333333
+      },
+      "thermal_abrasive": {
+        "stints": 12,
+        "physical_mae_s": 0.8004497576260969,
+        "centered_shape_mae_s": 0.35285467634650386,
+        "pit_err_laps": 2.4166666666666665
+      },
+      "tight_continuous": {
+        "stints": 8,
+        "physical_mae_s": 0.8300896504677605,
+        "centered_shape_mae_s": 0.4710759949207225,
+        "pit_err_laps": 9.375
+      }
+    }
+  }
+}

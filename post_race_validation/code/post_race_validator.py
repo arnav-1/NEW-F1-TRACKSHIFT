@@ -43,9 +43,20 @@ class PostRaceValidator:
     Mature Post-Race Validation Engine covering all 10 validation pillars.
     """
 
-    def __init__(self, cliff_curvature_multiplier: float = 1.8):
+    def __init__(
+        self,
+        cliff_curvature_multiplier: float = 1.8,
+        enable_2024_blanket_deficit: bool = False,
+        enable_2024_mass_distribution: bool = False,
+        enable_2024_drs_lap2_wake: bool = False,
+        enable_2024_tyre_scrub_state: bool = False,
+    ):
         self.cliff_multiplier = cliff_curvature_multiplier
         self.engine = PhysicalThermalWearEngine()
+        self.enable_2024_blanket_deficit = enable_2024_blanket_deficit
+        self.enable_2024_mass_distribution = enable_2024_mass_distribution
+        self.enable_2024_drs_lap2_wake = enable_2024_drs_lap2_wake
+        self.enable_2024_tyre_scrub_state = enable_2024_tyre_scrub_state
 
     def simulate_stint_from_practice(
         self,
@@ -60,22 +71,49 @@ class PostRaceValidator:
         fuel_perturbation: float = 0.0,
         mass_perturbation: float = 0.0,
         q_frict_scale: float = 1.0,
+        enable_2024_blanket_deficit: Optional[bool] = None,
+        enable_2024_mass_distribution: Optional[bool] = None,
+        enable_2024_drs_lap2_wake: Optional[bool] = None,
+        enable_2024_tyre_scrub_state: Optional[bool] = None,
+        stint_number: int = 1,
+        is_sticker_tyre: bool = True,
     ) -> Dict[str, Any]:
         """
         Simulates forward degradation for a race stint using strictly FROZEN practice parameters.
-        Initializes at Pirelli tyre warmer blanket temperatures (100°C tread, 85°C carcass).
-        Supports perturbation testing.
+        Supports 2024 FIA Sporting & Technical Regulations:
+        1. Blanket Exit Thermal Deficit (Tech Regs Art 10.8.4.d, Sporting Regs Art 44.4.b)
+        2. Dynamic Mass Distribution Shift (Tech Regs Art 4.1, 4.2 & 6.1.2)
+        3. Early DRS Lap 2 Wake Sliding (Sporting Regs Art 22.1.c.i)
+        4. Tyre Scrub & Mold-Release State (Sporting Regs Art 30.2/30.4)
         """
+        use_blanket_deficit = self.enable_2024_blanket_deficit if enable_2024_blanket_deficit is None else enable_2024_blanket_deficit
+        use_mass_dist = self.enable_2024_mass_distribution if enable_2024_mass_distribution is None else enable_2024_mass_distribution
+        use_drs_wake = self.enable_2024_drs_lap2_wake if enable_2024_drs_lap2_wake is None else enable_2024_drs_lap2_wake
+        use_scrub_state = self.enable_2024_tyre_scrub_state if enable_2024_tyre_scrub_state is None else enable_2024_tyre_scrub_state
+
         comp_info = frozen_calibrations["compounds"].get(compound, frozen_calibrations["compounds"]["MEDIUM"])
         w_p1 = comp_info["calibrated_w_p1"]
         comp_params = COMPOUND_PARAMS.get(compound, COMPOUND_PARAMS["MEDIUM"])
 
-        # Pirelli tyre warmer blanket initial conditions (100°C tread, 85°C carcass)
-        t_tread = (100.0 if compound in ["SOFT", "MEDIUM"] else 95.0) + (t_track_perturbation * 0.2)
-        t_carc = 85.0 + (t_track_perturbation * 0.1)
+        # Initial Thermal State:
+        if use_blanket_deficit:
+            # 2024 Tech Regs Art 10.8.4.d (70°C blanket cap) & Sporting Regs Art 44.4.b (5-minute grid unplug)
+            # Standing on grid and formation lap dissipation drops tread temp to ~62-65°C on launch
+            cooling_delta = 7.0 * (1.0 + (30.0 - air_temp_c) / 50.0)
+            t_tread_init = max(55.0, 70.0 - cooling_delta) + (t_track_perturbation * 0.2)
+            t_carc_init = 60.0 + (t_track_perturbation * 0.1)
+        else:
+            # Legacy assumption: 100°C tread, 85°C carcass
+            t_tread_init = (100.0 if compound in ["SOFT", "MEDIUM"] else 95.0) + (t_track_perturbation * 0.2)
+            t_carc_init = 85.0 + (t_track_perturbation * 0.1)
+
+        t_tread = t_tread_init
+        t_carc = t_carc_init
         eff_track_temp = track_temp_c + t_track_perturbation
         eff_initial_fuel = initial_fuel_kg + fuel_perturbation
-        d_accum = 0.0
+
+        # Initial accumulation: if scrubbed tyre, already has 1 lap of micro-wear
+        d_accum = 0.02 if (use_scrub_state and not is_sticker_tyre) else 0.0
 
         t_tread_traj = []
         t_carc_traj = []
@@ -94,13 +132,31 @@ class PostRaceValidator:
             speed_kmh = 215.0
             curvature = 0.0028
 
-            q_frict = self.engine.compute_frictional_power(
+            q_frict_raw = self.engine.compute_frictional_power(
                 speed_kmh=speed_kmh,
                 curvature_m_inv=curvature,
                 a_lon_ms2=1.0,
                 vehicle_mass_kg=veh_mass,
                 c_alpha_front=comp_params.c_alpha_front,
             ) * 0.30 * q_frict_scale
+
+            # Feature 2: Dynamic Mass Distribution (Tech Regs Art 4.1, 4.2 & 6.1.2)
+            # Rear-mid fuel cell burns down, shifting axle normal load and cornering scrub work
+            if use_mass_dist:
+                fuel_frac = fuel_rem / max(1.0, eff_initial_fuel)
+                mass_dist_scale = 1.0 + 0.04 * (fuel_frac - 0.5)
+            else:
+                mass_dist_scale = 1.0
+
+            # Feature 3: Early DRS Lap 2 Wake Sliding (2024 Sporting Regs Art 22.1.c.i)
+            # DRS enabled on Lap 2 compresses early pack; dirty air wake reduces downforce by 20-25%
+            # forcing higher cornering slip angle on laps 2-6 of Stint 1
+            if use_drs_wake and stint_number == 1 and (1 <= lap_idx <= 5):
+                wake_slip_scale = 1.0 + 0.20 * np.exp(-(lap_idx - 1) / 2.5)
+            else:
+                wake_slip_scale = 1.0
+
+            q_frict = q_frict_raw * mass_dist_scale * wake_slip_scale
 
             # Thermal step
             therm = self.engine.step_thermal_ode(
@@ -132,7 +188,15 @@ class PostRaceValidator:
             half_win = comp_params.t_window * 0.5
             temp_delta = max(0.0, abs(t_tread - comp_params.t_opt) - half_win)
             phi_thermal = max(0.70, 1.0 - self.engine.k_thermal_grip * ((temp_delta / half_win) ** 2))
-            mu_eff = comp_params.base_friction_mu0 * (1.0 - self.engine.lambda_wear * d_accum) * phi_thermal
+
+            # Feature 4: Sticker Tyre Mold-Release Squirm Factor (Sporting Regs Art 30.2/30.4)
+            # On Lap 1 of a brand new sticker tyre, boundary lubrication reduces micro-adhesion by 4%
+            if use_scrub_state and is_sticker_tyre and lap_idx == 0:
+                mold_release_factor = 0.96
+            else:
+                mold_release_factor = 1.0
+
+            mu_eff = comp_params.base_friction_mu0 * mold_release_factor * (1.0 - self.engine.lambda_wear * d_accum) * phi_thermal
 
             # Predicted tyre-attributable pace loss relative to fresh condition
             grip_loss_ratio = 1.0 - (mu_eff / comp_params.base_friction_mu0)
@@ -148,9 +212,11 @@ class PostRaceValidator:
             mu_eff_traj.append(mu_eff)
             deg_pred_traj.append(delta_t_pred)
 
-        # Baseline-relative degradation trajectory: degradation is pace lost from stint start
+        # Baseline-relative degradation trajectory: degradation is pace lost relative to best initial grip lap
         deg_pred_arr = np.array(deg_pred_traj)
-        deg_pred_relative = np.maximum(0.0, deg_pred_arr - deg_pred_arr[0])
+        min_p1_idx = min(4, len(deg_pred_arr))
+        base_pred_pace = np.min(deg_pred_arr[:min_p1_idx])
+        deg_pred_relative = np.maximum(0.0, deg_pred_arr - base_pred_pace)
 
         # Fit predicted degradation polynomial on normalized age
         a_norm = np.linspace(0.0, 1.0, stint_length)
