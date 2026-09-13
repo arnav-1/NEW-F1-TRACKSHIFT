@@ -12,6 +12,12 @@ import {
 import type { LapTelemetryRecord } from '../types/telemetry';
 import { Filter, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { MetricBadge } from './shared/F1DataComponents';
+import {
+  TelemetryReadoutTooltip,
+  computePaceDomain,
+  computeDeltaDomain,
+  TELEMETRY_THEME,
+} from './shared/TelemetryChartComponents';
 
 interface SignalDecouplingViewProps {
   telemetryData: LapTelemetryRecord[];
@@ -27,6 +33,12 @@ export const SignalDecouplingView: React.FC<SignalDecouplingViewProps> = ({
 
   // Outlier points flagged by PIP domain filters
   const outliers = telemetryData.filter((d) => d.is_outlier || d.outlier_reason);
+
+  // Dynamic engineering axis domain calculations (avoid zero-compression)
+  const paceValues = telemetryData.flatMap((d) => [d.raw_lap_time, d.pace_corrected_s]);
+  const paceDomain = computePaceDomain(paceValues, 0.4);
+  const deltaValues = telemetryData.flatMap((d) => [d.fuel_penalty_s, -d.track_evolution_s]);
+  const deltaDomain = computeDeltaDomain(deltaValues, 0.25);
 
   const getTagBadgeClass = (tag?: string) => {
     switch (tag) {
@@ -182,181 +194,220 @@ export const SignalDecouplingView: React.FC<SignalDecouplingViewProps> = ({
           </div>
         </div>
 
-        {/* Large Recharts Container */}
-        <div className="w-full h-[400px]">
+        {/* High-Density ATLAS / MoTeC Telemetry Chart Container */}
+        <div className="w-full h-[400px] bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={telemetryData}
-              margin={{ top: 15, right: 25, left: 5, bottom: 10 }}
+              margin={{ top: 15, right: 25, left: 10, bottom: 10 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+              <CartesianGrid
+                strokeDasharray={TELEMETRY_THEME.gridDash}
+                stroke={TELEMETRY_THEME.gridColor}
+              />
 
               {/* X Axis: Lap Number */}
               <XAxis
                 dataKey="lap_number"
-                stroke="#6B7280"
-                fontSize={10}
-                fontFamily="Inter, sans-serif"
-                tickLine={false}
+                stroke={TELEMETRY_THEME.axisLineColor}
+                tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
                 label={{
-                  value: 'Stint Lap Number',
+                  value: 'LAP NUMBER',
                   position: 'insideBottom',
                   offset: -6,
-                  fill: '#9CA3AF',
+                  fill: TELEMETRY_THEME.tickColor,
                   fontSize: 10,
-                  fontFamily: 'Inter, sans-serif',
+                  fontFamily: 'JetBrains Mono, monospace',
+                  letterSpacing: '0.08em',
                 }}
               />
 
-              {/* Left Y Axis: Lap Time in Seconds */}
+              {/* Left Y Axis: Lap Time in Seconds (Dynamically Bounded) */}
               <YAxis
                 yAxisId="left"
-                stroke="#9CA3AF"
-                fontSize={10}
-                fontFamily="JetBrains Mono, monospace"
-                domain={['auto', 'auto']}
-                tickLine={false}
-                tickFormatter={(v) => `${v.toFixed(1)}s`}
+                stroke={TELEMETRY_THEME.axisLineColor}
+                tick={{ fill: '#D1D5DB', fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                domain={paceDomain}
+                tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                tickFormatter={(v) => `${v.toFixed(2)}s`}
                 label={{
-                  value: 'Pace (s)',
+                  value: 'P_lap [s]',
                   angle: -90,
                   position: 'insideLeft',
-                  fill: '#9CA3AF',
+                  fill: '#D1D5DB',
                   fontSize: 10,
-                  fontFamily: 'Inter, sans-serif',
-                  offset: 5,
+                  fontFamily: 'JetBrains Mono, monospace',
+                  offset: 8,
                 }}
               />
 
-              {/* Right Y Axis: Confounder Delta in Seconds */}
+              {/* Right Y Axis: Confounder Delta in Seconds (Dynamically Bounded) */}
               <YAxis
                 yAxisId="right"
                 orientation="right"
-                stroke="#38BDF8"
-                fontSize={10}
-                fontFamily="JetBrains Mono, monospace"
-                domain={[-1.6, 4.0]}
-                tickLine={false}
+                stroke={TELEMETRY_THEME.axisLineColor}
+                tick={{ fill: TELEMETRY_THEME.channels.telemetryCyan, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                domain={deltaDomain}
+                tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
                 tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(2)}s`}
                 label={{
-                  value: 'Delta (s)',
+                  value: 'Δ_residual [s]',
                   angle: 90,
                   position: 'insideRight',
-                  fill: '#38BDF8',
+                  fill: TELEMETRY_THEME.channels.telemetryCyan,
                   fontSize: 10,
-                  fontFamily: 'Inter, sans-serif',
-                  offset: 5,
+                  fontFamily: 'JetBrains Mono, monospace',
+                  offset: 8,
                 }}
               />
 
-              {/* Tooltip */}
+              {/* High-Density ATLAS Cursor Telemetry Readout */}
               <Tooltip
+                cursor={{ stroke: TELEMETRY_THEME.cursorLineColor, strokeWidth: 1, strokeDasharray: '2 2' }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload as LapTelemetryRecord;
                     return (
-                      <div className="bg-[#12151C] border border-white/[0.1] p-3 rounded-lg shadow-xl text-xs max-w-xs">
-                        <div className="flex items-center justify-between border-b border-white/[0.08] pb-1.5 mb-2 font-mono">
-                          <span className="font-semibold text-zinc-100">Lap {data.lap_number}</span>
-                          <span className="text-zinc-400">{data.fuel_remaining_kg} kg fuel</span>
-                        </div>
-                        <div className="space-y-1 text-[11px] font-mono tabular-nums">
-                          <div className="flex justify-between">
-                            <span className="text-zinc-400 font-sans">Raw Observed:</span>
-                            <span className="font-semibold text-zinc-200">{data.raw_lap_time.toFixed(3)}s</span>
-                          </div>
-                          <div className="flex justify-between text-red-400">
-                            <span className="font-sans">Fuel Penalty:</span>
-                            <span className="font-semibold">+{data.fuel_penalty_s.toFixed(3)}s</span>
-                          </div>
-                          <div className="flex justify-between text-sky-400">
-                            <span className="font-sans">Track Evolution:</span>
-                            <span className="font-semibold">-{data.track_evolution_s.toFixed(3)}s</span>
-                          </div>
-                          <div className="flex justify-between pt-1.5 border-t border-white/[0.08] text-xs">
-                            <span className="font-semibold text-zinc-100 font-sans">Clean Residual:</span>
-                            <span className="font-bold text-white">{data.pace_corrected_s.toFixed(3)}s</span>
-                          </div>
-                          {data.outlier_reason && (
-                            <div className="mt-2 pt-1 border-t border-amber-500/30 text-amber-400 text-[10px] font-sans">
-                              ⚠️ {data.outlier_reason} [{data.pip_filter_tag}]
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      <TelemetryReadoutTooltip
+                        active={active}
+                        title={`LAP ${data.lap_number} TELEMETRY`}
+                        subtitle={`${data.fuel_remaining_kg.toFixed(1)} kg fuel`}
+                        items={[
+                          {
+                            channel: 'RAW PACE',
+                            value: data.raw_lap_time.toFixed(3),
+                            unit: 's',
+                            color: TELEMETRY_THEME.channels.slateReference,
+                          },
+                          {
+                            channel: 'FUEL PENALTY',
+                            value: data.fuel_penalty_s.toFixed(3),
+                            unit: 's',
+                            color: TELEMETRY_THEME.channels.haasRed,
+                            isDelta: true,
+                          },
+                          {
+                            channel: 'TRACK EVO',
+                            value: (-data.track_evolution_s).toFixed(3),
+                            unit: 's',
+                            color: TELEMETRY_THEME.channels.telemetryCyan,
+                            isDelta: true,
+                          },
+                          {
+                            channel: 'DECOUPLED PACE',
+                            value: data.pace_corrected_s.toFixed(3),
+                            unit: 's',
+                            color: TELEMETRY_THEME.channels.laserWhite,
+                            isProminent: true,
+                          },
+                        ]}
+                        alertMessage={
+                          data.outlier_reason
+                            ? `${data.outlier_reason} [${data.pip_filter_tag}]`
+                            : undefined
+                        }
+                        alertType="warning"
+                      />
                     );
                   }
                   return null;
                 }}
               />
 
-              {/* Series 1: Raw Lap Time (Muted slate, thin dotted line) */}
+              {/* Series 1: Raw Lap Time (Thin reference dash, 1.2px) */}
               {showRaw && (
                 <Line
                   yAxisId="left"
                   type="monotone"
                   dataKey="raw_lap_time"
                   name="Raw Lap Time"
-                  stroke="#64748B"
-                  strokeWidth={1.5}
-                  strokeDasharray="3 3"
-                  dot={{ r: 2, fill: '#64748B' }}
+                  stroke={TELEMETRY_THEME.channels.slateReference}
+                  strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
+                  strokeDasharray="2 2"
+                  dot={false}
+                  activeDot={{
+                    r: 3,
+                    stroke: TELEMETRY_THEME.channels.slateReference,
+                    strokeWidth: 1.5,
+                    fill: '#080A0E',
+                  }}
                 />
               )}
 
-              {/* Series 2: Fuel Mass Correction (Muted Red, dashed line) */}
+              {/* Series 2: Fuel Mass Correction (Haas Red, 1.2px) */}
               {showFuel && (
                 <Line
                   yAxisId="right"
                   type="monotone"
                   dataKey="fuel_penalty_s"
                   name="Fuel Mass Penalty"
-                  stroke="#EF4444"
-                  strokeWidth={1.8}
-                  strokeDasharray="4 4"
+                  stroke={TELEMETRY_THEME.channels.haasRed}
+                  strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
+                  strokeDasharray="4 2"
                   dot={false}
+                  activeDot={{
+                    r: 3,
+                    stroke: TELEMETRY_THEME.channels.haasRed,
+                    strokeWidth: 1.5,
+                    fill: '#080A0E',
+                  }}
                 />
               )}
 
-              {/* Series 3: Track Evolution Gain (Cyan, dashed line) */}
+              {/* Series 3: Track Evolution Gain (Telemetry Cyan, 1.2px) */}
               {showTrackEvo && (
                 <Line
                   yAxisId="right"
                   type="monotone"
                   dataKey={(d: LapTelemetryRecord) => -d.track_evolution_s}
                   name="Track Evolution Gain"
-                  stroke="#38BDF8"
-                  strokeWidth={1.8}
-                  strokeDasharray="4 4"
+                  stroke={TELEMETRY_THEME.channels.telemetryCyan}
+                  strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
+                  strokeDasharray="4 2"
                   dot={false}
+                  activeDot={{
+                    r: 3,
+                    stroke: TELEMETRY_THEME.channels.telemetryCyan,
+                    strokeWidth: 1.5,
+                    fill: '#080A0E',
+                  }}
                 />
               )}
 
-              {/* Series 4: Decoupled Performance Signal (Solid White, bold 2.5px stroke) */}
+              {/* Series 4: Decoupled Performance Signal (Laser White, 1.5px) */}
               {showCleaned && (
                 <Line
                   yAxisId="left"
                   type="monotone"
                   dataKey="pace_corrected_s"
                   name="Decoupled Signal"
-                  stroke="#F3F4F6"
-                  strokeWidth={2.2}
-                  dot={{ r: 2.5, fill: '#F3F4F6' }}
-                  activeDot={{ r: 5, fill: '#FFFFFF', stroke: '#E10600', strokeWidth: 2 }}
+                  stroke={TELEMETRY_THEME.channels.laserWhite}
+                  strokeWidth={TELEMETRY_THEME.strokeWidth.primary}
+                  dot={false}
+                  activeDot={{
+                    r: 3.5,
+                    stroke: TELEMETRY_THEME.channels.telemetryCyan,
+                    strokeWidth: 2,
+                    fill: '#FFFFFF',
+                  }}
                 />
               )}
 
-              {/* Filtered Outlier Points on the Graph (Flagged by PIP) */}
+              {/* Filtered Outlier Markers: Precision 3.5px warning rings (No clumsy solid dots) */}
               {outliers.map((pt) => (
                 <ReferenceDot
                   yAxisId="left"
                   key={pt.lap_number}
                   x={pt.lap_number}
                   y={pt.raw_lap_time}
-                  r={5}
-                  fill="#F59E0B"
-                  stroke="#0A0C0F"
-                  strokeWidth={2}
+                  r={3.5}
+                  fill="#080A0E"
+                  stroke={TELEMETRY_THEME.channels.amberWarning}
+                  strokeWidth={1.5}
                 />
               ))}
             </ComposedChart>

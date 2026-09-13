@@ -60,8 +60,7 @@ export function generateLapTelemetry(
   massScaling: boolean = true,
   pushLevel: number = 0.94
 ): LapTelemetryRecord[] {
-  const isBarcelona = circuit === 'barcelona';
-  const circuitBasePace = isBarcelona ? 80.2 : 90.5;
+  const circuitBasePace = circuit === 'spain' ? 80.2 : circuit === 'silverstone' ? 87.4 : 64.8;
 
   // Session-specific telemetry parameters
   let basePace = circuitBasePace;

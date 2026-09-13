@@ -11,6 +11,11 @@ import {
 } from 'recharts';
 import type { LapTelemetryRecord } from '../types/telemetry';
 import { Flame, Thermometer, Cpu } from 'lucide-react';
+import {
+  TelemetryReadoutTooltip,
+  computeWearDomain,
+  TELEMETRY_THEME,
+} from './shared/TelemetryChartComponents';
 
 interface TriMechanismWearChartProps {
   telemetryData: LapTelemetryRecord[];
@@ -38,9 +43,14 @@ export const TriMechanismWearChart: React.FC<TriMechanismWearChartProps> = ({
     tread_temp: 112.4,
     carcass_temp: 104.1,
     cumulative_d: 24.5,
+    total_rate: 6.8,
   };
 
-  const cliffLap = 19.4;
+  const cliffLap = 19;
+
+  // Dynamic wear domain
+  const totalDamages = wearData.map((d) => d.total_rate);
+  const wearDomain = computeWearDomain(totalDamages, 0.2);
 
   return (
     <div className="pitwall-panel p-4 h-full flex flex-col justify-between">
@@ -104,7 +114,7 @@ export const TriMechanismWearChart: React.FC<TriMechanismWearChartProps> = ({
       </div>
 
       {/* Stacked Area Chart Canvas */}
-      <div className="w-full h-[220px]">
+      <div className="w-full h-[220px] bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={wearData}
@@ -112,98 +122,89 @@ export const TriMechanismWearChart: React.FC<TriMechanismWearChartProps> = ({
           >
             <defs>
               <linearGradient id="gradAbrasion" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#FFFFFF" stopOpacity={0.9} />
-                <stop offset="95%" stopColor="#CBD5E1" stopOpacity={0.2} />
+                <stop offset="5%" stopColor="#94A3B8" stopOpacity={0.45} />
+                <stop offset="95%" stopColor="#94A3B8" stopOpacity={0.08} />
               </linearGradient>
               <linearGradient id="gradGraining" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#FF9100" stopOpacity={0.9} />
-                <stop offset="95%" stopColor="#FF9100" stopOpacity={0.25} />
+                <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.45} />
+                <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.08} />
               </linearGradient>
               <linearGradient id="gradBlistering" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#E10600" stopOpacity={0.95} />
-                <stop offset="95%" stopColor="#8A0000" stopOpacity={0.3} />
+                <stop offset="5%" stopColor="#EF4444" stopOpacity={0.5} />
+                <stop offset="95%" stopColor="#EF4444" stopOpacity={0.1} />
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="#242432" opacity={0.6} />
+            <CartesianGrid
+              strokeDasharray={TELEMETRY_THEME.gridDash}
+              stroke={TELEMETRY_THEME.gridColor}
+            />
             <XAxis
               dataKey="lap_number"
-              stroke="#8C8C9A"
-              fontSize={11}
-              fontFamily="JetBrains Mono"
-              tickLine={false}
+              stroke={TELEMETRY_THEME.axisLineColor}
+              tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+              tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+              axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
               label={{
-                value: 'Stint Laps Completed',
+                value: 'STINT LAPS COMPLETED',
                 position: 'insideBottom',
                 offset: -2,
-                fill: '#8C8C9A',
+                fill: TELEMETRY_THEME.tickColor,
                 fontSize: 10,
-                fontFamily: 'JetBrains Mono',
+                fontFamily: 'JetBrains Mono, monospace',
               }}
             />
             <YAxis
-              stroke="#8C8C9A"
-              fontSize={11}
-              fontFamily="JetBrains Mono"
-              tickLine={false}
+              stroke={TELEMETRY_THEME.axisLineColor}
+              domain={wearDomain}
+              tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+              tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+              axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
               label={{
-                value: 'Damage Rate (×10⁻⁴)',
+                value: 'D_rate [×10⁻⁴]',
                 angle: -90,
                 position: 'insideLeft',
-                fill: '#8C8C9A',
+                fill: TELEMETRY_THEME.tickColor,
                 fontSize: 10,
-                fontFamily: 'JetBrains Mono',
+                fontFamily: 'JetBrains Mono, monospace',
                 offset: 15,
               }}
             />
 
-            {/* Custom Tooltip with Units */}
+            {/* Custom Telemetry Tooltip with Units */}
             <Tooltip
+              cursor={{ stroke: TELEMETRY_THEME.cursorLineColor, strokeWidth: 1, strokeDasharray: '2 2' }}
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
                   return (
-                    <div className="bg-[#0e0e16] border border-haas-border p-3 rounded-lg shadow-2xl font-mono text-xs max-w-xs">
-                      <div className="flex items-center justify-between border-b border-haas-border pb-1 mb-2">
-                        <span className="font-extrabold text-haas-white">LAP {data.lap_number} (FL Limiting Tyre)</span>
-                        <span className="text-haas-cyan text-[10px]">{data.tread_temp}°C / {data.carcass_temp}°C</span>
-                      </div>
-                      <div className="space-y-1 text-[11px]">
-                        <div className="flex justify-between">
-                          <span className="text-white font-bold">1. Mechanical Abrasion (w_p):</span>
-                          <span className="font-bold text-white">{data.abrasion}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-haas-amber">2. Cold Graining (w_g):</span>
-                          <span className="font-bold text-haas-amber">{data.graining}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-haas-red">3. Thermal Blistering (w_b):</span>
-                          <span className="font-bold text-haas-red">{data.blistering}</span>
-                        </div>
-                        <div className="flex justify-between pt-1 border-t border-haas-border/70 font-extrabold">
-                          <span className="text-haas-white">Total Damage Rate:</span>
-                          <span className="text-emerald-400">{data.total_rate}</span>
-                        </div>
-                        <div className="flex justify-between text-purple-300">
-                          <span>Cumulative Damage D(t):</span>
-                          <span className="font-black">{data.cumulative_d}%</span>
-                        </div>
-                      </div>
-                    </div>
+                    <TelemetryReadoutTooltip
+                      active={active}
+                      title={`LAP ${data.lap_number} (FL LIMITING TYRE)`}
+                      subtitle={`${data.tread_temp}°C / ${data.carcass_temp}°C`}
+                      items={[
+                        { channel: 'MECHANICAL ABRASION', value: data.abrasion, unit: 'x10⁻⁴', color: '#CBD5E1' },
+                        { channel: 'COLD GRAINING', value: data.graining, unit: 'x10⁻⁴', color: '#FBBF24' },
+                        { channel: 'THERMAL BLISTERING', value: data.blistering, unit: 'x10⁻⁴', color: '#F87171' },
+                        { channel: 'TOTAL WEAR RATE', value: data.total_rate, unit: 'x10⁻⁴', color: '#FFFFFF', isProminent: true },
+                        { channel: 'CUMULATIVE D(t)', value: `${data.cumulative_d}%`, color: '#C084FC' },
+                      ]}
+                      alertMessage={data.lap_number >= cliffLap ? `CLIFF HORIZON (Lap ${cliffLap})` : undefined}
+                      alertType={data.lap_number >= cliffLap ? 'critical' : 'info'}
+                    />
                   );
                 }
                 return null;
               }}
             />
 
-            {/* 1. Mechanical Abrasion in Solid White */}
+            {/* 1. Mechanical Abrasion */}
             <Area
               type="monotone"
               dataKey="abrasion"
               stackId="1"
-              stroke="#FFFFFF"
-              strokeWidth={1.5}
+              stroke="#CBD5E1"
+              strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
               fill="url(#gradAbrasion)"
             />
 
@@ -212,8 +213,8 @@ export const TriMechanismWearChart: React.FC<TriMechanismWearChartProps> = ({
               type="monotone"
               dataKey="graining"
               stackId="1"
-              stroke="#FF9100"
-              strokeWidth={1.5}
+              stroke="#FBBF24"
+              strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
               fill="url(#gradGraining)"
             />
 
@@ -222,24 +223,24 @@ export const TriMechanismWearChart: React.FC<TriMechanismWearChartProps> = ({
               type="monotone"
               dataKey="blistering"
               stackId="1"
-              stroke="#E10600"
-              strokeWidth={2}
+              stroke="#F87171"
+              strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
               fill="url(#gradBlistering)"
             />
 
             {/* Dotted Vertical Reference Line at Analytical Cliff Lap */}
             <ReferenceLine
               x={cliffLap}
-              stroke="#E10600"
-              strokeDasharray="3 3"
-              strokeWidth={2}
+              stroke={TELEMETRY_THEME.channels.haasRed}
+              strokeDasharray="3 2"
+              strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
               label={{
-                value: `ANALYTICAL CLIFF (LAP ${cliffLap})`,
+                value: `CLIFF HORIZON: LAP ${cliffLap}`,
                 position: 'top',
-                fill: '#E10600',
+                fill: TELEMETRY_THEME.channels.haasRed,
                 fontSize: 10,
-                fontFamily: 'JetBrains Mono',
-                fontWeight: 'bold',
+                fontFamily: 'JetBrains Mono, monospace',
+                fontWeight: 700,
               }}
             />
           </AreaChart>

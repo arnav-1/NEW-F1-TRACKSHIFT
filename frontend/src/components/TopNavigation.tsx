@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import type { SessionId, TyreCompound } from '../types/telemetry';
+import React from 'react';
+import type { CircuitId } from '../types/telemetry';
 import { useTelemetry, type CompoundType, type SessionType } from '../context/TelemetryContext';
-import { Map, Activity, Disc, Award, SlidersHorizontal, ChevronRight, Clock, User } from 'lucide-react';
+import { Map, Activity, Disc, Award, SlidersHorizontal, Thermometer, Wind } from 'lucide-react';
 
 export type WorkspaceTab = 'circuit' | 'decoupling' | 'chassis' | 'validation';
 
 interface TopNavigationProps {
   activeTab: WorkspaceTab;
   onTabChange: (tab: WorkspaceTab) => void;
-  currentSession?: SessionId;
-  onSessionChange?: (s: SessionId) => void;
-  currentCompound?: TyreCompound;
-  onCompoundChange?: (c: TyreCompound) => void;
-  tyreLifeLaps?: number;
   onOpenPhysicsInspector: () => void;
 }
 
@@ -22,29 +17,17 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
   onOpenPhysicsInspector,
 }) => {
   const {
-    selectedCompound,
-    setCompound,
+    selectedCircuit,
+    setCircuit,
     selectedSession,
     setSession,
-    currentLapData,
+    selectedCompound,
+    setCompound,
+    currentLap,
+    totalStintLaps,
+    activeCircuitInfo,
+    activeSessionWeather,
   } = useTelemetry();
-
-  // Dual live clock state (Track Time in Barcelona CEST vs Local / My Time)
-  const [trackTime, setTrackTime] = useState('14:32:45');
-  const [sessionSeconds, setSessionSeconds] = useState(2538); // 42m 18s countdown
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      setTrackTime(now.toTimeString().split(' ')[0]);
-      setSessionSeconds((prev) => (prev > 0 ? prev - 1 : 3600));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const countdownH = Math.floor(sessionSeconds / 3600);
-  const countdownM = Math.floor((sessionSeconds % 3600) / 60);
-  const countdownS = sessionSeconds % 60;
 
   const tabs: Array<{ id: WorkspaceTab; label: string; icon: React.ComponentType<{ className?: string }> }> = [
     { id: 'circuit', label: 'Circuit & Live Telemetry', icon: Map },
@@ -64,10 +47,16 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
     }
   };
 
-  const compounds: Array<{ id: CompoundType; code: string; label: string; tooltip: string }> = [
-    { id: 'SOFT', code: 'SC3', label: 'SC3', tooltip: 'Soft Compound (C3)' },
-    { id: 'MEDIUM', code: 'MC2', label: 'MC2', tooltip: 'Medium Compound (C2)' },
-    { id: 'HARD', code: 'HC1', label: 'HC1', tooltip: 'Hard Compound (C1)' },
+  const compounds: Array<{ id: CompoundType; label: string }> = [
+    { id: 'SOFT', label: 'SC3' },
+    { id: 'MEDIUM', label: 'MC2' },
+    { id: 'HARD', label: 'HC1' },
+  ];
+
+  const circuits: Array<{ id: CircuitId; label: string; flag: string; country: string }> = [
+    { id: 'spain', label: 'Barcelona-Catalunya', flag: '🇪🇸', country: 'Spain' },
+    { id: 'silverstone', label: 'Silverstone Circuit', flag: '🇬🇧', country: 'Great Britain' },
+    { id: 'austria', label: 'Red Bull Ring (Spielberg)', flag: '🇦🇹', country: 'Austria' },
   ];
 
   return (
@@ -103,7 +92,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
         </div>
       </div>
 
-      {/* Tier 1: Primary Navigation Bar with Signature F1 Hazard Texture */}
+      {/* Tier 1: Primary Navigation Bar with F1 Red Accent */}
       <div className="f1-hazard-pattern bg-[#101116]/95 backdrop-blur-md px-4 lg:px-8 py-0">
         <div className="max-w-[1800px] mx-auto flex items-center justify-between min-h-[58px]">
           
@@ -123,7 +112,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
               <div className="f1-display text-base tracking-wider text-white leading-none flex items-center gap-2">
                 <span>PIT-WALL CONSOLE</span>
                 <span className="text-[10px] not-italic font-mono font-medium px-2 py-0.5 rounded-full bg-[#E10600]/15 text-[#FF3B30] border border-[#E10600]/30 tracking-normal">
-                  VF-26
+                  VF-24
                 </span>
               </div>
             </div>
@@ -156,7 +145,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
             })}
           </nav>
 
-          {/* Right Action Cluster: Quick Compound Switcher, Physics Pill, Profile */}
+          {/* Right Action Cluster: Quick Compound Switcher & Physics Pill */}
           <div className="flex items-center gap-2.5 shrink-0 py-2">
             
             {/* Quick Compound Switcher Pills */}
@@ -190,11 +179,6 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
               <span className="hidden sm:inline">PHYSICS SPECS</span>
             </button>
 
-            {/* Profile / Account Icon */}
-            <div className="w-8 h-8 rounded-full bg-white/[0.05] border border-white/[0.1] flex items-center justify-center text-zinc-300 hover:text-white hover:border-white/[0.25] transition-colors cursor-pointer">
-              <User className="w-4 h-4" />
-            </div>
-
           </div>
 
         </div>
@@ -221,73 +205,95 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 
       </div>
 
-      {/* Tier 2: Slim Secondary Context Bar */}
+      {/* Tier 2: Real Pit-Wall Telemetry Context Bar */}
       <div className="bg-[#14161C] border-t border-white/[0.05] px-4 lg:px-8 py-2 text-xs text-zinc-300 font-sans">
         <div className="max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-3">
           
-          {/* Location Indicator & Session Selector */}
+          {/* Circuit & Session Selectors */}
           <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="flex items-center gap-1.5 bg-black/40 px-2.5 py-1 rounded-md border border-white/[0.06]">
-              <span className="text-base leading-none">🇪🇸</span>
-              <span className="f1-display text-xs tracking-wider text-white">
-                CIRCUIT DE BARCELONA-CATALUNYA
-              </span>
-              <ChevronRight className="w-3.5 h-3.5 text-zinc-500" />
-              <span className="text-zinc-400 font-mono text-[11px]">4.657 KM (14 TURNS)</span>
+            
+            {/* 3-Track Benchmark Selector */}
+            <div className="flex items-center gap-2 bg-black/50 border border-white/[0.08] px-2.5 py-1 rounded-md">
+              <span className="text-[10px] font-display uppercase tracking-wider text-zinc-400 font-bold">CIRCUIT:</span>
+              <div className="flex items-center gap-1">
+                {circuits.map((c) => {
+                  const isSelected = selectedCircuit === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => setCircuit(c.id)}
+                      className={`px-2 py-0.5 rounded text-[11px] font-display uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                        isSelected
+                          ? 'bg-[#E10600] text-white font-bold shadow-[0_0_8px_rgba(225,6,0,0.4)]'
+                          : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.05]'
+                      }`}
+                    >
+                      <span>{c.flag}</span>
+                      <span>{c.country}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Session Selector Pill */}
-            <div className="flex items-center gap-1.5 bg-black/40 border border-white/[0.06] rounded-md px-2.5 py-1">
-              <span className="text-[10px] font-display uppercase tracking-wider text-zinc-500 font-bold">SESSION:</span>
+            {/* Session Selector */}
+            <div className="flex items-center gap-1.5 bg-black/50 border border-white/[0.08] rounded-md px-2.5 py-1">
+              <span className="text-[10px] font-display uppercase tracking-wider text-zinc-400 font-bold">SESSION:</span>
               <select
                 value={selectedSession}
                 onChange={(e) => setSession(e.target.value as SessionType)}
                 className="bg-transparent text-white font-display uppercase tracking-wider font-bold text-xs cursor-pointer focus:outline-none pr-1"
               >
                 <option value="Race" className="bg-[#101116] text-white">Sunday Race (Held-Out)</option>
-                <option value="FP1" className="bg-[#101116] text-white">FP1 Practice</option>
-                <option value="FP2" className="bg-[#101116] text-white">FP2 Practice</option>
-                <option value="FP3" className="bg-[#101116] text-white">FP3 Practice</option>
+                <option value="FP1" className="bg-[#101116] text-white">FP1 Practice (Green Track)</option>
+                <option value="FP2" className="bg-[#101116] text-white">FP2 Practice (Long Run)</option>
+                <option value="FP3" className="bg-[#101116] text-white">FP3 Practice (Quali Sim)</option>
               </select>
             </div>
+
+            {/* Circuit Limiting Spec Pill */}
+            <div className="hidden xl:flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono bg-white/[0.02] border border-white/[0.06] px-2.5 py-1 rounded-md">
+              <span className="text-zinc-500 font-sans">LIMITING:</span>
+              <span className="text-red-400 font-bold">{activeCircuitInfo.limiting_wheel_name}</span>
+            </div>
+
           </div>
 
-          {/* Right Context Readout: Countdown Timer & Clocks & Tyre Life */}
+          {/* Right Context Readout: Authentic Track Telemetry (No Gimmick Clocks) */}
           <div className="flex items-center gap-3 lg:gap-5 ml-auto flex-wrap">
             
-            {/* Live Countdown Timer in F1 Bold Tabular Numbers */}
-            <div className="flex items-center gap-2 bg-black/40 border border-white/[0.06] px-3 py-1 rounded-md">
-              <span className="text-[10px] font-display uppercase tracking-wider text-zinc-400 font-bold flex items-center gap-1">
-                <Clock className="w-3 h-3 text-[#E10600]" />
-                SESSION CLOCK:
-              </span>
-              <div className="font-mono font-bold text-xs tracking-wider text-white tabular-nums flex items-baseline gap-1">
-                <span>{String(countdownH).padStart(2, '0')}</span>
-                <span className="text-[9px] text-zinc-500 font-sans">H</span>
-                <span>{String(countdownM).padStart(2, '0')}</span>
-                <span className="text-[9px] text-zinc-500 font-sans">M</span>
-                <span>{String(countdownS).padStart(2, '0')}</span>
-                <span className="text-[9px] text-zinc-500 font-sans">S</span>
+            {/* Real Track & Ambient Temperature */}
+            <div className="flex items-center gap-2 bg-black/40 border border-white/[0.06] px-3 py-1 rounded-md font-mono text-[11px]">
+              <Thermometer className="w-3.5 h-3.5 text-red-400 shrink-0" />
+              <div className="flex items-center gap-2">
+                <span>
+                  <span className="text-zinc-500 font-sans text-[10px] mr-1">TRACK</span>
+                  <strong className="text-white tabular-nums">{activeSessionWeather.track_temp_c.toFixed(1)}°C</strong>
+                </span>
+                <span className="text-zinc-700">|</span>
+                <span>
+                  <span className="text-zinc-500 font-sans text-[10px] mr-1">AIR</span>
+                  <span className="text-zinc-300 tabular-nums">{activeSessionWeather.air_temp_c.toFixed(1)}°C</span>
+                </span>
               </div>
             </div>
 
-            {/* Dual Clock: Track Time vs Local */}
-            <div className="hidden sm:flex items-center gap-3 text-[11px] font-mono tabular-nums text-zinc-400">
-              <div>
-                <span className="text-[9px] text-zinc-500 uppercase mr-1 font-sans">TRACK TIME</span>
-                <span className="text-zinc-200 font-semibold">{trackTime}</span>
-              </div>
-              <span className="text-zinc-700">|</span>
-              <div>
-                <span className="text-[9px] text-zinc-500 uppercase mr-1 font-sans">TYRE LIFE</span>
-                <span className="text-[#FF3B30] font-semibold">{currentLapData.tyre_life} LAPS</span>
-              </div>
+            {/* Weather Condition */}
+            <div className="hidden sm:flex items-center gap-1.5 bg-black/40 border border-white/[0.06] px-2.5 py-1 rounded-md text-[11px] text-zinc-300 font-mono">
+              <Wind className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+              <span>{activeSessionWeather.condition}</span>
             </div>
 
-            {/* Quick Status Chip */}
-            <div className="hidden lg:flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-display uppercase font-bold tracking-wider bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>PIT WINDOW OPEN</span>
+            {/* Stint Lap Progress */}
+            <div className="flex items-center gap-2 text-[11px] font-mono tabular-nums bg-black/40 border border-white/[0.06] px-2.5 py-1 rounded-md">
+              <span className="text-[10px] text-zinc-500 uppercase font-sans">STINT PROGRESS</span>
+              <span className="text-[#FF3B30] font-bold">LAP {currentLap} / {totalStintLaps}</span>
+            </div>
+
+            {/* Pit Window Status Badge */}
+            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-display uppercase font-bold tracking-wider bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{currentLap >= 14 && currentLap <= 25 ? 'PIT WINDOW OPEN' : 'STINT ACTIVE'}</span>
             </div>
 
           </div>
@@ -298,4 +304,3 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
     </header>
   );
 };
-

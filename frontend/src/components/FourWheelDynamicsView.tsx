@@ -1,5 +1,6 @@
 import React from 'react';
-import type { TyreCornerMetrics, LapTelemetryRecord } from '../types/telemetry';
+import type { TyreCornerMetrics, LapTelemetryRecord, WheelId } from '../types/telemetry';
+import { useTelemetry } from '../context/TelemetryContext';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -10,6 +11,11 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from 'recharts';
+import {
+  TelemetryReadoutTooltip,
+  computeWearDomain,
+  TELEMETRY_THEME,
+} from './shared/TelemetryChartComponents';
 
 interface FourWheelDynamicsViewProps {
   corners: Record<'FL' | 'FR' | 'RL' | 'RR', TyreCornerMetrics>;
@@ -20,62 +26,129 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
   corners,
   telemetryData,
 }) => {
-  // Wear decomposition data for stacked area chart
+  const {
+    selectedWheel,
+    setSelectedWheel,
+    activeCircuitInfo,
+    compoundMetadata,
+    currentLap,
+  } = useTelemetry();
+
+  const limitingCorner = activeCircuitInfo.limiting_wheel || 'FL';
+
+  // Compute wear decomposition for the selected wheel ('FL', 'FR', 'RL', 'RR', or 'ALL')
   const wearData = telemetryData.map((d) => {
-    const fl = d.corners.FL;
+    if (selectedWheel === 'ALL') {
+      const fl = d.corners.FL;
+      const fr = d.corners.FR;
+      const rl = d.corners.RL;
+      const rr = d.corners.RR;
+      const avgAbrasion = (fl.abrasion_rate + fr.abrasion_rate + rl.abrasion_rate + rr.abrasion_rate) / 4;
+      const avgGraining = (fl.graining_rate + fr.graining_rate + rl.graining_rate + rr.graining_rate) / 4;
+      const avgBlistering = (fl.blistering_rate + fr.blistering_rate + rl.blistering_rate + rr.blistering_rate) / 4;
+      const avgCum = (fl.cumulative_damage + fr.cumulative_damage + rl.cumulative_damage + rr.cumulative_damage) / 4;
+      return {
+        lap_number: d.lap_number,
+        abrasion: Number((avgAbrasion * 10000).toFixed(2)),
+        graining: Number((avgGraining * 10000).toFixed(2)),
+        blistering: Number((avgBlistering * 10000).toFixed(2)),
+        total_damage: Number(((avgAbrasion + avgGraining + avgBlistering) * 10000).toFixed(2)),
+        cumulative_damage: avgCum,
+      };
+    }
+
+    const wheelData = d.corners[selectedWheel as 'FL' | 'FR' | 'RL' | 'RR'] || d.corners.FL;
     return {
       lap_number: d.lap_number,
-      abrasion: Number((fl.abrasion_rate * 10000).toFixed(2)),
-      graining: Number((fl.graining_rate * 10000).toFixed(2)),
-      blistering: Number((fl.blistering_rate * 10000).toFixed(2)),
-      total_damage: Number(((fl.abrasion_rate + fl.graining_rate + fl.blistering_rate) * 10000).toFixed(2)),
-      cumulative_damage: fl.cumulative_damage,
+      abrasion: Number((wheelData.abrasion_rate * 10000).toFixed(2)),
+      graining: Number((wheelData.graining_rate * 10000).toFixed(2)),
+      blistering: Number((wheelData.blistering_rate * 10000).toFixed(2)),
+      total_damage: Number(((wheelData.abrasion_rate + wheelData.graining_rate + wheelData.blistering_rate) * 10000).toFixed(2)),
+      cumulative_damage: wheelData.cumulative_damage,
     };
   });
 
-  const cliffLap = 19;
+  const cliffLap = Math.round(compoundMetadata.predicted_cliff_lap || 19);
+
+  // Dynamic engineering axis domain for wear rates
+  const totalDamages = wearData.map((d) => d.abrasion + d.graining + d.blistering);
+  const wearDomain = computeWearDomain(totalDamages, 0.2);
+
+  const wheelOptions: Array<{ id: WheelId; label: string; isLimiting?: boolean }> = [
+    { id: 'FL', label: 'FL (Front-Left)', isLimiting: limitingCorner === 'FL' },
+    { id: 'FR', label: 'FR (Front-Right)', isLimiting: limitingCorner === 'FR' },
+    { id: 'RL', label: 'RL (Rear-Left)', isLimiting: limitingCorner === 'RL' },
+    { id: 'RR', label: 'RR (Rear-Right)', isLimiting: limitingCorner === 'RR' },
+    { id: 'ALL', label: 'CHASSIS ALL (Mean)' },
+  ];
 
   const renderCornerCard = (cornerKey: 'FL' | 'FR' | 'RL' | 'RR', positionName: string) => {
-    const corner = corners[cornerKey];
-    const isLimiting = cornerKey === 'FL';
+    const corner = corners[cornerKey] || {
+      corner: cornerKey,
+      workload_share: 0.25,
+      tread_temp_c: 102.0,
+      carcass_temp_c: 98.0,
+      abrasion_rate: 0.00015,
+      graining_rate: 0.0,
+      blistering_rate: 0.0,
+      cumulative_damage: 0.15,
+      is_limiting: cornerKey === limitingCorner,
+      status: 'OPTIMAL',
+    };
+
+    const isLimiting = cornerKey === limitingCorner;
+    const isSelected = selectedWheel === cornerKey;
 
     let status = 'Optimal Window';
     let statusClass = 'text-emerald-400 bg-emerald-950/40 border-emerald-800/40';
 
-    if (isLimiting || corner.tread_temp_c > 118) {
-      status = 'Overheating';
+    if (corner.tread_temp_c > 118) {
+      status = 'Thermal Blistering';
       statusClass = 'text-red-400 bg-red-950/40 border-red-800/40 font-semibold';
     } else if (corner.tread_temp_c < 85) {
-      status = 'Graining Risk';
+      status = 'Cold Graining';
       statusClass = 'text-amber-400 bg-amber-950/40 border-amber-800/40 font-semibold';
+    } else if (isLimiting) {
+      status = 'Limiting Corner';
+      statusClass = 'text-red-300 bg-red-950/50 border-red-800/50 font-semibold';
     }
 
-    const treadPct = Math.min(100, Math.max(10, Math.round(((corner.tread_temp_c - 70) / 60) * 100)));
-    const carcassPct = Math.min(100, Math.max(10, Math.round(((corner.carcass_temp_c - 70) / 60) * 100)));
+    const treadPct = Math.min(100, Math.max(10, Math.round(((corner.tread_temp_c - 60) / 70) * 100)));
+    const carcassPct = Math.min(100, Math.max(10, Math.round(((corner.carcass_temp_c - 60) / 70) * 100)));
 
     return (
       <div
-        className={`f1-card p-4 relative font-sans transition-colors ${
-          isLimiting
-            ? 'border-red-900/60 bg-gradient-to-br from-[#16181D] via-[#1E1619] to-[#251418] shadow-[0_4px_24px_rgba(225,6,0,0.15)]'
-            : 'hover:border-white/[0.15]'
+        onClick={() => setSelectedWheel(cornerKey)}
+        className={`f1-card p-4 relative font-sans transition-all cursor-pointer ${
+          isSelected
+            ? 'ring-2 ring-[#E10600] border-red-800/70 bg-[#171A22]'
+            : isLimiting
+            ? 'border-red-900/60 bg-gradient-to-br from-[#16181D] via-[#1E1619] to-[#251418] shadow-[0_4px_24px_rgba(225,6,0,0.15)] hover:border-red-600/60'
+            : 'hover:border-white/[0.20]'
         }`}
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
             <span
-              className={`w-7 h-7 rounded-full text-xs font-bold font-display flex items-center justify-center ${
+              className={`w-7 h-7 rounded-full text-xs font-bold font-display flex items-center justify-center transition-all ${
                 isLimiting
                   ? 'bg-[#E10600] text-white shadow-[0_0_10px_rgba(225,6,0,0.6)]'
+                  : isSelected
+                  ? 'bg-red-900/80 text-white border border-red-500'
                   : 'bg-white/[0.06] text-zinc-300 border border-white/[0.1]'
               }`}
             >
               {cornerKey}
             </span>
             <div>
-              <div className="f1-display text-xs tracking-wider text-white font-bold">
-                {positionName}
+              <div className="f1-display text-xs tracking-wider text-white font-bold flex items-center gap-1.5">
+                <span>{positionName}</span>
+                {isSelected && (
+                  <span className="text-[9px] bg-red-600/30 text-red-400 px-1.5 py-0.2 rounded font-mono">
+                    ACTIVE CHART
+                  </span>
+                )}
               </div>
               <div className="text-[10px] text-zinc-400 font-sans">
                 Node {cornerKey} Telemetry
@@ -85,7 +158,7 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
 
           {isLimiting ? (
             <span className="f1-pill text-[9px] bg-red-950/60 text-red-300 border border-red-800/50 px-2.5 py-0.5 rounded-full font-bold">
-              Limiting Tyre (FL)
+              Limiting ({cornerKey})
             </span>
           ) : (
             <span className={`f1-pill text-[9px] px-2.5 py-0.5 rounded-full border font-bold ${statusClass}`}>
@@ -101,7 +174,9 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
           <div>
             <div className="flex justify-between text-zinc-400 mb-1 text-[11px]">
               <span>Tread Temp:</span>
-              <span className="text-zinc-100 font-mono font-semibold tabular-nums">{corner.tread_temp_c.toFixed(1)} °C [{treadPct}%]</span>
+              <span className="text-zinc-100 font-mono font-semibold tabular-nums">
+                {corner.tread_temp_c.toFixed(1)} °C [{treadPct}%]
+              </span>
             </div>
             <div className="w-full bg-[#0A0C0F] h-1.5 rounded-full overflow-hidden border border-white/[0.06]">
               <div
@@ -117,7 +192,9 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
           <div>
             <div className="flex justify-between text-zinc-400 mb-1 text-[11px]">
               <span>Carcass Temp:</span>
-              <span className="text-zinc-100 font-mono font-semibold tabular-nums">{corner.carcass_temp_c.toFixed(1)} °C [{carcassPct}%]</span>
+              <span className="text-zinc-100 font-mono font-semibold tabular-nums">
+                {corner.carcass_temp_c.toFixed(1)} °C [{carcassPct}%]
+              </span>
             </div>
             <div className="w-full bg-[#0A0C0F] h-1.5 rounded-full overflow-hidden border border-white/[0.06]">
               <div
@@ -144,8 +221,8 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
           </div>
 
           <div className="pt-1.5 flex justify-between items-center text-[11px] text-zinc-400">
-            <span>Status:</span>
-            <span className={`px-2 py-0.2 rounded-full text-[10px] border ${statusClass}`}>
+            <span>Thermal Window:</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] border ${statusClass}`}>
               {status}
             </span>
           </div>
@@ -163,8 +240,8 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
         
         {/* Left Column: FL & RL Cards */}
         <div className="xl:col-span-4 space-y-4">
-          {renderCornerCard('FL', 'Front-Left (Outer Lim)')}
-          {renderCornerCard('RL', 'Rear-Left (Drive Out)')}
+          {renderCornerCard('FL', 'Front-Left (FL)')}
+          {renderCornerCard('RL', 'Rear-Left (RL)')}
         </div>
 
         {/* Center: Titanium Vector Chassis Model */}
@@ -172,7 +249,7 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
           
           <div className="text-center mb-3">
             <span className="text-[10px] font-medium text-zinc-400 bg-white/[0.04] px-3 py-1 rounded-full border border-white/[0.07] tracking-wider uppercase">
-              VF-26 Contact Patch Dynamics
+              VF-24 4-Corner Physical Telemetry (Lap {currentLap})
             </span>
           </div>
 
@@ -197,10 +274,21 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
             <line x1="132" y1="75" x2="86" y2="92" stroke="#4B5563" strokeWidth="1.2" strokeDasharray="3 2" />
 
             {/* Front Tyres */}
-            <rect x="10" y="55" width="20" height="42" rx="3" fill="#0A0C0F" stroke="#E10600" strokeWidth="2" />
-            <text x="14" y="80" fill="#E10600" fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="bold">FL</text>
-            <rect x="130" y="55" width="20" height="42" rx="3" fill="#0A0C0F" stroke="#374151" strokeWidth="1.5" />
-            <text x="134" y="80" fill="#9CA3AF" fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="bold">FR</text>
+            <rect
+              x="10" y="55" width="20" height="42" rx="3"
+              fill={selectedWheel === 'FL' ? '#1F1214' : '#0A0C0F'}
+              stroke={limitingCorner === 'FL' ? '#E10600' : '#4B5563'}
+              strokeWidth={limitingCorner === 'FL' ? '2.2' : '1.5'}
+            />
+            <text x="14" y="80" fill={limitingCorner === 'FL' ? '#E10600' : '#D1D5DB'} fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="bold">FL</text>
+            
+            <rect
+              x="130" y="55" width="20" height="42" rx="3"
+              fill={selectedWheel === 'FR' ? '#1F1214' : '#0A0C0F'}
+              stroke={limitingCorner === 'FR' ? '#E10600' : '#4B5563'}
+              strokeWidth={limitingCorner === 'FR' ? '2.2' : '1.5'}
+            />
+            <text x="134" y="80" fill={limitingCorner === 'FR' ? '#E10600' : '#9CA3AF'} fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="bold">FR</text>
 
             {/* Monocoque Body & Cockpit */}
             <path d="M 68 105 L 92 105 L 96 175 L 64 175 Z" fill="#12151C" stroke="#4B5563" strokeWidth="1" />
@@ -222,10 +310,21 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
             <line x1="132" y1="240" x2="85" y2="240" stroke="#4B5563" strokeWidth="1.2" strokeDasharray="3 2" />
 
             {/* Rear Tyres */}
-            <rect x="8" y="218" width="24" height="46" rx="3" fill="#0A0C0F" stroke="#38BDF8" strokeWidth="1.8" />
-            <text x="13" y="246" fill="#38BDF8" fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="bold">RL</text>
-            <rect x="128" y="218" width="24" height="46" rx="3" fill="#0A0C0F" stroke="#374151" strokeWidth="1.5" />
-            <text x="133" y="246" fill="#9CA3AF" fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="bold">RR</text>
+            <rect
+              x="8" y="218" width="24" height="46" rx="3"
+              fill={selectedWheel === 'RL' ? '#1F1214' : '#0A0C0F'}
+              stroke={limitingCorner === 'RL' ? '#E10600' : '#38BDF8'}
+              strokeWidth={limitingCorner === 'RL' ? '2.2' : '1.8'}
+            />
+            <text x="13" y="246" fill={limitingCorner === 'RL' ? '#E10600' : '#38BDF8'} fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="bold">RL</text>
+            
+            <rect
+              x="128" y="218" width="24" height="46" rx="3"
+              fill={selectedWheel === 'RR' ? '#1F1214' : '#0A0C0F'}
+              stroke={limitingCorner === 'RR' ? '#E10600' : '#4B5563'}
+              strokeWidth={limitingCorner === 'RR' ? '2.2' : '1.5'}
+            />
+            <text x="133" y="246" fill={limitingCorner === 'RR' ? '#E10600' : '#9CA3AF'} fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="bold">RR</text>
 
             {/* Rear Wing */}
             <rect x="28" y="265" width="104" height="18" rx="2" fill="#0B0D11" stroke="#E10600" strokeWidth="1.5" />
@@ -236,11 +335,15 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
           <div className="w-full mt-4 pt-3 border-t border-white/[0.06] grid grid-cols-2 gap-2 text-center text-xs">
             <div className="p-2 rounded-md bg-[#0A0C0F] border border-white/[0.06]">
               <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-medium">Pitch Bias (Brake)</span>
-              <span className="font-semibold text-sky-400 font-mono tabular-nums">70% Front Axle</span>
+              <span className="font-semibold text-sky-400 font-mono tabular-nums">
+                {activeCircuitInfo.id === 'austria' ? '74% Heavy Front' : '68% Front Axle'}
+              </span>
             </div>
             <div className="p-2 rounded-md bg-[#0A0C0F] border border-white/[0.06]">
-              <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-medium">Roll Bias (T3 / T9)</span>
-              <span className="font-semibold text-red-400 font-mono tabular-nums">88% Outer Left</span>
+              <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-medium">Limiting Axle Bias</span>
+              <span className="font-semibold text-red-400 font-mono tabular-nums">
+                {activeCircuitInfo.id === 'austria' ? 'Rear Traction Drive' : '88% Outer Left Lateral'}
+              </span>
             </div>
           </div>
 
@@ -248,8 +351,8 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
 
         {/* Right Column: FR & RR Cards */}
         <div className="xl:col-span-4 space-y-4">
-          {renderCornerCard('FR', 'Front-Right (Inner Unload)')}
-          {renderCornerCard('RR', 'Rear-Right (Drive In)')}
+          {renderCornerCard('FR', 'Front-Right (FR)')}
+          {renderCornerCard('RR', 'Rear-Right (RR)')}
         </div>
 
       </div>
@@ -259,14 +362,42 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
         
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 mb-4 border-b border-white/[0.08]">
           <div>
-            <h3 className="f1-display text-sm tracking-wide text-white font-bold">
-              Tri-Mechanism Wear Superposition [D(t)]
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="f1-display text-sm tracking-wide text-white font-bold">
+                Tri-Mechanism Wear Superposition [D(t)]
+              </h3>
+              <span className="text-xs font-mono font-bold text-red-400 bg-red-950/40 px-2 py-0.5 rounded border border-red-800/40">
+                {selectedWheel === 'ALL' ? 'CHASSIS ALL' : `TYRE: ${selectedWheel}`}
+              </span>
+            </div>
             <span className="text-xs text-zinc-400 font-sans">
-              Cumulative damage breakdown across stint laps
+              Cumulative damage rate breakdown (Abrasion + Graining + Blistering) across stint laps
             </span>
           </div>
 
+          {/* Corner Selector Pills for the Chart */}
+          <div className="flex items-center gap-1.5 bg-[#0A0C0F] border border-white/[0.08] p-1 rounded-lg">
+            {wheelOptions.map((opt) => {
+              const isCurrent = selectedWheel === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => setSelectedWheel(opt.id)}
+                  className={`px-2.5 py-1 rounded text-[10px] font-display uppercase tracking-wider transition-all font-bold ${
+                    isCurrent
+                      ? 'bg-[#E10600] text-white shadow-[0_0_8px_rgba(225,6,0,0.5)]'
+                      : opt.isLimiting
+                      ? 'text-red-300 hover:text-white bg-red-950/20'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.05]'
+                  }`}
+                >
+                  {opt.id} {opt.isLimiting ? '★' : ''}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Legend Badges */}
           <div className="flex items-center gap-3 text-xs">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.04] text-zinc-300 font-sans">
               <span className="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
@@ -283,120 +414,133 @@ export const FourWheelDynamicsView: React.FC<FourWheelDynamicsViewProps> = ({
           </div>
         </div>
 
-        {/* Recharts Stacked Area Canvas */}
-        <div className="w-full h-[320px]">
+        {/* High-Density Recharts Stacked Area Canvas */}
+        <div className="w-full h-[320px] bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={wearData} margin={{ top: 10, right: 25, left: 5, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+            <AreaChart data={wearData} margin={{ top: 15, right: 25, left: 10, bottom: 5 }}>
+              <defs>
+                <linearGradient id="gradAbrasionF1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#94A3B8" stopOpacity={0.45} />
+                  <stop offset="95%" stopColor="#94A3B8" stopOpacity={0.08} />
+                </linearGradient>
+                <linearGradient id="gradGrainingF1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.45} />
+                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.08} />
+                </linearGradient>
+                <linearGradient id="gradBlisteringF1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#EF4444" stopOpacity={0.5} />
+                  <stop offset="95%" stopColor="#EF4444" stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+
+              <CartesianGrid
+                strokeDasharray={TELEMETRY_THEME.gridDash}
+                stroke={TELEMETRY_THEME.gridColor}
+              />
 
               <XAxis
                 dataKey="lap_number"
-                stroke="#6B7280"
-                fontSize={10}
-                fontFamily="Inter, sans-serif"
-                tickLine={false}
+                stroke={TELEMETRY_THEME.axisLineColor}
+                tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
                 label={{
-                  value: 'Stint Lap Number',
+                  value: 'LAP NUMBER',
                   position: 'insideBottom',
                   offset: -4,
-                  fill: '#9CA3AF',
+                  fill: TELEMETRY_THEME.tickColor,
                   fontSize: 10,
-                  fontFamily: 'Inter, sans-serif',
+                  fontFamily: 'JetBrains Mono, monospace',
+                  letterSpacing: '0.08em',
                 }}
               />
 
               <YAxis
-                stroke="#6B7280"
-                fontSize={10}
-                fontFamily="JetBrains Mono, monospace"
-                tickLine={false}
+                stroke={TELEMETRY_THEME.axisLineColor}
+                domain={wearDomain}
+                tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                tickFormatter={(v) => `${v.toFixed(1)}`}
                 label={{
-                  value: 'Damage Rate (x10⁻⁴/lap)',
+                  value: 'D_rate [x10⁻⁴/lap]',
                   angle: -90,
                   position: 'insideLeft',
-                  fill: '#9CA3AF',
+                  fill: TELEMETRY_THEME.tickColor,
                   fontSize: 10,
-                  fontFamily: 'Inter, sans-serif',
-                  offset: 5,
+                  fontFamily: 'JetBrains Mono, monospace',
+                  offset: 8,
                 }}
               />
 
               <Tooltip
+                cursor={{ stroke: TELEMETRY_THEME.cursorLineColor, strokeWidth: 1, strokeDasharray: '2 2' }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const d = payload[0].payload;
                     return (
-                      <div className="bg-[#12151C] border border-white/[0.1] p-3 rounded-lg shadow-xl text-xs max-w-xs">
-                        <div className="font-semibold text-zinc-100 border-b border-white/[0.08] pb-1 mb-2 font-mono">
-                          Lap {d.lap_number} Damage Breakdown
-                        </div>
-                        <div className="space-y-1 text-[11px] font-mono tabular-nums">
-                          <div className="flex justify-between text-slate-300">
-                            <span className="font-sans">Abrasion:</span>
-                            <span className="font-semibold">+{d.abrasion}</span>
-                          </div>
-                          <div className="flex justify-between text-amber-400">
-                            <span className="font-sans">Graining:</span>
-                            <span className="font-semibold">+{d.graining}</span>
-                          </div>
-                          <div className="flex justify-between text-red-400">
-                            <span className="font-sans">Blistering:</span>
-                            <span className="font-semibold">+{d.blistering}</span>
-                          </div>
-                          <div className="flex justify-between pt-1 border-t border-white/[0.08] font-bold text-white">
-                            <span className="font-sans">Damage State:</span>
-                            <span>{d.cumulative_damage.toFixed(3)}</span>
-                          </div>
-                        </div>
-                      </div>
+                      <TelemetryReadoutTooltip
+                        active={active}
+                        title={`LAP ${d.lap_number} WEAR DECOMPOSITION [${selectedWheel}]`}
+                        subtitle={`Cumulative Damage D(t): ${d.cumulative_damage.toFixed(3)}`}
+                        items={[
+                          { channel: 'MECHANICAL ABRASION', value: d.abrasion, unit: 'x10⁻⁴', color: '#94A3B8' },
+                          { channel: 'COLD GRAINING', value: d.graining, unit: 'x10⁻⁴', color: '#F59E0B' },
+                          { channel: 'THERMAL BLISTERING', value: d.blistering, unit: 'x10⁻⁴', color: '#EF4444' },
+                          { channel: 'TOTAL WEAR RATE', value: d.total_damage, unit: 'x10⁻⁴', color: '#FFFFFF', isProminent: true },
+                        ]}
+                        alertMessage={d.lap_number >= cliffLap ? `CLIFF HORIZON REACHED (Lap ${cliffLap})` : undefined}
+                        alertType={d.lap_number >= cliffLap ? 'critical' : 'info'}
+                      />
                     );
                   }
                   return null;
                 }}
               />
 
-              {/* Stacked Areas */}
+              {/* Stacked Areas with translucent technical fills and razor 1.2px borders */}
               <Area
                 type="monotone"
                 dataKey="abrasion"
                 stackId="1"
-                stroke="#94A3B8"
-                fill="#94A3B8"
-                fillOpacity={0.7}
+                stroke="#CBD5E1"
+                strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
+                fill="url(#gradAbrasionF1)"
                 name="Mechanical Abrasion"
               />
               <Area
                 type="monotone"
                 dataKey="graining"
                 stackId="1"
-                stroke="#D97706"
-                fill="#D97706"
-                fillOpacity={0.7}
+                stroke="#FBBF24"
+                strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
+                fill="url(#gradGrainingF1)"
                 name="Cold Graining"
               />
               <Area
                 type="monotone"
                 dataKey="blistering"
                 stackId="1"
-                stroke="#DC2626"
-                fill="#DC2626"
-                fillOpacity={0.7}
+                stroke="#F87171"
+                strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
+                fill="url(#gradBlisteringF1)"
                 name="Thermal Blistering"
               />
 
               {/* Analytical Stint Cliff Marker */}
               <ReferenceLine
                 x={cliffLap}
-                stroke="#EF4444"
-                strokeDasharray="4 4"
-                strokeWidth={1.5}
+                stroke={TELEMETRY_THEME.channels.haasRed}
+                strokeDasharray="3 2"
+                strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
                 label={{
-                  value: `Cliff Inflection: Lap ${cliffLap}`,
+                  value: `CLIFF HORIZON: LAP ${cliffLap}`,
                   position: 'top',
-                  fill: '#EF4444',
+                  fill: TELEMETRY_THEME.channels.haasRed,
                   fontSize: 10,
-                  fontFamily: 'Inter, sans-serif',
-                  fontWeight: 600,
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontWeight: 700,
+                  letterSpacing: '0.05em',
                 }}
               />
             </AreaChart>

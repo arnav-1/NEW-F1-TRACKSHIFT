@@ -122,14 +122,45 @@ export interface PostRaceValidationData {
   engineering_diagnostics?: EngineeringDiagnostics;
 }
 
+export interface SessionWeather {
+  track_temp_c: number;
+  air_temp_c: number;
+  humidity_pct: number;
+  wind_speed_kmh: number;
+  condition: string;
+}
+
+export interface CircuitInfo {
+  id: CircuitId;
+  name: string;
+  country: string;
+  flag: string;
+  length_km: number;
+  turns: number;
+  limiting_wheel: 'FL' | 'FR' | 'RL' | 'RR';
+  limiting_wheel_name: string;
+  archetype: string;
+}
+
+export interface CircuitSession {
+  session_name: string;
+  weather: SessionWeather;
+  compounds: Record<string, CompoundTelemetryData>;
+}
+
+export interface CircuitDataset {
+  circuit_info: CircuitInfo;
+  sessions: Record<string, CircuitSession>;
+}
+
 export interface TelemetryExportSchema {
+  circuit_id?: string;
   circuit: string;
   driver: string;
   driver_number: number;
   chassis: string;
-  sessions: Record<string, {
-    compounds: Record<string, CompoundTelemetryData>;
-  }>;
+  circuits?: Record<string, CircuitDataset>;
+  sessions: Record<string, CircuitSession>;
   benchmarks: BenchmarkRecord[];
   post_race_validation?: PostRaceValidationData;
 }
@@ -153,6 +184,8 @@ export interface AblationConfig {
   paceManagementPush: number;      // Default 0.94
 }
 
-export type CircuitId = 'barcelona' | 'silverstone';
+export type CircuitId = 'spain' | 'silverstone' | 'austria';
+export type WheelId = 'FL' | 'FR' | 'RL' | 'RR' | 'ALL';
 export type SessionId = 'FP1' | 'FP2' | 'FP3' | 'Race';
 export type TyreCompound = 'SOFT' | 'MEDIUM' | 'HARD';
+

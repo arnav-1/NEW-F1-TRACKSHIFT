@@ -9,8 +9,12 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  Legend,
 } from 'recharts';
+import {
+  TelemetryReadoutTooltip,
+  computePaceDomain,
+  TELEMETRY_THEME,
+} from './shared/TelemetryChartComponents';
 
 export const ValidationBenchmarkTable: React.FC = () => {
   const [showComparisonPlot, setShowComparisonPlot] = useState(false);
@@ -32,6 +36,9 @@ export const ValidationBenchmarkTable: React.FC = () => {
       trackshift: Number(trackshiftPhysics.toFixed(3)),
     };
   });
+
+  const paceValues = extrapolationData.flatMap((d) => [d.actual, d.polynomial, d.trackshift]);
+  const extrapolationDomain = computePaceDomain(paceValues, 0.5);
 
   return (
     <div className="pitwall-panel p-4 h-full flex flex-col justify-between">
@@ -146,92 +153,86 @@ export const ValidationBenchmarkTable: React.FC = () => {
         </div>
       ) : (
         /* Visual Extrapolation Comparison Chart: Polynomial Failure vs TrackShift Physical Monotonicity */
-        <div className="w-full h-[220px]">
+        <div className="w-full h-[220px] bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={extrapolationData} margin={{ top: 10, right: 20, left: -5, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#242432" opacity={0.6} />
+              <CartesianGrid
+                strokeDasharray={TELEMETRY_THEME.gridDash}
+                stroke={TELEMETRY_THEME.gridColor}
+              />
               <XAxis
                 dataKey="lap"
-                stroke="#8C8C9A"
-                fontSize={10}
-                fontFamily="JetBrains Mono"
-                tickLine={false}
+                stroke={TELEMETRY_THEME.axisLineColor}
+                tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
                 label={{
-                  value: 'Stint Lap Horizon (Extrapolation past FP)',
+                  value: 'EXTRAPOLATED LAP HORIZON',
                   position: 'insideBottom',
                   offset: -2,
-                  fill: '#8C8C9A',
+                  fill: TELEMETRY_THEME.tickColor,
                   fontSize: 10,
-                  fontFamily: 'JetBrains Mono',
+                  fontFamily: 'JetBrains Mono, monospace',
                 }}
               />
               <YAxis
-                stroke="#8C8C9A"
-                fontSize={10}
-                fontFamily="JetBrains Mono"
-                tickLine={false}
-                domain={[80.0, 87.5]}
+                stroke={TELEMETRY_THEME.axisLineColor}
+                tick={{ fill: '#D1D5DB', fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                domain={extrapolationDomain}
+                tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
                 tickFormatter={(v) => `${v.toFixed(1)}s`}
               />
               <Tooltip
+                cursor={{ stroke: TELEMETRY_THEME.cursorLineColor, strokeWidth: 1, strokeDasharray: '2 2' }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const d = payload[0].payload;
                     return (
-                      <div className="bg-[#0e0e16] border border-haas-border p-3 rounded-lg font-mono text-xs max-w-xs shadow-2xl">
-                        <div className="font-extrabold text-haas-white mb-1.5 border-b border-haas-border pb-1">
-                          Lap {d.lap} Stint Comparison
-                        </div>
-                        <div className="space-y-1 text-[11px]">
-                          <div className="flex justify-between">
-                            <span className="text-haas-white">Actual Race Pace:</span>
-                            <span className="font-black text-white">{d.actual}s</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-haas-red">Baseline Poly (Blowout):</span>
-                            <span className="font-black text-haas-red">{d.polynomial}s</span>
-                          </div>
-                          <div className="flex justify-between pt-1 border-t border-haas-border/70">
-                            <span className="text-emerald-400">TrackShift Physical:</span>
-                            <span className="font-black text-emerald-400">{d.trackshift}s</span>
-                          </div>
-                        </div>
-                      </div>
+                      <TelemetryReadoutTooltip
+                        active={active}
+                        title={`LAP ${d.lap} PACE HORIZON`}
+                        subtitle="EXTRAPOLATION AUDIT"
+                        items={[
+                          { channel: 'ACTUAL GROUND TRUTH', value: `${d.actual}s`, color: '#00FF66' },
+                          { channel: 'TRACKSHIFT PHYSICAL', value: `${d.trackshift}s`, color: '#00F0FF', isProminent: true },
+                          { channel: 'BASELINE POLYNOMIAL', value: `${d.polynomial}s`, color: '#FF1801' },
+                        ]}
+                        alertMessage={d.polynomial - d.actual > 1.5 ? `POLYNOMIAL BLOWOUT: +${(d.polynomial - d.actual).toFixed(2)}s` : undefined}
+                        alertType="critical"
+                      />
                     );
                   }
                   return null;
                 }}
               />
-              <Legend
-                verticalAlign="top"
-                height={28}
-                iconType="circle"
-                wrapperStyle={{ fontSize: '10px', fontFamily: 'JetBrains Mono' }}
-              />
               <Line
                 type="monotone"
                 dataKey="actual"
                 name="Actual Race Pace (Ground Truth)"
-                stroke="#F5F5F7"
-                strokeWidth={2.5}
+                stroke="#00FF66"
+                strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
                 dot={false}
+                activeDot={{ r: 3, stroke: '#00FF66', strokeWidth: 1.5, fill: '#080A0E' }}
               />
               <Line
                 type="monotone"
                 dataKey="polynomial"
                 name="Baseline Polynomial (Divergent Failure)"
-                stroke="#E10600"
-                strokeWidth={2}
-                strokeDasharray="4 4"
+                stroke="#FF1801"
+                strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
+                strokeDasharray="4 2"
                 dot={false}
+                activeDot={{ r: 3, stroke: '#FF1801', strokeWidth: 1.5, fill: '#080A0E' }}
               />
               <Line
                 type="monotone"
                 dataKey="trackshift"
                 name="TrackShift Physics-Informed Curve"
-                stroke="#10B981"
-                strokeWidth={3}
+                stroke="#00F0FF"
+                strokeWidth={TELEMETRY_THEME.strokeWidth.primary}
                 dot={false}
+                activeDot={{ r: 3.5, stroke: '#00F0FF', strokeWidth: 2, fill: '#FFFFFF' }}
               />
             </LineChart>
           </ResponsiveContainer>
