@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TelemetryProvider, useTelemetry } from './context/TelemetryContext';
-import { TopNavigation } from './components/TopNavigation';
+import { TopNavigation, type WorkspaceTab } from './components/TopNavigation';
 import { CircuitMap } from './components/CircuitMap';
 import { SignalDecouplingView } from './components/SignalDecouplingView';
 import { FourWheelDynamicsView } from './components/FourWheelDynamicsView';
@@ -8,11 +8,10 @@ import { PostRaceValidationView } from './components/PostRaceValidationView';
 import { AblationDrawer } from './components/AblationDrawer';
 
 function DashboardContent() {
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>('circuit');
   const [isPhysicsOpen, setIsPhysicsOpen] = useState<boolean>(false);
 
   const {
-    activeTab,
-    setActiveTab,
     currentLapData,
     stintDataset,
     ablationConfig,

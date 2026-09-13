@@ -245,10 +245,10 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                 onChange={(e) => setSession(e.target.value as SessionType)}
                 className="bg-transparent text-white font-display uppercase tracking-wider font-bold text-xs cursor-pointer focus:outline-none pr-1"
               >
+                <option value="Race" className="bg-[#101116] text-white">Sunday Race (Held-Out)</option>
                 <option value="FP1" className="bg-[#101116] text-white">FP1 Practice (Green Track)</option>
                 <option value="FP2" className="bg-[#101116] text-white">FP2 Practice (Long Run)</option>
                 <option value="FP3" className="bg-[#101116] text-white">FP3 Practice (Quali Sim)</option>
-                <option value="Race" className="bg-[#101116] text-white">Sunday Race (Held-Out)</option>
               </select>
             </div>
 

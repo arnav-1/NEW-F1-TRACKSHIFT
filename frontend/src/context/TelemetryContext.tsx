@@ -17,17 +17,8 @@ import { CIRCUITS_GEOMETRY } from '../data/circuitsData';
 
 export type CompoundType = 'SOFT' | 'MEDIUM' | 'HARD';
 export type SessionType = 'FP1' | 'FP2' | 'FP3' | 'Race';
-export type WorkspaceTab = 'circuit' | 'decoupling' | 'chassis' | 'validation';
 
 export interface TelemetryContextType {
-  activeTab: WorkspaceTab;
-  setActiveTab: (tab: WorkspaceTab) => void;
-  advanceToNextSession: () => void;
-  resetWeekendToFP1: () => void;
-  maxUnlockedSession: SessionType;
-  setMaxUnlockedSession: (s: SessionType) => void;
-  isSessionUnlocked: (s: SessionType) => boolean;
-  unlockAllSessions: () => void;
   selectedCircuit: CircuitId;
   selectedSession: SessionType;
   selectedCompound: CompoundType;
@@ -37,19 +28,27 @@ export interface TelemetryContextType {
   totalStintLaps: number;
   isPlaying: boolean;
   activeTurn: number | null;
-  setCircuit: (id: CircuitId) => void;
-  setSession: (session: SessionType) => void;
-  setCompound: (comp: CompoundType) => void;
-  setSelectedWheel: (wheel: WheelId) => void;
+  activeCircuitInfo: CircuitInfo;
+  activeSessionWeather: SessionWeather;
+  setCircuit: (c: CircuitId) => void;
+  setSession: (s: SessionType) => void;
+  setCompound: (c: CompoundType) => void;
+  setSelectedWheel: (w: WheelId) => void;
   setLapIndex: (idx: number) => void;
   setLap: (lap: number) => void;
   setIsPlaying: (playing: boolean) => void;
   setActiveTurn: (turn: number | null) => void;
   currentLapData: LapTelemetryRecord;
   stintDataset: LapTelemetryRecord[];
-  activeCircuitInfo: CircuitInfo;
-  activeSessionWeather: SessionWeather;
-  compoundMetadata?: any;
+  compoundMetadata: {
+    stint_number: number;
+    total_laps: number;
+    limiting_corner: string;
+    limiting_workload_pct: number;
+    fitted_alpha: number;
+    fitted_beta: number;
+    predicted_cliff_lap: number;
+  };
   benchmarks: BenchmarkRecord[];
   postRaceValidation?: PostRaceValidationData;
   activeSessionRecommendation?: SessionRecommendation;
@@ -62,60 +61,14 @@ const TelemetryContext = createContext<TelemetryContextType | undefined>(undefin
 // Cast exported JSON data cleanly to schema
 const telemetryData = rawTelemetryExport as unknown as TelemetryExportSchema;
 
-const SESSION_HIERARCHY: Record<SessionType, number> = {
-  FP1: 1,
-  FP2: 2,
-  FP3: 3,
-  Race: 4,
-};
-
 export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>('circuit');
   const [selectedCircuit, setSelectedCircuit] = useState<CircuitId>('spain');
-  const [selectedSession, setSelectedSession] = useState<SessionType>('FP1');
-  const [maxUnlockedSession, setMaxUnlockedSession] = useState<SessionType>('FP1');
+  const [selectedSession, setSelectedSession] = useState<SessionType>('Race');
   const [selectedCompound, setSelectedCompound] = useState<CompoundType>('SOFT');
   const [selectedWheel, setSelectedWheel] = useState<WheelId>('FL');
   const [currentLapIndex, setCurrentLapIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [activeTurn, setActiveTurn] = useState<number | null>(3);
-
-  const isSessionUnlocked = (s: SessionType): boolean => {
-    return SESSION_HIERARCHY[s] <= SESSION_HIERARCHY[maxUnlockedSession];
-  };
-
-  const unlockAllSessions = () => {
-    setMaxUnlockedSession('Race');
-  };
-
-  const advanceToNextSession = () => {
-    if (selectedSession === 'FP1') {
-      setSelectedSession('FP2');
-      setMaxUnlockedSession((prev) => (SESSION_HIERARCHY[prev] < 2 ? 'FP2' : prev));
-      setCurrentLapIndex(0);
-      setIsPlaying(false);
-    } else if (selectedSession === 'FP2') {
-      setSelectedSession('FP3');
-      setMaxUnlockedSession((prev) => (SESSION_HIERARCHY[prev] < 3 ? 'FP3' : prev));
-      setCurrentLapIndex(0);
-      setIsPlaying(false);
-    } else if (selectedSession === 'FP3') {
-      setSelectedSession('Race');
-      setMaxUnlockedSession('Race');
-      setCurrentLapIndex(0);
-      setIsPlaying(false);
-    } else if (selectedSession === 'Race') {
-      setActiveTab('validation');
-    }
-  };
-
-  const resetWeekendToFP1 = () => {
-    setSelectedSession('FP1');
-    setMaxUnlockedSession('FP1');
-    setCurrentLapIndex(0);
-    setIsPlaying(false);
-    setActiveTab('circuit');
-  };
 
   const [ablationConfig, setAblationConfig] = useState<AblationConfig>({
     aeroDeficit: 0.88,
@@ -204,10 +157,7 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Circuit switcher dispatcher
   const handleSetCircuit = (c: CircuitId) => {
     setSelectedCircuit(c);
-    setSelectedSession('FP1');
-    setMaxUnlockedSession('FP1');
     setCurrentLapIndex(0);
-    setIsPlaying(false);
     // Adjust active turn if out of bounds for the selected circuit
     const maxTurns = CIRCUITS_GEOMETRY[c]?.turns_count ?? 10;
     if (activeTurn === null || activeTurn > maxTurns) {
@@ -218,11 +168,7 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Session switcher dispatcher
   const handleSetSession = (s: SessionType) => {
     setSelectedSession(s);
-    if (SESSION_HIERARCHY[s] > SESSION_HIERARCHY[maxUnlockedSession]) {
-      setMaxUnlockedSession(s);
-    }
     setCurrentLapIndex(0);
-    setIsPlaying(false);
   };
 
   // Compound switcher dispatcher
@@ -244,16 +190,13 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     handleSetLapIndex(lap - 1);
   };
 
-  // Playback timer advances lap automatically
+  // Playback timer advances lap automatically every 1.5 seconds
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | undefined;
     if (isPlaying) {
       timer = setInterval(() => {
         setCurrentLapIndex((prev) => {
-          if (prev >= totalStintLaps - 1) {
-            setIsPlaying(false);
-            return prev;
-          }
+          if (prev >= totalStintLaps - 1) return 0;
           return prev + 1;
         });
       }, 1500);
@@ -264,14 +207,6 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [isPlaying, totalStintLaps]);
 
   const value: TelemetryContextType = {
-    activeTab,
-    setActiveTab,
-    advanceToNextSession,
-    resetWeekendToFP1,
-    maxUnlockedSession,
-    setMaxUnlockedSession,
-    isSessionUnlocked,
-    unlockAllSessions,
     selectedCircuit,
     selectedSession,
     selectedCompound,
