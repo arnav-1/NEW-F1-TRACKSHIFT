@@ -20,7 +20,7 @@ export interface SectorMarkerData {
 }
 
 export interface CircuitMapGeometry {
-  circuitId: 'spain' | 'silverstone' | 'austria';
+  circuitId: 'spain' | 'silverstone' | 'austria' | 'belgium';
   name: string;
   country: string;
   flag: string;
@@ -162,8 +162,50 @@ export const AUSTRIA_MAP: CircuitMapGeometry = {
   ],
 };
 
-export const CIRCUITS_GEOMETRY: Record<'spain' | 'silverstone' | 'austria', CircuitMapGeometry> = {
+// 4. BELGIUM (Circuit de Spa-Francorchamps)
+export const BELGIUM_MAP: CircuitMapGeometry = {
+  circuitId: 'belgium',
+  name: 'Circuit de Spa-Francorchamps',
+  country: 'Belgium',
+  flag: '🇧🇪',
+  length_km: 7.004,
+  turns_count: 19,
+  limiting_wheel: 'FR',
+  limiting_wheel_name: 'Front-Right (FR)',
+  archetype: 'High-Speed Elevation & Convective Cooling (Eau Rouge / Pouhon)',
+  viewBox: '0 0 1000 600',
+  peakScrubLabel: 'Pouhon Peak FR Scrub (T10-T11)',
+  heavyBrakingLabel: 'Heavy Braking (T1 La Source, T19 Bus Stop)',
+  svgPath:
+    "M 740,460 L 820,460 C 860,460 880,430 870,390 L 830,260 C 810,210 780,180 740,190 " +
+    "L 610,230 C 560,240 540,210 560,170 L 610,90 C 630,50 590,30 550,50 " +
+    "L 380,140 C 330,170 310,210 320,270 L 330,340 C 340,390 310,420 270,410 " +
+    "L 170,390 C 130,380 110,410 130,450 L 210,510 C 260,540 330,530 380,490 " +
+    "L 520,380 C 560,350 610,360 630,400 L 670,460 Z",
+  turns: [
+    { id: 1,  name: "La Source (T1)",          x: 850, y: 430, type: 'heavy_braking', lateral_g: 2.1, roll_transfer: 55.0, pitch_bias: 76.0, apex_speed_kmh: 75,  limiting_tyre: 'FR', heat_flux_kw: 185.0 },
+    { id: 2,  name: "Eau Rouge (T2)",          x: 770, y: 220, type: 'peak_scrub',    lateral_g: 3.8, roll_transfer: 80.0, pitch_bias: 42.0, apex_speed_kmh: 295, limiting_tyre: 'FR', heat_flux_kw: 215.0 },
+    { id: 3,  name: "Raidillon (T4)",          x: 740, y: 190, type: 'peak_scrub',    lateral_g: 4.2, roll_transfer: 84.0, pitch_bias: 38.0, apex_speed_kmh: 305, limiting_tyre: 'FL', heat_flux_kw: 230.0 },
+    { id: 5,  name: "Les Combes (T5)",         x: 580, y: 180, type: 'heavy_braking', lateral_g: 3.1, roll_transfer: 71.0, pitch_bias: 69.0, apex_speed_kmh: 140, limiting_tyre: 'FR', heat_flux_kw: 190.0 },
+    { id: 7,  name: "Malmedy (T7)",            x: 610, y: 90,  type: 'medium',        lateral_g: 2.7, roll_transfer: 63.0, pitch_bias: 48.0, apex_speed_kmh: 175, limiting_tyre: 'FL', heat_flux_kw: 145.0 },
+    { id: 8,  name: "Bruxelles (T8)",          x: 480, y: 110, type: 'medium',        lateral_g: 2.8, roll_transfer: 66.0, pitch_bias: 52.0, apex_speed_kmh: 115, limiting_tyre: 'FR', heat_flux_kw: 155.0 },
+    { id: 10, name: "Pouhon (T10-T11)",        x: 320, y: 310, type: 'peak_scrub',    lateral_g: 4.6, roll_transfer: 89.0, pitch_bias: 36.0, apex_speed_kmh: 285, limiting_tyre: 'FR', heat_flux_kw: 260.0 },
+    { id: 12, name: "Fagnes (T12)",            x: 230, y: 405, type: 'medium',        lateral_g: 3.2, roll_transfer: 73.0, pitch_bias: 49.0, apex_speed_kmh: 165, limiting_tyre: 'FL', heat_flux_kw: 160.0 },
+    { id: 14, name: "Stavelot (T14)",          x: 150, y: 430, type: 'fast_exit',     lateral_g: 3.4, roll_transfer: 75.0, pitch_bias: 38.0, apex_speed_kmh: 215, limiting_tyre: 'FR', heat_flux_kw: 175.0 },
+    { id: 17, name: "Blanchimont (T17)",       x: 420, y: 450, type: 'peak_scrub',    lateral_g: 4.3, roll_transfer: 85.0, pitch_bias: 34.0, apex_speed_kmh: 315, limiting_tyre: 'FR', heat_flux_kw: 220.0 },
+    { id: 19, name: "Bus Stop Chicane (T19)",  x: 690, y: 440, type: 'heavy_braking', lateral_g: 2.2, roll_transfer: 58.0, pitch_bias: 75.0, apex_speed_kmh: 80,  limiting_tyre: 'FR', heat_flux_kw: 180.0 },
+  ],
+  sectors: [
+    { id: "S1", x: 740, y: 170, label: "SECTOR 1" },
+    { id: "S2", x: 280, y: 350, label: "SECTOR 2" },
+    { id: "S3", x: 720, y: 460, label: "FINISH / S3" },
+  ],
+};
+
+export const CIRCUITS_GEOMETRY: Record<'spain' | 'silverstone' | 'austria' | 'belgium', CircuitMapGeometry> = {
   spain: SPAIN_MAP,
   silverstone: SILVERSTONE_MAP,
   austria: AUSTRIA_MAP,
+  belgium: BELGIUM_MAP,
 };
+

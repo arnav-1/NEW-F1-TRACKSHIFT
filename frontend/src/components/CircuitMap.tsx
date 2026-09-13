@@ -3,6 +3,7 @@ import { CIRCUITS_GEOMETRY, SPAIN_MAP, type TurnMarkerData } from '../data/circu
 import { useTelemetry } from '../context/TelemetryContext';
 import { Play, Pause, SkipBack, SkipForward, Navigation } from 'lucide-react';
 import { MetricCard, MetricBadge, DataListRow } from './shared/F1DataComponents';
+import { StrategyRecommendationBox } from './StrategyRecommendationBox';
 
 export type { TurnMarkerData };
 
@@ -129,6 +130,9 @@ export const CircuitMap: React.FC = () => {
         />
 
       </div>
+ 
+      {/* Pit-Wall Continual Learning & Strategy Directive Banner */}
+      <StrategyRecommendationBox />
 
       {/* Main Workspace Grid: Large Circuit Map & Turn Telemetry Inspector */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">

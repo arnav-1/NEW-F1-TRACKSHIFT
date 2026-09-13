@@ -55,8 +55,9 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 
   const circuits: Array<{ id: CircuitId; label: string; flag: string; country: string }> = [
     { id: 'spain', label: 'Barcelona-Catalunya', flag: '🇪🇸', country: 'Spain' },
-    { id: 'silverstone', label: 'Silverstone Circuit', flag: '🇬🇧', country: 'Great Britain' },
     { id: 'austria', label: 'Red Bull Ring (Spielberg)', flag: '🇦🇹', country: 'Austria' },
+    { id: 'silverstone', label: 'Silverstone Circuit', flag: '🇬🇧', country: 'Great Britain' },
+    { id: 'belgium', label: 'Spa-Francorchamps', flag: '🇧🇪', country: 'Belgium' },
   ];
 
   return (

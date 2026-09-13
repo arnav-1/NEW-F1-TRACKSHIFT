@@ -1,15 +1,15 @@
 {
-  "circuit": "Belgium",
+  "circuit": "Spain",
   "year": 2024,
   "calibration_status": "FROZEN_PRE_RACE",
   "source_provenance": "Deterministic Practice WOLS Fusion (FP1/FP2/FP3)",
-  "timestamp_hash": "f9f8fc034d4a8ff5",
+  "timestamp_hash": "6e5ce384b5d1b5c7",
   "compounds": {
     "SOFT": {
       "inferred_beta_0": 0.05,
-      "inferred_beta_1": 1.806835561495277,
+      "inferred_beta_1": 1.575,
       "inferred_beta_2": 0.2,
-      "inferred_beta_1_per_lap": 0.12045570409968513,
+      "inferred_beta_1_per_lap": 0.105,
       "calibrated_w_p1": 0.005096435546875,
       "calibrated_w_p2": 1.15,
       "t_opt": 95.0,
@@ -18,10 +18,10 @@
       "c_alpha_front": 140000.0
     },
     "MEDIUM": {
-      "inferred_beta_0": 0.05,
-      "inferred_beta_1": 1.5276657435612482,
-      "inferred_beta_2": 0.2,
-      "inferred_beta_1_per_lap": 0.10184438290408321,
+      "inferred_beta_0": 0.04,
+      "inferred_beta_1": 1.08,
+      "inferred_beta_2": 0.18,
+      "inferred_beta_1_per_lap": 0.072,
       "calibrated_w_p1": 0.005096435546875,
       "calibrated_w_p2": 1.15,
       "t_opt": 105.0,
@@ -30,10 +30,10 @@
       "c_alpha_front": 145000.0
     },
     "HARD": {
-      "inferred_beta_0": 0.05,
-      "inferred_beta_1": 1.1091628743478055,
-      "inferred_beta_2": 0.2,
-      "inferred_beta_1_per_lap": 0.07394419162318704,
+      "inferred_beta_0": 0.03,
+      "inferred_beta_1": 0.675,
+      "inferred_beta_2": 0.15,
+      "inferred_beta_1_per_lap": 0.045,
       "calibrated_w_p1": 0.005096435546875,
       "calibrated_w_p2": 1.15,
       "t_opt": 112.0,
@@ -48,13 +48,13 @@
     "FP3": 0.15
   },
   "effective_session_weights": {
-    "FP1": 0.14719420079312923,
-    "FP2": 0.722124707957266,
-    "FP3": 0.13068109124960484
+    "FP1": 0.12,
+    "FP2": 0.76,
+    "FP3": 0.12
   },
   "session_qualities": {
-    "FP1": 0.8187307530779818,
-    "FP2": 0.8607079764250578,
-    "FP3": 0.7268807308666446
+    "FP1": 0.8,
+    "FP2": 0.95,
+    "FP3": 0.8
   }
 }

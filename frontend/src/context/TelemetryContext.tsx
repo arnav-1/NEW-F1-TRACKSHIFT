@@ -10,6 +10,7 @@ import type {
   WheelId,
   CircuitInfo,
   SessionWeather,
+  SessionRecommendation,
 } from '../types/telemetry';
 import rawTelemetryExport from '../data/telemetry_export.json';
 import { CIRCUITS_GEOMETRY } from '../data/circuitsData';
@@ -50,6 +51,7 @@ export interface TelemetryContextType {
   };
   benchmarks: BenchmarkRecord[];
   postRaceValidation?: PostRaceValidationData;
+  activeSessionRecommendation?: SessionRecommendation;
   ablationConfig: AblationConfig;
   setAblationConfig: (config: AblationConfig) => void;
 }
@@ -124,6 +126,12 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const fallback = telemetryData.sessions?.['FP2']?.compounds?.['SOFT'];
     return fallback;
   }, [selectedCircuit, selectedSession, selectedCompound]);
+
+  const activeSessionRecommendation: SessionRecommendation | undefined = useMemo(() => {
+    const circuitEntry = telemetryData.circuits?.[selectedCircuit];
+    const sessionObj = circuitEntry?.sessions?.[selectedSession] || telemetryData.sessions?.[selectedSession];
+    return sessionObj?.recommendation;
+  }, [selectedCircuit, selectedSession]);
 
   const stintDataset: LapTelemetryRecord[] = useMemo(() => {
     return activeCompoundData?.laps || [];
@@ -223,6 +231,7 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     compoundMetadata,
     benchmarks: telemetryData.benchmarks || [],
     postRaceValidation: telemetryData.post_race_validation,
+    activeSessionRecommendation,
     ablationConfig,
     setAblationConfig,
   };

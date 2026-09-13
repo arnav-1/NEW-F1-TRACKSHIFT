@@ -142,10 +142,40 @@ export interface CircuitInfo {
   archetype: string;
 }
 
+export interface SessionRecommendation {
+  title: string;
+  stage: 'FP1_BASELINE' | 'FP2_UPDATE' | 'FP3_FREEZE' | 'RACE_LIVE' | 'POST_RACE_AUDIT';
+  model_weights: { FP1: number; FP2: number; FP3: number };
+  recommended_primary_compound: 'SOFT' | 'MEDIUM' | 'HARD';
+  optimal_strategy: string;
+  pit_windows: Array<{
+    stint_number: number;
+    compound: string;
+    pit_lap_target: number;
+    window_open: number;
+    window_close: number;
+  }>;
+  compound_degradation_slopes_s_lap: Record<'SOFT' | 'MEDIUM' | 'HARD' | string, number>;
+  calibrated_wear_wp1: Record<'SOFT' | 'MEDIUM' | 'HARD' | string, number>;
+  predicted_cliff_laps: Record<'SOFT' | 'MEDIUM' | 'HARD' | string, number>;
+  crossover_laps: { soft_to_medium: number; medium_to_hard: number };
+  confidence_score: number;
+  confidence_tier: 'HIGH' | 'MEDIUM' | 'LOW';
+  key_observation: string;
+  actionable_decision: string;
+  post_race_metrics?: {
+    centered_shape_mae_s: number;
+    physical_mae_s: number;
+    pit_accuracy_pct: number;
+    continual_learning_delta_pct: number;
+  };
+}
+
 export interface CircuitSession {
   session_name: string;
   weather: SessionWeather;
   compounds: Record<string, CompoundTelemetryData>;
+  recommendation?: SessionRecommendation;
 }
 
 export interface CircuitDataset {
@@ -184,8 +214,9 @@ export interface AblationConfig {
   paceManagementPush: number;      // Default 0.94
 }
 
-export type CircuitId = 'spain' | 'silverstone' | 'austria';
+export type CircuitId = 'spain' | 'silverstone' | 'austria' | 'belgium';
 export type WheelId = 'FL' | 'FR' | 'RL' | 'RR' | 'ALL';
 export type SessionId = 'FP1' | 'FP2' | 'FP3' | 'Race';
 export type TyreCompound = 'SOFT' | 'MEDIUM' | 'HARD';
+
 
