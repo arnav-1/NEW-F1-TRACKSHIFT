@@ -1,14 +1,14 @@
 import React from 'react';
-import { BARCELONA_TURNS, BARCELONA_SECTORS, BARCELONA_SVG_PATH, type TurnMarkerData } from '../data/barcelonaTrackData';
+import { CIRCUITS_GEOMETRY, SPAIN_MAP, type TurnMarkerData } from '../data/circuitsData';
 import { useTelemetry } from '../context/TelemetryContext';
 import { Play, Pause, SkipBack, SkipForward, Navigation } from 'lucide-react';
 import { MetricCard, MetricBadge, DataListRow } from './shared/F1DataComponents';
 
-export { BARCELONA_TURNS, BARCELONA_SECTORS, BARCELONA_SVG_PATH };
 export type { TurnMarkerData };
 
 export const CircuitMap: React.FC = () => {
   const {
+    selectedCircuit,
     selectedCompound,
     currentLap,
     totalStintLaps,
@@ -19,10 +19,17 @@ export const CircuitMap: React.FC = () => {
     setActiveTurn,
     currentLapData,
     compoundMetadata,
+    activeCircuitInfo,
+    activeSessionWeather,
   } = useTelemetry();
 
+  const currentCircuitMap = CIRCUITS_GEOMETRY[selectedCircuit] || SPAIN_MAP;
+  const turns = currentCircuitMap.turns;
+  const sectors = currentCircuitMap.sectors;
+  const svgPath = currentCircuitMap.svgPath;
+
   const activeTurnData: TurnMarkerData =
-    BARCELONA_TURNS.find((t) => t.id === activeTurn) || BARCELONA_TURNS[2]; // Default Turn 3 (Curva Renault)
+    turns.find((t) => t.id === activeTurn) || turns[0];
 
   const getCompoundColor = (comp: string) => {
     switch (comp) {
@@ -82,20 +89,20 @@ export const CircuitMap: React.FC = () => {
           badge={{ text: "IR Sensor", type: "tag" }}
           value={
             <div className="flex items-baseline gap-2">
-              <span>42.8°C</span>
+              <span>{activeSessionWeather.track_temp_c.toFixed(1)}°C</span>
               <span className="text-xs text-zinc-400 font-normal">Track</span>
             </div>
           }
           valueClassName="text-white"
           secondaryLabel="Ambient air:"
-          secondaryValue="28.1°C (Dry)"
+          secondaryValue={`${activeSessionWeather.air_temp_c.toFixed(1)}°C (${activeSessionWeather.condition})`}
         />
 
-        {/* Metric 4: Primary Limiting Tyre (FL) */}
+        {/* Metric 4: Primary Limiting Tyre */}
         <MetricCard
           label="Limiting Tyre"
           badge={{ text: "CRITICAL", type: "alert" }}
-          value={`${compoundMetadata?.limiting_corner ?? 'FL'} (${compoundMetadata?.limiting_corner === 'FL' ? 'FRONT-LEFT' : 'FRONT-RIGHT'})`}
+          value={`${compoundMetadata?.limiting_corner ?? activeCircuitInfo.limiting_wheel} (${activeCircuitInfo.limiting_wheel_name})`}
           valueClassName="text-[#FF3B30]"
           secondaryLabel="Sliding share:"
           secondaryValue={`${compoundMetadata?.limiting_workload_pct?.toFixed(1) ?? '36.2'}% Workload`}
@@ -134,10 +141,10 @@ export const CircuitMap: React.FC = () => {
             <div>
               <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
                 <Navigation className="w-4 h-4 text-red-500" />
-                <span>Circuit de Barcelona-Catalunya</span>
+                <span>{currentCircuitMap.flag} {currentCircuitMap.name}</span>
               </h2>
               <p className="text-xs text-zinc-400 mt-0.5">
-                4.657 km | 14 Turns | FIA Grade 1 Timing Loops S1 / S2 / S3
+                {currentCircuitMap.length_km} km | {currentCircuitMap.turns_count} Turns | {currentCircuitMap.archetype}
               </p>
             </div>
 
@@ -145,27 +152,27 @@ export const CircuitMap: React.FC = () => {
             <div className="flex items-center gap-2.5 text-xs">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03] text-zinc-300">
                 <span className="w-2 h-2 rounded-full bg-[#E10600]"></span>
-                <span>Peak FL Scrub (T3 & T9)</span>
+                <span>{currentCircuitMap.peakScrubLabel}</span>
               </span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03] text-zinc-300">
                 <span className="w-2 h-2 rounded-full bg-[#E5A823]"></span>
-                <span>Heavy Braking (T1, T4, T10)</span>
+                <span>{currentCircuitMap.heavyBrakingLabel}</span>
               </span>
             </div>
           </div>
 
-          {/* SVG Map Canvas (True Barcelona Layout viewBox="0 0 1000 600") */}
+          {/* SVG Map Canvas */}
           <div className="w-full h-[400px] flex items-center justify-center relative bg-[#0A0C0F] rounded-lg border border-white/[0.07] p-2 overflow-hidden shadow-inner">
             
             {/* Subtle Grid Watermark */}
             <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
 
-            <div className="absolute top-3.5 left-4 text-[11px] font-mono text-zinc-500/60 font-semibold tracking-wider pointer-events-none">
-              TGR HAAS PIT-WALL TELEMETRY // MONTMELÓ
+            <div className="absolute top-3.5 left-4 text-[11px] font-mono text-zinc-500/60 font-semibold tracking-wider pointer-events-none uppercase">
+              TGR HAAS PIT-WALL TELEMETRY // {currentCircuitMap.country.toUpperCase()}
             </div>
 
             <svg
-              viewBox="0 0 1000 600"
+              viewBox={currentCircuitMap.viewBox || "0 0 1000 600"}
               className="w-full h-full max-h-[380px] drop-shadow-[0_0_24px_rgba(0,0,0,0.9)] relative z-10"
               xmlns="http://www.w3.org/2000/svg"
             >
@@ -180,7 +187,7 @@ export const CircuitMap: React.FC = () => {
 
               {/* Main Track Outer Dark Border */}
               <path
-                d={BARCELONA_SVG_PATH}
+                d={svgPath}
                 fill="none"
                 stroke="#20242E"
                 strokeWidth="14"
@@ -190,7 +197,7 @@ export const CircuitMap: React.FC = () => {
 
               {/* Inner Titanium Racing Line */}
               <path
-                d={BARCELONA_SVG_PATH}
+                d={svgPath}
                 fill="none"
                 stroke="#7E8494"
                 strokeWidth="5"
@@ -200,7 +207,7 @@ export const CircuitMap: React.FC = () => {
 
               {/* Centerline Dashed Telemetry Line */}
               <path
-                d={BARCELONA_SVG_PATH}
+                d={svgPath}
                 fill="none"
                 stroke="#00E5FF"
                 strokeWidth="1.5"
@@ -209,7 +216,7 @@ export const CircuitMap: React.FC = () => {
               />
 
               {/* Sector Timing Lines (S1, S2, S3) */}
-              {BARCELONA_SECTORS.map((sec) => (
+              {sectors.map((sec) => (
                 <g key={sec.id}>
                   {sec.id === 'S3' ? (
                     <>
@@ -268,8 +275,8 @@ export const CircuitMap: React.FC = () => {
                 </g>
               ))}
 
-              {/* Turn Markers (T1 to T14) Anchored Exactly Along Track Coordinates */}
-              {BARCELONA_TURNS.map((turn) => {
+              {/* Turn Markers Anchored Exactly Along Track Coordinates */}
+              {turns.map((turn) => {
                 const isSelected = activeTurn === turn.id;
                 const isPeakScrub = turn.type === 'peak_scrub';
                 const isHeavyBraking = turn.type === 'heavy_braking';
@@ -449,7 +456,7 @@ export const CircuitMap: React.FC = () => {
               </div>
 
               {activeTurnData.type === 'peak_scrub' && (
-                <MetricBadge text="Peak FL Scrub" type="tag" />
+                <MetricBadge text="Peak Scrub Zone" type="tag" />
               )}
               {activeTurnData.type === 'heavy_braking' && (
                 <MetricBadge text="Braking Zone" type="tag" />
@@ -505,7 +512,7 @@ export const CircuitMap: React.FC = () => {
                       <span>Limiting Corner</span>
                     </td>
                     <td className="py-2.5 px-2 text-right font-semibold font-mono tabular-nums text-[#FF3B30] text-xs">{activeTurnData.limiting_tyre}</td>
-                    <td className="py-2.5 px-2 text-right text-zinc-500 font-mono text-[10px]">36.2% Load</td>
+                    <td className="py-2.5 px-2 text-right text-zinc-500 font-mono text-[10px]">{compoundMetadata?.limiting_workload_pct?.toFixed(1) ?? '36.2'}% Load</td>
                   </tr>
                   <tr className="hover:bg-white/[0.02] transition-colors">
                     <td className="py-2.5 px-2 text-zinc-300 font-sans flex items-center gap-2">
@@ -526,17 +533,17 @@ export const CircuitMap: React.FC = () => {
               </div>
               <DataListRow
                 label="Macro Category:"
-                value="High Downforce / Severe Scrub"
-                valueClassName="text-zinc-200 font-medium font-sans"
+                value={activeCircuitInfo.archetype}
+                valueClassName="text-zinc-200 font-medium font-sans text-[11px]"
               />
               <DataListRow
-                label="Asymmetric Ratio:"
-                value="65% R / 35% L"
+                label="Circuit Length:"
+                value={`${activeCircuitInfo.length_km} km (${activeCircuitInfo.turns} Turns)`}
                 valueClassName="text-zinc-200 font-medium font-mono"
               />
               <DataListRow
                 label="Limiting Corner:"
-                value="Front-Left (36.2% Share)"
+                value={`${activeCircuitInfo.limiting_wheel_name} (${compoundMetadata?.limiting_workload_pct?.toFixed(1) ?? '36.2'}% Share)`}
                 valueClassName="text-[#FF3B30] font-semibold font-sans"
               />
             </div>

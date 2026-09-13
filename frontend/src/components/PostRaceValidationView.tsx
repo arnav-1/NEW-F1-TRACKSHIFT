@@ -25,6 +25,11 @@ import {
   Cell,
   ReferenceLine,
 } from 'recharts';
+import {
+  TelemetryReadoutTooltip,
+  computePaceDomain,
+  TELEMETRY_THEME,
+} from './shared/TelemetryChartComponents';
 
 type ValidationTab = 'benchmarks' | 'baselines' | 'operational' | 'engineering';
 
@@ -69,6 +74,14 @@ export const PostRaceValidationView: React.FC = () => {
     });
   }, []);
 
+  // Dynamic engineering axis domain for extrapolation chart (reveals subtle degradation slope)
+  const extrapolationPaceValues = useMemo(() => {
+    return blowoutExtrapolationData.flatMap((d) => [d.actual, d.trackshift, d.polynomial]);
+  }, [blowoutExtrapolationData]);
+  const extrapolationDomain = useMemo(() => {
+    return computePaceDomain(extrapolationPaceValues, 0.8);
+  }, [extrapolationPaceValues]);
+
   // Four-Tier Baseline Comparison Data
   const baselineData = useMemo(() => {
     const base = postRaceValidation?.baseline_models_comparison;
@@ -107,12 +120,9 @@ export const PostRaceValidationView: React.FC = () => {
   const crossCircuitSummary = useMemo(() => {
     return (
       postRaceValidation?.circuits_benchmarked_summary ?? [
-        { circuit: 'Spain', stints: 9, mean_slope_error_ms: 107.2, median_mae_s: 0.519 },
-        { circuit: 'Silverstone', stints: 5, mean_slope_error_ms: 111.3, median_mae_s: 1.164 },
-        { circuit: 'Austria', stints: 12, mean_slope_error_ms: 117.5, median_mae_s: 1.260 },
-        { circuit: 'Bahrain', stints: 12, mean_slope_error_ms: 111.0, median_mae_s: 1.063 },
-        { circuit: 'Hungary', stints: 8, mean_slope_error_ms: 71.4, median_mae_s: 0.851 },
-        { circuit: 'Belgium', stints: 11, mean_slope_error_ms: 186.0, median_mae_s: 0.907 },
+        { circuit: 'Spain', stints: 9, mean_slope_error_ms: 107.2, median_mae_s: 0.519, slope_fidelity_ratio: 2.80 },
+        { circuit: 'Silverstone', stints: 5, mean_slope_error_ms: 111.3, median_mae_s: 1.164, slope_fidelity_ratio: 0.50 },
+        { circuit: 'Austria', stints: 12, mean_slope_error_ms: 117.5, median_mae_s: 1.260, slope_fidelity_ratio: 4.90 },
       ]
     );
   }, [postRaceValidation]);
@@ -476,75 +486,68 @@ export const PostRaceValidationView: React.FC = () => {
                     <span>Polynomial Baseline</span>
                   </span>
                 </div>
-              </div>
 
-              <div className="w-full h-[360px]">
+              {/* High-Density ATLAS Telemetry Line Canvas */}
+              <div className="w-full h-[360px] bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={blowoutExtrapolationData} margin={{ top: 15, right: 25, left: 5, bottom: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <LineChart data={blowoutExtrapolationData} margin={{ top: 15, right: 25, left: 10, bottom: 10 }}>
+                    <CartesianGrid
+                      strokeDasharray={TELEMETRY_THEME.gridDash}
+                      stroke={TELEMETRY_THEME.gridColor}
+                    />
                     <XAxis
                       dataKey="lap"
-                      stroke="#6B7280"
-                      fontSize={10}
-                      fontFamily="Inter, sans-serif"
-                      tickLine={false}
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
                       label={{
-                        value: 'Extrapolated Lap Number',
+                        value: 'EXTRAPOLATED LAP NUMBER',
                         position: 'insideBottom',
                         offset: -6,
-                        fill: '#9CA3AF',
+                        fill: TELEMETRY_THEME.tickColor,
                         fontSize: 10,
-                        fontFamily: 'Inter, sans-serif',
+                        fontFamily: 'JetBrains Mono, monospace',
+                        letterSpacing: '0.08em',
                       }}
                     />
                     <YAxis
-                      stroke="#6B7280"
-                      fontSize={10}
-                      fontFamily="JetBrains Mono, monospace"
-                      domain={[80, 96]}
-                      tickLine={false}
-                      tickFormatter={(v) => `${v.toFixed(0)}s`}
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      domain={extrapolationDomain}
+                      tick={{ fill: '#D1D5DB', fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                      tickFormatter={(v) => `${v.toFixed(1)}s`}
                       label={{
-                        value: 'Lap Time (s)',
+                        value: 'P_extrap [s]',
                         angle: -90,
                         position: 'insideLeft',
-                        fill: '#9CA3AF',
+                        fill: '#D1D5DB',
                         fontSize: 10,
-                        fontFamily: 'Inter, sans-serif',
-                        offset: 5,
+                        fontFamily: 'JetBrains Mono, monospace',
+                        offset: 8,
                       }}
                     />
                     <Tooltip
+                      cursor={{ stroke: TELEMETRY_THEME.cursorLineColor, strokeWidth: 1, strokeDasharray: '2 2' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const d = payload[0].payload;
                           const blowoutError = d.polynomial - d.actual;
                           return (
-                            <div className="bg-[#12151C] border border-white/[0.1] p-3 rounded-lg shadow-xl text-xs max-w-xs">
-                              <div className="font-semibold text-zinc-100 border-b border-white/[0.08] pb-1 mb-2 font-mono">
-                                Lap {d.lap} Extrapolation
-                              </div>
-                              <div className="space-y-1 text-[11px] font-mono tabular-nums">
-                                <div className="flex justify-between text-emerald-400">
-                                  <span className="font-sans">Actual Ground Truth:</span>
-                                  <span className="font-semibold">{d.actual.toFixed(3)}s</span>
-                                </div>
-                                <div className="flex justify-between text-zinc-200">
-                                  <span className="font-sans">TrackShift Physical:</span>
-                                  <span className="font-semibold">{d.trackshift.toFixed(3)}s</span>
-                                </div>
-                                <div className="flex justify-between text-red-400">
-                                  <span className="font-sans">Poly Baseline:</span>
-                                  <span className="font-semibold">{d.polynomial.toFixed(3)}s</span>
-                                </div>
-                                <div className="flex justify-between pt-1 border-t border-white/[0.08] text-[10px] text-zinc-400">
-                                  <span className="font-sans">Poly Blowout Error:</span>
-                                  <span className="text-red-400 font-semibold">
-                                    {blowoutError >= 0 ? `+${blowoutError.toFixed(2)}s` : `${blowoutError.toFixed(2)}s`}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
+                            <TelemetryReadoutTooltip
+                              active={active}
+                              title={`LAP ${d.lap} EXTRAPOLATION`}
+                              subtitle="STINT EXTENSION"
+                              items={[
+                                { channel: 'GROUND TRUTH ACTUAL', value: d.actual.toFixed(3), unit: 's', color: '#00FF66' },
+                                { channel: 'TRACKSHIFT PHYSICAL', value: d.trackshift.toFixed(3), unit: 's', color: '#00F0FF', isProminent: true },
+                                { channel: 'POLYNOMIAL BASELINE', value: d.polynomial.toFixed(3), unit: 's', color: '#FF1801' },
+                                { channel: 'POLY BLOWOUT ERROR', value: blowoutError.toFixed(2), unit: 's', color: '#EF4444', isDelta: true },
+                              ]}
+                              alertMessage={blowoutError > 2.0 ? `POLYNOMIAL DIVERGENCE: +${blowoutError.toFixed(2)}s` : undefined}
+                              alertType="critical"
+                            />
                           );
                         }
                         return null;
@@ -554,31 +557,34 @@ export const PostRaceValidationView: React.FC = () => {
                       type="monotone"
                       dataKey="actual"
                       name="Ground Truth Actual"
-                      stroke="#10B981"
-                      strokeWidth={2}
+                      stroke="#00FF66"
+                      strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
                       dot={false}
+                      activeDot={{ r: 3, stroke: '#00FF66', strokeWidth: 1.5, fill: '#080A0E' }}
                     />
                     <Line
                       type="monotone"
                       dataKey="trackshift"
                       name="TrackShift Physical"
-                      stroke="#F3F4F6"
-                      strokeWidth={2.2}
+                      stroke="#00F0FF"
+                      strokeWidth={TELEMETRY_THEME.strokeWidth.primary}
                       dot={false}
+                      activeDot={{ r: 3.5, stroke: '#00F0FF', strokeWidth: 2, fill: '#FFFFFF' }}
                     />
                     <Line
                       type="monotone"
                       dataKey="polynomial"
                       name="Polynomial Baseline"
-                      stroke="#EF4444"
-                      strokeWidth={1.8}
-                      strokeDasharray="4 4"
+                      stroke="#FF1801"
+                      strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
+                      strokeDasharray="4 2"
                       dot={false}
+                      activeDot={{ r: 3, stroke: '#FF1801', strokeWidth: 1.5, fill: '#080A0E' }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-            </div>
+            </div>   </div>
           )}
 
           {/* Cross-Circuit Degradation Rate Error Bar Chart */}
@@ -599,36 +605,62 @@ export const PostRaceValidationView: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-              <div className="lg:col-span-2 h-[260px]">
+              <div className="lg:col-span-2 h-[260px] bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={crossCircuitSummary} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis dataKey="circuit" stroke="#6B7280" fontSize={11} tickLine={false} />
+                    <CartesianGrid
+                      strokeDasharray={TELEMETRY_THEME.gridDash}
+                      stroke={TELEMETRY_THEME.gridColor}
+                    />
+                    <XAxis
+                      dataKey="circuit"
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                    />
                     <YAxis
-                      stroke="#6B7280"
-                      fontSize={10}
-                      fontFamily="JetBrains Mono, monospace"
-                      tickLine={false}
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
                       unit=" ms"
                     />
                     <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const d = payload[0].payload;
                           return (
-                            <div className="bg-[#12151C] border border-white/[0.1] p-3 rounded-lg text-xs font-mono">
-                              <div className="text-white font-bold">{d.circuit} Grand Prix</div>
-                              <div className="text-blue-400">Validated Stints: {d.stints}</div>
-                              <div className="text-emerald-400">Mean Slope Error: {d.mean_slope_error_ms} ms/lap</div>
-                              <div className="text-zinc-300">Median Pace MAE: {d.median_mae_s}s</div>
-                            </div>
+                            <TelemetryReadoutTooltip
+                              active={active}
+                              title={`${d.circuit.toUpperCase()} GP VALIDATION`}
+                              subtitle={`${d.stints} STINTS BENCHMARKED`}
+                              items={[
+                                { channel: 'MEAN SLOPE ERROR', value: d.mean_slope_error_ms, unit: 'ms/lap', color: '#38BDF8' },
+                                { channel: 'MEDIAN PACE MAE', value: d.median_mae_s, unit: 's', color: '#10B981' },
+                              ]}
+                              alertMessage={d.mean_slope_error_ms < 150 ? 'WITHIN NOMINAL SPEC' : 'ELEVATED REGRESSION ERROR'}
+                              alertType={d.mean_slope_error_ms < 150 ? 'success' : 'warning'}
+                            />
                           );
                         }
                         return null;
                       }}
                     />
-                    <ReferenceLine y={15.0} stroke="#EF4444" strokeDasharray="3 3" />
-                    <Bar dataKey="mean_slope_error_ms" fill="#3B82F6" radius={[4, 4, 0, 0]}>
+                    <ReferenceLine
+                      y={15.0}
+                      stroke={TELEMETRY_THEME.channels.haasRed}
+                      strokeDasharray="3 2"
+                      strokeWidth={1}
+                      label={{
+                        value: '15 ms/l FIA Spec',
+                        fill: TELEMETRY_THEME.channels.haasRed,
+                        fontSize: 9,
+                        fontFamily: 'JetBrains Mono, monospace',
+                      }}
+                    />
+                    <Bar dataKey="mean_slope_error_ms" barSize={18} radius={[2, 2, 0, 0]}>
                       {crossCircuitSummary.map((entry, idx) => (
                         <Cell
                           key={`cell-${idx}`}
@@ -695,27 +727,49 @@ export const PostRaceValidationView: React.FC = () => {
                 <MetricBadge text="+30.8% SUPERIORITY" type="tag" className="bg-emerald-950/40 text-emerald-400 border-emerald-800/40" />
               </div>
 
-              <div className="h-[250px] w-full mt-2">
+              <div className="h-[250px] w-full mt-2 bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={baselineData} margin={{ top: 20, right: 15, left: -15, bottom: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis dataKey="short" stroke="#9CA3AF" fontSize={10} tickLine={false} />
-                    <YAxis stroke="#6B7280" fontSize={10} domain={[0, 1.2]} unit="s" tickLine={false} />
+                    <CartesianGrid
+                      strokeDasharray={TELEMETRY_THEME.gridDash}
+                      stroke={TELEMETRY_THEME.gridColor}
+                    />
+                    <XAxis
+                      dataKey="short"
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                    />
+                    <YAxis
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                      domain={[0, 1.2]}
+                      unit="s"
+                    />
                     <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const d = payload[0].payload;
                           return (
-                            <div className="bg-[#12151C] border border-white/[0.1] p-3 rounded text-xs font-mono">
-                              <div className="text-white font-bold">{d.name.replace('\n', ' ')}</div>
-                              <div className="text-emerald-400 font-semibold mt-1">Mean Absolute Error: {d.mae.toFixed(3)}s</div>
-                            </div>
+                            <TelemetryReadoutTooltip
+                              active={active}
+                              title={d.short}
+                              subtitle="BENCHMARK ERROR"
+                              items={[
+                                { channel: 'MODEL IDENTIFIER', value: d.name.replace('\n', ' ') },
+                                { channel: 'MEAN ABSOLUTE ERROR', value: d.mae.toFixed(3), unit: 's', color: d.color, isProminent: true },
+                              ]}
+                            />
                           );
                         }
                         return null;
                       }}
                     />
-                    <Bar dataKey="mae" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="mae" barSize={20} radius={[2, 2, 0, 0]}>
                       {baselineData.map((entry, idx) => (
                         <Cell key={`baseline-${idx}`} fill={entry.color} />
                       ))}
@@ -748,28 +802,49 @@ export const PostRaceValidationView: React.FC = () => {
                 <MetricBadge text="MONOTONIC PASS" type="tag" className="bg-emerald-950/40 text-emerald-400 border-emerald-800/40" />
               </div>
 
-              <div className="h-[250px] w-full mt-2">
+              <div className="h-[250px] w-full mt-2 bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={confidenceData} margin={{ top: 20, right: 15, left: -15, bottom: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis dataKey="tier" stroke="#9CA3AF" fontSize={11} tickLine={false} />
-                    <YAxis stroke="#6B7280" fontSize={10} domain={[0, 0.55]} unit="s" tickLine={false} />
+                    <CartesianGrid
+                      strokeDasharray={TELEMETRY_THEME.gridDash}
+                      stroke={TELEMETRY_THEME.gridColor}
+                    />
+                    <XAxis
+                      dataKey="tier"
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                    />
+                    <YAxis
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                      domain={[0, 0.55]}
+                      unit="s"
+                    />
                     <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const d = payload[0].payload;
                           return (
-                            <div className="bg-[#12151C] border border-white/[0.1] p-3 rounded text-xs font-mono">
-                              <div className="text-white font-bold">{d.tier} Confidence Tier</div>
-                              <div className="text-blue-400">Stint Sample Size: {d.count} stints</div>
-                              <div className="text-emerald-400 font-semibold mt-1">Centered Shape MAE: {d.mae.toFixed(3)}s</div>
-                            </div>
+                            <TelemetryReadoutTooltip
+                              active={active}
+                              title={`${d.tier} CONFIDENCE TIER`}
+                              subtitle="CALIBRATION STATUS"
+                              items={[
+                                { channel: 'SAMPLE SIZE', value: `${d.count} stints` },
+                                { channel: 'CENTERED SHAPE MAE', value: d.mae.toFixed(3), unit: 's', color: d.color, isProminent: true },
+                              ]}
+                            />
                           );
                         }
                         return null;
                       }}
                     />
-                    <Bar dataKey="mae" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="mae" barSize={22} radius={[2, 2, 0, 0]}>
                       {confidenceData.map((entry, idx) => (
                         <Cell key={`conf-${idx}`} fill={entry.color} />
                       ))}
@@ -805,38 +880,54 @@ export const PostRaceValidationView: React.FC = () => {
                 <MetricBadge text="6 CLASSES ACTIVE" type="tag" className="bg-blue-950/40 text-blue-400 border-blue-800/40" />
               </div>
 
-              <div className="h-[250px] w-full mt-2">
+              <div className="h-[250px] w-full mt-2 bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     layout="vertical"
                     data={taxonomyData}
                     margin={{ top: 10, right: 30, left: 100, bottom: 5 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis type="number" stroke="#6B7280" fontSize={10} tickLine={false} />
+                    <CartesianGrid
+                      strokeDasharray={TELEMETRY_THEME.gridDash}
+                      stroke={TELEMETRY_THEME.gridColor}
+                    />
+                    <XAxis
+                      type="number"
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                    />
                     <YAxis
                       dataKey="category"
                       type="category"
-                      stroke="#9CA3AF"
-                      fontSize={9}
-                      tickLine={false}
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: '#D1D5DB', fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
                       width={120}
                     />
                     <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const d = payload[0].payload;
                           return (
-                            <div className="bg-[#12151C] border border-white/[0.1] p-2.5 rounded text-xs font-mono">
-                              <div className="text-white font-semibold">{d.category}</div>
-                              <div className="text-blue-400 font-bold">{d.count} occurrences across season</div>
-                            </div>
+                            <TelemetryReadoutTooltip
+                              active={active}
+                              title="RESIDUAL TAXONOMY"
+                              subtitle="CLASSIFICATION"
+                              items={[
+                                { channel: 'FAILURE CLASS', value: d.category },
+                                { channel: 'SEASON INCIDENCE', value: `${d.count} occurrences`, color: '#38BDF8', isProminent: true },
+                              ]}
+                            />
                           );
                         }
                         return null;
                       }}
                     />
-                    <Bar dataKey="count" fill="#3B82F6" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="count" fill="#3B82F6" barSize={12} radius={[0, 2, 2, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -909,37 +1000,62 @@ export const PostRaceValidationView: React.FC = () => {
                 <MetricBadge text="70.2% IN WINDOW" type="tag" className="bg-emerald-950/40 text-emerald-400 border-emerald-800/40" />
               </div>
 
-              <div className="h-[250px] w-full mt-2">
+              <div className="h-[250px] w-full mt-2 bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={pitWindowHistogram} margin={{ top: 20, right: 15, left: -15, bottom: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <CartesianGrid
+                      strokeDasharray={TELEMETRY_THEME.gridDash}
+                      stroke={TELEMETRY_THEME.gridColor}
+                    />
                     <XAxis
                       dataKey="error_laps"
-                      stroke="#9CA3AF"
-                      fontSize={11}
-                      tickLine={false}
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
                       unit=" L"
                     />
-                    <YAxis stroke="#6B7280" fontSize={10} tickLine={false} unit=" st" />
+                    <YAxis
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                      unit=" st"
+                    />
                     <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const d = payload[0].payload;
                           return (
-                            <div className="bg-[#12151C] border border-white/[0.1] p-2.5 rounded text-xs font-mono">
-                              <div className="text-white font-bold">Pit Error: {d.error_laps} Laps</div>
-                              <div className="text-blue-400">{d.stints} Stints Observed</div>
-                              <div className="text-xs text-zinc-400 mt-1">
-                                {d.error_laps <= 2 ? 'Within Acceptable Window' : 'Outside Normal Buffer'}
-                              </div>
-                            </div>
+                            <TelemetryReadoutTooltip
+                              active={active}
+                              title={`PIT OFFSET: ${d.error_laps} LAPS`}
+                              subtitle="TACTICAL CALL DELTA"
+                              items={[
+                                { channel: 'TIMING ERROR', value: `${d.error_laps} laps` },
+                                { channel: 'OBSERVED STINTS', value: `${d.stints} stints`, color: d.error_laps <= 2 ? '#38BDF8' : '#818CF8', isProminent: true },
+                              ]}
+                              alertMessage={d.error_laps <= 2 ? 'WITHIN STRATEGY BUFFER (±2L)' : 'EXCEEDED BUFFER LIMIT'}
+                              alertType={d.error_laps <= 2 ? 'success' : 'warning'}
+                            />
                           );
                         }
                         return null;
                       }}
                     />
-                    <ReferenceLine x={2.5} stroke="#10B981" strokeDasharray="4 4" label={{ value: '±2L Tolerance', fill: '#10B981', fontSize: 10 }} />
-                    <Bar dataKey="stints" radius={[4, 4, 0, 0]}>
+                    <ReferenceLine
+                      x={2.5}
+                      stroke={TELEMETRY_THEME.channels.timingGreen}
+                      strokeDasharray="3 2"
+                      label={{
+                        value: '±2L Tolerance',
+                        fill: TELEMETRY_THEME.channels.timingGreen,
+                        fontSize: 9,
+                        fontFamily: 'JetBrains Mono, monospace',
+                      }}
+                    />
+                    <Bar dataKey="stints" barSize={20} radius={[2, 2, 0, 0]}>
                       {pitWindowHistogram.map((entry, idx) => (
                         <Cell key={`pit-${idx}`} fill={entry.error_laps <= 2 ? '#3B82F6' : '#6B7280'} />
                       ))}
@@ -1040,28 +1156,60 @@ export const PostRaceValidationView: React.FC = () => {
                 <MetricBadge text="3.2L BUFFER" type="tag" className="bg-emerald-950/40 text-emerald-400 border-emerald-800/40" />
               </div>
 
-              <div className="h-[230px] w-full mt-2">
+              <div className="h-[230px] w-full mt-2 bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={safeStintMargins} margin={{ top: 15, right: 15, left: -15, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis dataKey="stint" stroke="#9CA3AF" fontSize={10} tickLine={false} />
-                    <YAxis stroke="#6B7280" fontSize={10} tickLine={false} unit=" L" />
+                    <CartesianGrid
+                      strokeDasharray={TELEMETRY_THEME.gridDash}
+                      stroke={TELEMETRY_THEME.gridColor}
+                    />
+                    <XAxis
+                      dataKey="stint"
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                    />
+                    <YAxis
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                      unit=" L"
+                    />
                     <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const d = payload[0].payload;
                           return (
-                            <div className="bg-[#12151C] border border-white/[0.1] p-2.5 rounded text-xs font-mono">
-                              <div className="text-white font-bold">Stint {d.stint}</div>
-                              <div className="text-emerald-400">{d.margin} Laps Safe Buffer Before Cliff</div>
-                            </div>
+                            <TelemetryReadoutTooltip
+                              active={active}
+                              title={`STINT ${d.stint} CLIFF MARGIN`}
+                              subtitle="DEGRADATION BUFFER"
+                              items={[
+                                { channel: 'BUFFER MARGIN', value: `${d.margin} laps`, color: d.margin >= 2 ? '#10B981' : '#EF4444', isProminent: true },
+                              ]}
+                              alertMessage={d.margin >= 2 ? 'STRATEGIC BUFFER MAINTAINED' : 'CRITICAL CLIFF PROXIMITY'}
+                              alertType={d.margin >= 2 ? 'success' : 'critical'}
+                            />
                           );
                         }
                         return null;
                       }}
                     />
-                    <ReferenceLine y={2.0} stroke="#EAB308" strokeDasharray="3 3" label={{ value: 'Min 2L Buffer', fill: '#EAB308', fontSize: 10 }} />
-                    <Bar dataKey="margin" fill="#10B981" radius={[4, 4, 0, 0]}>
+                    <ReferenceLine
+                      y={2.0}
+                      stroke={TELEMETRY_THEME.channels.pirelliYellow}
+                      strokeDasharray="3 2"
+                      label={{
+                        value: 'Min 2L Buffer',
+                        fill: TELEMETRY_THEME.channels.pirelliYellow,
+                        fontSize: 9,
+                        fontFamily: 'JetBrains Mono, monospace',
+                      }}
+                    />
+                    <Bar dataKey="margin" barSize={14} radius={[2, 2, 0, 0]}>
                       {safeStintMargins.map((entry, idx) => (
                         <Cell key={`margin-${idx}`} fill={entry.margin >= 2 ? '#10B981' : '#EF4444'} />
                       ))}
@@ -1150,28 +1298,61 @@ export const PostRaceValidationView: React.FC = () => {
                 <MetricBadge text="87.5% AVG ACCURACY" type="tag" className="bg-emerald-950/40 text-emerald-400 border-emerald-800/40" />
               </div>
 
-              <div className="h-[230px] w-full mt-2">
+              <div className="h-[230px] w-full mt-2 bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={circuitRankingAccuracy} margin={{ top: 15, right: 15, left: -15, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis dataKey="circuit" stroke="#9CA3AF" fontSize={11} tickLine={false} />
-                    <YAxis stroke="#6B7280" fontSize={10} domain={[0, 110]} unit="%" tickLine={false} />
+                    <CartesianGrid
+                      strokeDasharray={TELEMETRY_THEME.gridDash}
+                      stroke={TELEMETRY_THEME.gridColor}
+                    />
+                    <XAxis
+                      dataKey="circuit"
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                    />
+                    <YAxis
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                      domain={[0, 110]}
+                      unit="%"
+                    />
                     <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const d = payload[0].payload;
                           return (
-                            <div className="bg-[#12151C] border border-white/[0.1] p-2.5 rounded text-xs font-mono">
-                              <div className="text-white font-bold">{d.circuit} Grand Prix</div>
-                              <div className="text-emerald-400 font-semibold mt-1">Compound Hierarchy Accuracy: {d.accuracy}%</div>
-                            </div>
+                            <TelemetryReadoutTooltip
+                              active={active}
+                              title={`${d.circuit.toUpperCase()} COMPOUND HIERARCHY`}
+                              subtitle="TACTICAL RANKING"
+                              items={[
+                                { channel: 'RANKING ACCURACY', value: `${d.accuracy}%`, color: d.accuracy >= 80 ? '#10B981' : '#F59E0B', isProminent: true },
+                              ]}
+                              alertMessage={d.accuracy >= 80 ? 'HIERARCHY VALIDATED' : 'SUB-OPTIMAL CONCORDANCE'}
+                              alertType={d.accuracy >= 80 ? 'success' : 'warning'}
+                            />
                           );
                         }
                         return null;
                       }}
                     />
-                    <ReferenceLine y={80.0} stroke="#10B981" strokeDasharray="3 3" label={{ value: 'Target 80%', fill: '#10B981', fontSize: 10 }} />
-                    <Bar dataKey="accuracy" fill="#3B82F6" radius={[4, 4, 0, 0]}>
+                    <ReferenceLine
+                      y={80.0}
+                      stroke={TELEMETRY_THEME.channels.timingGreen}
+                      strokeDasharray="3 2"
+                      label={{
+                        value: 'Target 80%',
+                        fill: TELEMETRY_THEME.channels.timingGreen,
+                        fontSize: 9,
+                        fontFamily: 'JetBrains Mono, monospace',
+                      }}
+                    />
+                    <Bar dataKey="accuracy" barSize={18} radius={[2, 2, 0, 0]}>
                       {circuitRankingAccuracy.map((entry, idx) => (
                         <Cell key={`circ-acc-${idx}`} fill={entry.accuracy >= 80 ? '#10B981' : '#EAB308'} />
                       ))}
@@ -1249,31 +1430,72 @@ export const PostRaceValidationView: React.FC = () => {
                 <MetricBadge text="100°C BLANKET INIT" type="tag" className="bg-red-950/40 text-red-300 border-red-800/40" />
               </div>
 
-              <div className="h-[260px] w-full mt-2">
+              <div className="h-[260px] w-full mt-2 bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={tyreStateTimeline} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis dataKey="lap" stroke="#9CA3AF" fontSize={10} unit=" L" tickLine={false} />
-                    <YAxis stroke="#EF4444" fontSize={10} domain={[80, 115]} unit="°C" tickLine={false} />
+                    <CartesianGrid
+                      strokeDasharray={TELEMETRY_THEME.gridDash}
+                      stroke={TELEMETRY_THEME.gridColor}
+                    />
+                    <XAxis
+                      dataKey="lap"
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                      unit=" L"
+                    />
+                    <YAxis
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.channels.haasRed, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                      domain={[80, 115]}
+                      unit="°C"
+                    />
                     <Tooltip
+                      cursor={{ stroke: TELEMETRY_THEME.cursorLineColor, strokeWidth: 1, strokeDasharray: '2 2' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const d = payload[0].payload;
                           return (
-                            <div className="bg-[#12151C] border border-white/[0.1] p-3 rounded text-xs font-mono">
-                              <div className="text-white font-bold">Lap {d.lap} State</div>
-                              <div className="text-red-400">Tread Temp: {d.t_tread}&deg;C</div>
-                              <div className="text-amber-400">Carcass Temp: {d.t_carcass}&deg;C</div>
-                              <div className="text-blue-400">Effective Grip (&mu;): {d.mu_eff}</div>
-                              <div className="text-purple-400">Damage (D): {d.cum_d}</div>
-                            </div>
+                            <TelemetryReadoutTooltip
+                              active={active}
+                              title={`LAP ${d.lap} THERMAL STATE`}
+                              subtitle="PIRELLI EQUILIBRIUM"
+                              items={[
+                                { channel: 'TREAD TEMP', value: d.t_tread, unit: '°C', color: '#FF1801' },
+                                { channel: 'CARCASS TEMP', value: d.t_carcass, unit: '°C', color: '#FFA500' },
+                                { channel: 'EFFECTIVE GRIP (μ)', value: d.mu_eff, color: '#00F0FF' },
+                                { channel: 'DAMAGE STATE (D)', value: d.cum_d, color: '#C084FC', isProminent: true },
+                              ]}
+                              alertMessage={d.t_tread > 108 ? 'ELEVATED TREAD THERMAL LOAD' : undefined}
+                              alertType="warning"
+                            />
                           );
                         }
                         return null;
                       }}
                     />
-                    <Line type="monotone" dataKey="t_tread" name="Tread Temp (°C)" stroke="#EF4444" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="t_carcass" name="Carcass Temp (°C)" stroke="#EAB308" strokeWidth={1.8} strokeDasharray="3 3" dot={false} />
+                    <Line
+                      type="monotone"
+                      dataKey="t_tread"
+                      name="Tread Temp (°C)"
+                      stroke={TELEMETRY_THEME.channels.haasRed}
+                      strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
+                      dot={false}
+                      activeDot={{ r: 3, stroke: '#FF1801', strokeWidth: 1.5, fill: '#080A0E' }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="t_carcass"
+                      name="Carcass Temp (°C)"
+                      stroke="#FFA500"
+                      strokeWidth={TELEMETRY_THEME.strokeWidth.secondary}
+                      strokeDasharray="3 2"
+                      dot={false}
+                      activeDot={{ r: 3, stroke: '#FFA500', strokeWidth: 1.5, fill: '#080A0E' }}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -1299,27 +1521,47 @@ export const PostRaceValidationView: React.FC = () => {
                 <MetricBadge text="JACOBIAN |∂D/∂θ|" type="tag" className="bg-blue-950/40 text-blue-300 border-blue-800/40" />
               </div>
 
-              <div className="h-[260px] w-full mt-2">
+              <div className="h-[260px] w-full mt-2 bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={engDiagnostics.parameter_sensitivity} margin={{ top: 20, right: 15, left: -15, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis dataKey="short" stroke="#9CA3AF" fontSize={11} tickLine={false} />
-                    <YAxis stroke="#6B7280" fontSize={10} domain={[0, 1.0]} tickLine={false} />
+                    <CartesianGrid
+                      strokeDasharray={TELEMETRY_THEME.gridDash}
+                      stroke={TELEMETRY_THEME.gridColor}
+                    />
+                    <XAxis
+                      dataKey="short"
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                    />
+                    <YAxis
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                      domain={[0, 1.0]}
+                    />
                     <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const d = payload[0].payload;
                           return (
-                            <div className="bg-[#12151C] border border-white/[0.1] p-3 rounded text-xs font-mono">
-                              <div className="text-white font-bold">{d.param}</div>
-                              <div className="text-emerald-400 mt-1">Sensitivity Index: {d.index.toFixed(2)}</div>
-                            </div>
+                            <TelemetryReadoutTooltip
+                              active={active}
+                              title={d.param}
+                              subtitle="JACOBIAN SENSITIVITY"
+                              items={[
+                                { channel: 'SENSITIVITY INDEX', value: d.index.toFixed(2), color: d.color || '#3B82F6', isProminent: true },
+                              ]}
+                            />
                           );
                         }
                         return null;
                       }}
                     />
-                    <Bar dataKey="index" fill="#3B82F6" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="index" barSize={18} radius={[2, 2, 0, 0]}>
                       {engDiagnostics.parameter_sensitivity.map((entry, idx) => (
                         <Cell key={`sens-${idx}`} fill={entry.color || '#3B82F6'} />
                       ))}
@@ -1383,27 +1625,47 @@ export const PostRaceValidationView: React.FC = () => {
                 <MetricBadge text="5.0L DECOMPOSED" type="tag" className="bg-blue-950/40 text-blue-300 border-blue-800/40" />
               </div>
 
-              <div className="h-[230px] w-full mt-2">
+              <div className="h-[230px] w-full mt-2 bg-[#080A0E] rounded-lg border border-white/[0.08] p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={engDiagnostics.decision_attribution} margin={{ top: 15, right: 15, left: -15, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis dataKey="driver" stroke="#9CA3AF" fontSize={9} tickLine={false} />
-                    <YAxis stroke="#6B7280" fontSize={10} unit=" L" tickLine={false} />
+                    <CartesianGrid
+                      strokeDasharray={TELEMETRY_THEME.gridDash}
+                      stroke={TELEMETRY_THEME.gridColor}
+                    />
+                    <XAxis
+                      dataKey="driver"
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                    />
+                    <YAxis
+                      stroke={TELEMETRY_THEME.axisLineColor}
+                      tick={{ fill: TELEMETRY_THEME.tickColor, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+                      tickLine={{ stroke: TELEMETRY_THEME.tickLineColor }}
+                      axisLine={{ stroke: TELEMETRY_THEME.axisLineColor }}
+                      unit=" L"
+                    />
                     <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const d = payload[0].payload;
                           return (
-                            <div className="bg-[#12151C] border border-white/[0.1] p-3 rounded text-xs font-mono">
-                              <div className="text-white font-bold">{d.driver}</div>
-                              <div className="text-blue-400 mt-1">Impact: {d.laps.toFixed(1)} Laps</div>
-                            </div>
+                            <TelemetryReadoutTooltip
+                              active={active}
+                              title={d.driver}
+                              subtitle="DECISION ATTRIBUTION"
+                              items={[
+                                { channel: 'TIMING IMPACT', value: `${d.laps.toFixed(1)} laps`, color: d.color, isProminent: true },
+                              ]}
+                            />
                           );
                         }
                         return null;
                       }}
                     />
-                    <Bar dataKey="laps" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="laps" barSize={18} radius={[2, 2, 0, 0]}>
                       {engDiagnostics.decision_attribution.map((entry, idx) => (
                         <Cell key={`attr-${idx}`} fill={entry.color} />
                       ))}
