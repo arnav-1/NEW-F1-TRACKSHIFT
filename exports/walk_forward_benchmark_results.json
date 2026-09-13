@@ -1,0 +1,682 @@
+{
+  "baseline_prior_races": [
+    "Bahrain",
+    "Saudi Arabia",
+    "Australia",
+    "Japan",
+    "China",
+    "Miami"
+  ],
+  "circuits_evaluated": [
+    "Spain",
+    "Austria",
+    "Silverstone",
+    "Belgium"
+  ],
+  "scorecards": {
+    "Spain": [
+      {
+        "circuit": "Spain",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 1,
+        "compound": "SOFT",
+        "stint_length": 14,
+        "centered_shape_mae_s": 0.11015388213671654,
+        "physical_mae_s": 0.1408129417961477,
+        "slope_error_ms_per_lap": 95.60890589799237,
+        "predicted_pit_lap": 1,
+        "actual_pit_lap": 14,
+        "pit_window_error_laps": 13,
+        "pit_captured_within_2l": false,
+        "telemetry_grip": {
+          "circuit": "Spain",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 1,
+          "compound": "SOFT",
+          "sample_points_count": 14,
+          "correlation": 0.4430371291969942,
+          "rmse": 0.3596631002780126,
+          "mae": 0.3462630903839821,
+          "relative_bias": -0.3462630903839821,
+          "trend_agreement_pct": 7.6923076923076925,
+          "status_code": 0
+        }
+      },
+      {
+        "circuit": "Spain",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 2,
+        "compound": "MEDIUM",
+        "stint_length": 24,
+        "centered_shape_mae_s": 0.10654137425901324,
+        "physical_mae_s": 0.138992305145022,
+        "slope_error_ms_per_lap": 114.25802776981963,
+        "predicted_pit_lap": 2,
+        "actual_pit_lap": 24,
+        "pit_window_error_laps": 22,
+        "pit_captured_within_2l": false,
+        "telemetry_grip": {
+          "circuit": "Spain",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 2,
+          "compound": "MEDIUM",
+          "sample_points_count": 24,
+          "correlation": 0.4098136408798121,
+          "rmse": 0.6962497207893116,
+          "mae": 0.6808229926036061,
+          "relative_bias": -0.6808229926036061,
+          "trend_agreement_pct": 8.695652173913043,
+          "status_code": 0
+        }
+      },
+      {
+        "circuit": "Spain",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 3,
+        "compound": "HARD",
+        "stint_length": 28,
+        "centered_shape_mae_s": 0.10594805064009825,
+        "physical_mae_s": 0.13855302769321265,
+        "slope_error_ms_per_lap": 168.94974806176222,
+        "predicted_pit_lap": 3,
+        "actual_pit_lap": 28,
+        "pit_window_error_laps": 25,
+        "pit_captured_within_2l": false,
+        "telemetry_grip": {
+          "circuit": "Spain",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 3,
+          "compound": "HARD",
+          "sample_points_count": 28,
+          "correlation": 0.5855305120639978,
+          "rmse": 0.7280201821364863,
+          "mae": 0.7092131479568626,
+          "relative_bias": -0.7092131479568626,
+          "trend_agreement_pct": 29.629629629629626,
+          "status_code": 0
+        }
+      }
+    ],
+    "Austria": [
+      {
+        "circuit": "Austria",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 1,
+        "compound": "SOFT",
+        "stint_length": 14,
+        "centered_shape_mae_s": 0.11015388213671654,
+        "physical_mae_s": 0.1408129417961477,
+        "slope_error_ms_per_lap": 107.37942435596354,
+        "predicted_pit_lap": 1,
+        "actual_pit_lap": 14,
+        "pit_window_error_laps": 13,
+        "pit_captured_within_2l": false,
+        "telemetry_grip": {
+          "circuit": "Austria",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 1,
+          "compound": "SOFT",
+          "sample_points_count": 14,
+          "correlation": 0.443037129196994,
+          "rmse": 0.42044220148367883,
+          "mae": 0.4048771486337181,
+          "relative_bias": -0.4048771486337181,
+          "trend_agreement_pct": 7.6923076923076925,
+          "status_code": 0
+        }
+      },
+      {
+        "circuit": "Austria",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 2,
+        "compound": "MEDIUM",
+        "stint_length": 24,
+        "centered_shape_mae_s": 0.10654137425901324,
+        "physical_mae_s": 0.138992305145022,
+        "slope_error_ms_per_lap": 125.31896484927304,
+        "predicted_pit_lap": 2,
+        "actual_pit_lap": 24,
+        "pit_window_error_laps": 22,
+        "pit_captured_within_2l": false,
+        "telemetry_grip": {
+          "circuit": "Austria",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 2,
+          "compound": "MEDIUM",
+          "sample_points_count": 24,
+          "correlation": 0.42988152216966113,
+          "rmse": 0.7078609466954316,
+          "mae": 0.6917862743829267,
+          "relative_bias": -0.6917862743829267,
+          "trend_agreement_pct": 13.043478260869565,
+          "status_code": 0
+        }
+      },
+      {
+        "circuit": "Austria",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 3,
+        "compound": "HARD",
+        "stint_length": 33,
+        "centered_shape_mae_s": 0.10532163487444376,
+        "physical_mae_s": 0.13815549779287026,
+        "slope_error_ms_per_lap": 144.59743028128756,
+        "predicted_pit_lap": 3,
+        "actual_pit_lap": 33,
+        "pit_window_error_laps": 30,
+        "pit_captured_within_2l": false,
+        "telemetry_grip": {
+          "circuit": "Austria",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 3,
+          "compound": "HARD",
+          "sample_points_count": 33,
+          "correlation": 0.6093555635208224,
+          "rmse": 0.7312973685832637,
+          "mae": 0.7138396319726217,
+          "relative_bias": -0.7138396319726217,
+          "trend_agreement_pct": 37.5,
+          "status_code": 0
+        }
+      }
+    ],
+    "Silverstone": [
+      {
+        "circuit": "Silverstone",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 1,
+        "compound": "SOFT",
+        "stint_length": 14,
+        "centered_shape_mae_s": 0.1101538821367166,
+        "physical_mae_s": 0.1408129417961477,
+        "slope_error_ms_per_lap": 146.495995298667,
+        "predicted_pit_lap": 1,
+        "actual_pit_lap": 14,
+        "pit_window_error_laps": 13,
+        "pit_captured_within_2l": false,
+        "telemetry_grip": {
+          "circuit": "Silverstone",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 1,
+          "compound": "SOFT",
+          "sample_points_count": 14,
+          "correlation": 0.4430371291969943,
+          "rmse": 0.5541914162270893,
+          "mae": 0.5338265723065777,
+          "relative_bias": -0.5338265723065777,
+          "trend_agreement_pct": 7.6923076923076925,
+          "status_code": 0
+        }
+      },
+      {
+        "circuit": "Silverstone",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 2,
+        "compound": "MEDIUM",
+        "stint_length": 24,
+        "centered_shape_mae_s": 0.10654137425901324,
+        "physical_mae_s": 0.138992305145022,
+        "slope_error_ms_per_lap": 168.00555398532308,
+        "predicted_pit_lap": 2,
+        "actual_pit_lap": 24,
+        "pit_window_error_laps": 22,
+        "pit_captured_within_2l": false,
+        "telemetry_grip": {
+          "circuit": "Silverstone",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 2,
+          "compound": "MEDIUM",
+          "sample_points_count": 24,
+          "correlation": 0.5161571353199137,
+          "rmse": 0.7291744392086039,
+          "mae": 0.7105304749541849,
+          "relative_bias": -0.7105304749541849,
+          "trend_agreement_pct": 21.73913043478261,
+          "status_code": 0
+        }
+      },
+      {
+        "circuit": "Silverstone",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 3,
+        "compound": "HARD",
+        "stint_length": 14,
+        "centered_shape_mae_s": 0.11015388213671648,
+        "physical_mae_s": 0.1408129417961477,
+        "slope_error_ms_per_lap": 384.1581754442961,
+        "predicted_pit_lap": 5,
+        "actual_pit_lap": 14,
+        "pit_window_error_laps": 9,
+        "pit_captured_within_2l": false,
+        "telemetry_grip": {
+          "circuit": "Silverstone",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 3,
+          "compound": "HARD",
+          "sample_points_count": 14,
+          "correlation": 0.8508300882557386,
+          "rmse": 0.5222447332795181,
+          "mae": 0.49178821203462847,
+          "relative_bias": -0.49178821203462847,
+          "trend_agreement_pct": 100.0,
+          "status_code": 0
+        }
+      }
+    ],
+    "Belgium": [
+      {
+        "circuit": "Belgium",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 1,
+        "compound": "SOFT",
+        "stint_length": 14,
+        "centered_shape_mae_s": 0.1101538821367166,
+        "physical_mae_s": 0.1408129417961477,
+        "slope_error_ms_per_lap": 121.76738904008722,
+        "predicted_pit_lap": 1,
+        "actual_pit_lap": 14,
+        "pit_window_error_laps": 13,
+        "pit_captured_within_2l": false,
+        "telemetry_grip": {
+          "circuit": "Belgium",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 1,
+          "compound": "SOFT",
+          "sample_points_count": 14,
+          "correlation": 0.44303712919699406,
+          "rmse": 0.47934505667880145,
+          "mae": 0.4616706910978146,
+          "relative_bias": -0.4616706910978146,
+          "trend_agreement_pct": 7.6923076923076925,
+          "status_code": 0
+        }
+      },
+      {
+        "circuit": "Belgium",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 2,
+        "compound": "MEDIUM",
+        "stint_length": 24,
+        "centered_shape_mae_s": 0.10654137425901332,
+        "physical_mae_s": 0.138992305145022,
+        "slope_error_ms_per_lap": 140.17760149295802,
+        "predicted_pit_lap": 2,
+        "actual_pit_lap": 24,
+        "pit_window_error_laps": 22,
+        "pit_captured_within_2l": false,
+        "telemetry_grip": {
+          "circuit": "Belgium",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 2,
+          "compound": "MEDIUM",
+          "sample_points_count": 24,
+          "correlation": 0.4597279363514799,
+          "rmse": 0.7182459488239499,
+          "mae": 0.7013234609984368,
+          "relative_bias": -0.7013234609984368,
+          "trend_agreement_pct": 13.043478260869565,
+          "status_code": 0
+        }
+      },
+      {
+        "circuit": "Belgium",
+        "year": 2024,
+        "driver": "27",
+        "stint_number": 3,
+        "compound": "HARD",
+        "stint_length": 6,
+        "centered_shape_mae_s": 0.1200449680653034,
+        "physical_mae_s": 0.14873455367880925,
+        "slope_error_ms_per_lap": 832.6101288567407,
+        "predicted_pit_lap": 4,
+        "actual_pit_lap": 6,
+        "pit_window_error_laps": 2,
+        "pit_captured_within_2l": true,
+        "telemetry_grip": {
+          "circuit": "Belgium",
+          "year": 2024,
+          "driver": "27",
+          "stint_number": 3,
+          "compound": "HARD",
+          "sample_points_count": 6,
+          "correlation": 0.9431830588834837,
+          "rmse": 0.4458458253642093,
+          "mae": 0.39505544252748503,
+          "relative_bias": -0.39505544252748503,
+          "trend_agreement_pct": 100.0,
+          "status_code": 0
+        }
+      }
+    ]
+  },
+  "strategy_plans": {
+    "Spain": {
+      "circuit": "Spain",
+      "race_distance_laps": 66,
+      "starting_compound": "SOFT",
+      "compound_sequence": [
+        "SOFT",
+        "MEDIUM",
+        "HARD"
+      ],
+      "compound_sequence_ids": [
+        3,
+        2,
+        1
+      ],
+      "stint_lengths": [
+        14,
+        24,
+        28
+      ],
+      "pit_laps": [
+        14,
+        38
+      ],
+      "pit_windows": [
+        [
+          12,
+          16
+        ],
+        [
+          36,
+          40
+        ]
+      ],
+      "predicted_total_race_time_s": 5357.0,
+      "pit_time_loss_total_s": 44.0,
+      "constraints_satisfied": 1,
+      "safety_margin_pct": 15.0
+    },
+    "Austria": {
+      "circuit": "Austria",
+      "race_distance_laps": 71,
+      "starting_compound": "SOFT",
+      "compound_sequence": [
+        "SOFT",
+        "MEDIUM",
+        "HARD"
+      ],
+      "compound_sequence_ids": [
+        3,
+        2,
+        1
+      ],
+      "stint_lengths": [
+        14,
+        24,
+        33
+      ],
+      "pit_laps": [
+        14,
+        38
+      ],
+      "pit_windows": [
+        [
+          12,
+          16
+        ],
+        [
+          36,
+          40
+        ]
+      ],
+      "predicted_total_race_time_s": 5759.5,
+      "pit_time_loss_total_s": 44.0,
+      "constraints_satisfied": 1,
+      "safety_margin_pct": 15.0
+    },
+    "Silverstone": {
+      "circuit": "Silverstone",
+      "race_distance_laps": 52,
+      "starting_compound": "SOFT",
+      "compound_sequence": [
+        "SOFT",
+        "MEDIUM",
+        "HARD"
+      ],
+      "compound_sequence_ids": [
+        3,
+        2,
+        1
+      ],
+      "stint_lengths": [
+        14,
+        24,
+        14
+      ],
+      "pit_laps": [
+        14,
+        38
+      ],
+      "pit_windows": [
+        [
+          12,
+          16
+        ],
+        [
+          36,
+          40
+        ]
+      ],
+      "predicted_total_race_time_s": 4230.0,
+      "pit_time_loss_total_s": 44.0,
+      "constraints_satisfied": 1,
+      "safety_margin_pct": 15.0
+    },
+    "Belgium": {
+      "circuit": "Belgium",
+      "race_distance_laps": 44,
+      "starting_compound": "SOFT",
+      "compound_sequence": [
+        "SOFT",
+        "MEDIUM",
+        "HARD"
+      ],
+      "compound_sequence_ids": [
+        3,
+        2,
+        1
+      ],
+      "stint_lengths": [
+        14,
+        24,
+        6
+      ],
+      "pit_laps": [
+        14,
+        38
+      ],
+      "pit_windows": [
+        [
+          12,
+          16
+        ],
+        [
+          36,
+          40
+        ]
+      ],
+      "predicted_total_race_time_s": 3586.0,
+      "pit_time_loss_total_s": 44.0,
+      "constraints_satisfied": 1,
+      "safety_margin_pct": 15.0
+    }
+  },
+  "learning_updates": {
+    "Spain": [
+      {
+        "target_circuit": "Spain",
+        "source_circuit": "Spain",
+        "compound": "SOFT",
+        "parameter_name": "w_p1",
+        "old_value": 0.046,
+        "inferred_value": 0.05346944577328065,
+        "updated_value": 0.05346944577328065,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      },
+      {
+        "target_circuit": "Spain",
+        "source_circuit": "Spain",
+        "compound": "MEDIUM",
+        "parameter_name": "w_p1",
+        "old_value": 0.032,
+        "inferred_value": 0.04092640841951716,
+        "updated_value": 0.04092640841951716,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      },
+      {
+        "target_circuit": "Spain",
+        "source_circuit": "Spain",
+        "compound": "HARD",
+        "parameter_name": "w_p1",
+        "old_value": 0.021,
+        "inferred_value": 0.03419919906732517,
+        "updated_value": 0.0273,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      }
+    ],
+    "Austria": [
+      {
+        "target_circuit": "Austria",
+        "source_circuit": "Austria",
+        "compound": "SOFT",
+        "parameter_name": "w_p1",
+        "old_value": 0.05346944577328065,
+        "inferred_value": 0.0618584633010903,
+        "updated_value": 0.0618584633010903,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      },
+      {
+        "target_circuit": "Austria",
+        "source_circuit": "Austria",
+        "compound": "MEDIUM",
+        "parameter_name": "w_p1",
+        "old_value": 0.04092640841951716,
+        "inferred_value": 0.05071695254836662,
+        "updated_value": 0.05071695254836662,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      },
+      {
+        "target_circuit": "Austria",
+        "source_circuit": "Austria",
+        "compound": "HARD",
+        "parameter_name": "w_p1",
+        "old_value": 0.0273,
+        "inferred_value": 0.03859667424072559,
+        "updated_value": 0.03549,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      }
+    ],
+    "Silverstone": [
+      {
+        "target_circuit": "Silverstone",
+        "source_circuit": "Silverstone",
+        "compound": "SOFT",
+        "parameter_name": "w_p1",
+        "old_value": 0.0618584633010903,
+        "inferred_value": 0.07330346293379866,
+        "updated_value": 0.07330346293379866,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      },
+      {
+        "target_circuit": "Silverstone",
+        "source_circuit": "Silverstone",
+        "compound": "MEDIUM",
+        "parameter_name": "w_p1",
+        "old_value": 0.05071695254836662,
+        "inferred_value": 0.06384238645346998,
+        "updated_value": 0.06384238645346998,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      },
+      {
+        "target_circuit": "Silverstone",
+        "source_circuit": "Silverstone",
+        "compound": "HARD",
+        "parameter_name": "w_p1",
+        "old_value": 0.03549,
+        "inferred_value": 0.06550235745658563,
+        "updated_value": 0.046137,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      }
+    ],
+    "Belgium": [
+      {
+        "target_circuit": "Belgium",
+        "source_circuit": "Belgium",
+        "compound": "SOFT",
+        "parameter_name": "w_p1",
+        "old_value": 0.07330346293379866,
+        "inferred_value": 0.08281654020255548,
+        "updated_value": 0.08281654020255548,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      },
+      {
+        "target_circuit": "Belgium",
+        "source_circuit": "Belgium",
+        "compound": "MEDIUM",
+        "parameter_name": "w_p1",
+        "old_value": 0.06384238645346998,
+        "inferred_value": 0.07479376157010734,
+        "updated_value": 0.07479376157010734,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      },
+      {
+        "target_circuit": "Belgium",
+        "source_circuit": "Belgium",
+        "compound": "HARD",
+        "parameter_name": "w_p1",
+        "old_value": 0.046137,
+        "inferred_value": 0.11118466631693287,
+        "updated_value": 0.05997809999999999,
+        "acceptance_status": "UPDATE_ACCEPTED",
+        "repeatability_evidence_count": 1,
+        "walk_forward_improvement_pct": 4.5
+      }
+    ]
+  }
+}

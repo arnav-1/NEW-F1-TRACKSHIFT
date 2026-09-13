@@ -1,0 +1,38 @@
+{
+  "circuit": "Austria",
+  "race_distance_laps": 71,
+  "starting_compound": "SOFT",
+  "compound_sequence": [
+    "SOFT",
+    "MEDIUM",
+    "HARD"
+  ],
+  "compound_sequence_ids": [
+    3,
+    2,
+    1
+  ],
+  "stint_lengths": [
+    14,
+    24,
+    33
+  ],
+  "pit_laps": [
+    14,
+    38
+  ],
+  "pit_windows": [
+    [
+      12,
+      16
+    ],
+    [
+      36,
+      40
+    ]
+  ],
+  "predicted_total_race_time_s": 5759.5,
+  "pit_time_loss_total_s": 44.0,
+  "constraints_satisfied": 1,
+  "safety_margin_pct": 15.0
+}

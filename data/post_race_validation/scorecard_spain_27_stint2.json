@@ -1,0 +1,29 @@
+{
+  "circuit": "Spain",
+  "year": 2024,
+  "driver": "27",
+  "stint_number": 2,
+  "compound": "MEDIUM",
+  "stint_length": 24,
+  "centered_shape_mae_s": 0.10654137425901324,
+  "physical_mae_s": 0.138992305145022,
+  "slope_error_ms_per_lap": 114.25802776981963,
+  "predicted_pit_lap": 2,
+  "actual_pit_lap": 24,
+  "pit_window_error_laps": 22,
+  "pit_captured_within_2l": false,
+  "telemetry_grip": {
+    "circuit": "Spain",
+    "year": 2024,
+    "driver": "27",
+    "stint_number": 2,
+    "compound": "MEDIUM",
+    "sample_points_count": 24,
+    "correlation": 0.4098136408798121,
+    "rmse": 0.6962497207893116,
+    "mae": 0.6808229926036061,
+    "relative_bias": -0.6808229926036061,
+    "trend_agreement_pct": 8.695652173913043,
+    "status_code": 0
+  }
+}

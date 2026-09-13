@@ -1,0 +1,29 @@
+{
+  "circuit": "Silverstone",
+  "year": 2024,
+  "driver": "27",
+  "stint_number": 2,
+  "compound": "MEDIUM",
+  "stint_length": 24,
+  "centered_shape_mae_s": 0.10654137425901324,
+  "physical_mae_s": 0.138992305145022,
+  "slope_error_ms_per_lap": 168.00555398532308,
+  "predicted_pit_lap": 2,
+  "actual_pit_lap": 24,
+  "pit_window_error_laps": 22,
+  "pit_captured_within_2l": false,
+  "telemetry_grip": {
+    "circuit": "Silverstone",
+    "year": 2024,
+    "driver": "27",
+    "stint_number": 2,
+    "compound": "MEDIUM",
+    "sample_points_count": 24,
+    "correlation": 0.5161571353199137,
+    "rmse": 0.7291744392086039,
+    "mae": 0.7105304749541849,
+    "relative_bias": -0.7105304749541849,
+    "trend_agreement_pct": 21.73913043478261,
+    "status_code": 0
+  }
+}

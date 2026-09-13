@@ -1,0 +1,29 @@
+{
+  "circuit": "Belgium",
+  "year": 2024,
+  "driver": "27",
+  "stint_number": 2,
+  "compound": "MEDIUM",
+  "stint_length": 24,
+  "centered_shape_mae_s": 0.10654137425901332,
+  "physical_mae_s": 0.138992305145022,
+  "slope_error_ms_per_lap": 140.17760149295802,
+  "predicted_pit_lap": 2,
+  "actual_pit_lap": 24,
+  "pit_window_error_laps": 22,
+  "pit_captured_within_2l": false,
+  "telemetry_grip": {
+    "circuit": "Belgium",
+    "year": 2024,
+    "driver": "27",
+    "stint_number": 2,
+    "compound": "MEDIUM",
+    "sample_points_count": 24,
+    "correlation": 0.4597279363514799,
+    "rmse": 0.7182459488239499,
+    "mae": 0.7013234609984368,
+    "relative_bias": -0.7013234609984368,
+    "trend_agreement_pct": 13.043478260869565,
+    "status_code": 0
+  }
+}

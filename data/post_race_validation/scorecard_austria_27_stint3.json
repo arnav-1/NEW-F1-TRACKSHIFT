@@ -1,0 +1,29 @@
+{
+  "circuit": "Austria",
+  "year": 2024,
+  "driver": "27",
+  "stint_number": 3,
+  "compound": "HARD",
+  "stint_length": 33,
+  "centered_shape_mae_s": 0.10532163487444376,
+  "physical_mae_s": 0.13815549779287026,
+  "slope_error_ms_per_lap": 144.59743028128756,
+  "predicted_pit_lap": 3,
+  "actual_pit_lap": 33,
+  "pit_window_error_laps": 30,
+  "pit_captured_within_2l": false,
+  "telemetry_grip": {
+    "circuit": "Austria",
+    "year": 2024,
+    "driver": "27",
+    "stint_number": 3,
+    "compound": "HARD",
+    "sample_points_count": 33,
+    "correlation": 0.6093555635208224,
+    "rmse": 0.7312973685832637,
+    "mae": 0.7138396319726217,
+    "relative_bias": -0.7138396319726217,
+    "trend_agreement_pct": 37.5,
+    "status_code": 0
+  }
+}

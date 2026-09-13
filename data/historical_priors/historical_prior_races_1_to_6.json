@@ -1,0 +1,53 @@
+{
+  "global_parameters": {
+    "vehicle_mass_kg": 798.0,
+    "c_l_a": 3.8,
+    "beta_fuel": 0.033,
+    "fuel_burn_per_lap_kg": 1.6,
+    "lambda_wear": 0.5,
+    "k_pace_loss": 3.2,
+    "p1_heat_partition": 0.5,
+    "q_ref_w": 15000.0
+  },
+  "compounds": {
+    "SOFT": {
+      "beta_1_per_lap": 0.108,
+      "beta_1": 1.62,
+      "beta_2": 0.35,
+      "beta_0": 0.05,
+      "calibrated_w_p1": 0.046,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 95.0,
+      "t_window": 15.0,
+      "base_mu0": 1.55
+    },
+    "MEDIUM": {
+      "beta_1_per_lap": 0.072,
+      "beta_1": 1.08,
+      "beta_2": 0.22,
+      "beta_0": 0.04,
+      "calibrated_w_p1": 0.032,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 105.0,
+      "t_window": 18.0,
+      "base_mu0": 1.45
+    },
+    "HARD": {
+      "beta_1_per_lap": 0.044,
+      "beta_1": 0.66,
+      "beta_2": 0.15,
+      "beta_0": 0.03,
+      "calibrated_w_p1": 0.021,
+      "calibrated_w_p2": 1.15,
+      "t_opt": 112.0,
+      "t_window": 20.0,
+      "base_mu0": 1.35
+    }
+  },
+  "race_support_count": 6,
+  "circuit_support_count": 6,
+  "stint_support_count": 48,
+  "lap_support_count": 864,
+  "quality_score": 0.92,
+  "version": "2.0.0"
+}
