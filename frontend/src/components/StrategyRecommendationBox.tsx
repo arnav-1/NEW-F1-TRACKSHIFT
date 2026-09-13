@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTelemetry } from '../context/TelemetryContext';
+import { useTelemetry, type SessionType } from '../context/TelemetryContext';
 import {
   Brain,
   Sliders,
@@ -10,16 +10,25 @@ import {
   ChevronUp,
   Target,
   Layers,
+  ArrowRight,
+  RotateCcw,
+  Award,
+  Lock,
 } from 'lucide-react';
 
 export const StrategyRecommendationBox: React.FC = () => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
   const {
     selectedSession,
+    setSession,
     selectedCompound,
     activeCircuitInfo,
     activeSessionRecommendation,
+    advanceToNextSession,
+    resetWeekendToFP1,
+    isSessionUnlocked,
+    setActiveTab,
   } = useTelemetry();
 
   if (!activeSessionRecommendation) {
@@ -61,13 +70,126 @@ export const StrategyRecommendationBox: React.FC = () => {
     }
   };
 
-  return (
-    <div className="tgr-card border border-white/[0.14] bg-[#0E1015]/95 shadow-2xl relative overflow-hidden transition-all duration-300">
-      
-      {/* Background Accent Glow */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-red-600/10 via-transparent to-transparent pointer-events-none rounded-bl-full" />
+  const sessions: Array<{ id: SessionType; label: string; stageName: string; color: string }> = [
+    { id: 'FP1', label: '1. FP1 Practice', stageName: 'Green Track Baseline', color: 'emerald' },
+    { id: 'FP2', label: '2. FP2 Long-Run', stageName: 'Dominant 82% Update', color: 'sky' },
+    { id: 'FP3', label: '3. FP3 Pre-Race', stageName: 'Pre-Race Freeze', color: 'purple' },
+    { id: 'Race', label: '4. Sunday GP', stageName: 'Pre-Race Strategy & Audit', color: 'red' },
+  ];
 
-      {/* 1. Sleek, Ultra-Glanceable Executive Summary Bar (Always Visible & Clickable) */}
+  return (
+    <div className="tgr-card border border-white/[0.14] bg-[#0E1015]/95 shadow-2xl relative overflow-hidden transition-all duration-300 space-y-0">
+      
+      {/* Background Ambient Glow */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-red-600/10 via-transparent to-transparent pointer-events-none rounded-bl-full" />
+
+      {/* 1. Grand Prix Weekend Sequential Stepper & Advancement Action Bar */}
+      <div className="bg-black/90 px-4 lg:px-6 py-2.5 border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-3">
+        
+        {/* Step Breadcrumbs: FP1 -> FP2 -> FP3 -> Race */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs">
+          <span className="text-[10px] font-display uppercase tracking-widest text-zinc-400 font-bold mr-1 hidden sm:inline">
+            WEEKEND STEPPER:
+          </span>
+
+          {sessions.map((sess, idx) => {
+            const isCurrent = selectedSession === sess.id;
+            const isUnlocked = isSessionUnlocked(sess.id);
+
+            return (
+              <React.Fragment key={sess.id}>
+                {idx > 0 && <ArrowRight className="w-3 h-3 text-zinc-600 shrink-0" />}
+
+                <button
+                  onClick={() => {
+                    if (isUnlocked) {
+                      setSession(sess.id);
+                    }
+                  }}
+                  disabled={!isUnlocked}
+                  title={isUnlocked ? `Switch to ${sess.label}` : `${sess.label} is locked until previous session finishes`}
+                  className={`px-3 py-1 rounded-md flex items-center gap-1.5 transition-all font-display uppercase tracking-wider font-bold text-xs ${
+                    isCurrent
+                      ? sess.color === 'emerald'
+                        ? 'bg-emerald-600 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]'
+                        : sess.color === 'sky'
+                        ? 'bg-sky-600 text-white shadow-[0_0_10px_rgba(2,132,199,0.5)]'
+                        : sess.color === 'purple'
+                        ? 'bg-purple-600 text-white shadow-[0_0_10px_rgba(147,51,234,0.5)]'
+                        : 'bg-[#E10600] text-white shadow-[0_0_12px_rgba(225,6,0,0.6)]'
+                      : isUnlocked
+                      ? 'bg-white/[0.04] text-zinc-300 hover:text-white hover:bg-white/[0.08]'
+                      : 'bg-white/[0.02] text-zinc-600 cursor-not-allowed border border-white/[0.04]'
+                  }`}
+                >
+                  <span>{sess.label}</span>
+                  {!isUnlocked ? (
+                    <Lock className="w-3 h-3 text-zinc-600" />
+                  ) : !isCurrent ? (
+                    <CheckCircle2 className="w-3 h-3 text-zinc-400" />
+                  ) : null}
+                </button>
+              </React.Fragment>
+            );
+          })}
+        </div>
+
+        {/* Right Action Advancement Buttons */}
+        <div className="flex items-center gap-2.5 ml-auto">
+          {selectedSession === 'FP1' && (
+            <button
+              onClick={advanceToNextSession}
+              className="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-display font-black tracking-wider uppercase rounded-md shadow-md flex items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span>MOVE ONTO FP2 (LONG-RUN UPDATE)</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {selectedSession === 'FP2' && (
+            <button
+              onClick={advanceToNextSession}
+              className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-display font-black tracking-wider uppercase rounded-md shadow-md flex items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span>MOVE ONTO FP3 (PRE-RACE FREEZE)</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {selectedSession === 'FP3' && (
+            <button
+              onClick={advanceToNextSession}
+              className="px-4 py-1.5 bg-[#E10600] hover:bg-[#B30500] text-white text-xs font-display font-black tracking-wider uppercase rounded-md shadow-md flex items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98] animate-pulse"
+            >
+              <span>LAUNCH SUNDAY RACE 🚦</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {selectedSession === 'Race' && (
+            <button
+              onClick={() => setActiveTab('validation')}
+              className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-display font-black tracking-wider uppercase rounded-md shadow-md flex items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Award className="w-4 h-4 text-emerald-300" />
+              <span>DESIGNATED POST-RACE VALIDATION 🏆</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* Reset Weekend Button */}
+          <button
+            onClick={resetWeekendToFP1}
+            title="Reset simulation to FP1 Practice"
+            className="p-1.5 bg-white/[0.04] hover:bg-white/[0.1] text-zinc-400 hover:text-white rounded-md border border-white/[0.08] transition-colors"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+      </div>
+
+      {/* 2. Sleek Executive Summary Ribbon (Clickable to Expand / Collapse) */}
       <div
         onClick={() => setIsExpanded(!isExpanded)}
         className="px-5 py-3.5 flex flex-wrap items-center justify-between gap-4 cursor-pointer select-none hover:bg-white/[0.02] transition-colors"
@@ -81,7 +203,7 @@ export const StrategyRecommendationBox: React.FC = () => {
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2 flex-wrap text-xs">
               <span className="font-display font-black tracking-wider text-red-500 uppercase text-xs">
-                HAAS F1 PIT-WALL STRATEGY
+                HAAS F1 STRATEGY DIRECTIVE
               </span>
               <span className="text-zinc-600">|</span>
               <span className={`px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase border ${getStageColor(rec.stage)}`}>
@@ -103,7 +225,8 @@ export const StrategyRecommendationBox: React.FC = () => {
 
         {/* Center: High-Impact Recommendation Badges */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Recommended Tyre Badge */}
+          
+          {/* Primary Recommended Tyre Badge */}
           <div className="flex items-center gap-2 bg-black/60 border border-white/[0.08] px-3 py-1.5 rounded-lg">
             <span className="text-[11px] text-zinc-400 font-sans uppercase font-semibold">TYRE:</span>
             <span className={`px-2.5 py-0.5 rounded text-xs font-display font-black tracking-wider border ${getCompoundBadgeStyle(rec.recommended_primary_compound)}`}>
@@ -111,8 +234,8 @@ export const StrategyRecommendationBox: React.FC = () => {
             </span>
           </div>
 
-          {/* Primary Pit Window */}
-          {rec.pit_windows[0] && (
+          {/* Pit Target (Only when available in FP3/Race) */}
+          {rec.pit_windows[0] && ['FP3', 'Race'].includes(selectedSession) && (
             <div className="hidden lg:flex items-center gap-2 bg-black/60 border border-white/[0.08] px-3 py-1.5 rounded-lg">
               <Target className="w-3.5 h-3.5 text-red-400" />
               <span className="text-[11px] text-zinc-400 font-sans uppercase font-semibold">PIT TARGET:</span>
@@ -155,7 +278,7 @@ export const StrategyRecommendationBox: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Expanded Detail Pane (Opens smoothly on click) */}
+      {/* 3. Expanded Technical Numbers & Session-Specific Pane (Boxes appear/disappear sequentially) */}
       {isExpanded && (
         <div className="px-5 pb-5 pt-2 border-t border-white/[0.08] space-y-4 animate-in fade-in-50 duration-200">
           
@@ -164,7 +287,7 @@ export const StrategyRecommendationBox: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-mono">
               <span className="text-zinc-300 font-sans font-semibold text-xs uppercase tracking-wider flex items-center gap-1.5">
                 <Layers className="w-4 h-4 text-red-500" />
-                <span>Continual Learning Fusion Weights:</span>
+                <span>Continual Learning Fusion Weights (Physical Evolution):</span>
               </span>
               <div className="flex items-center gap-4 text-xs tabular-nums">
                 <span className={fp1Pct > 0 ? 'text-emerald-400 font-bold' : 'text-zinc-600'}>
@@ -201,7 +324,7 @@ export const StrategyRecommendationBox: React.FC = () => {
           {/* High-Legibility Big Numerical Output Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
             
-            {/* Card 1: Primary Recommended Strategy */}
+            {/* Card 1: Primary Compound & Session Baseline */}
             <div className="p-4 rounded-lg bg-black/50 border border-white/[0.08] space-y-2.5">
               <div className="text-xs text-zinc-400 font-sans uppercase font-bold tracking-wider">
                 PRIMARY TYRE RECOMMENDATION
@@ -211,11 +334,11 @@ export const StrategyRecommendationBox: React.FC = () => {
                   {rec.recommended_primary_compound}
                 </span>
                 <span className="text-sm font-bold text-white font-sans">
-                  Race Baseline
+                  {selectedSession === 'FP1' ? 'Initial Baseline' : selectedSession === 'FP2' ? 'Long-Run Choice' : 'Race Mandate'}
                 </span>
               </div>
               <div className="pt-2 border-t border-white/[0.06] text-xs font-mono text-zinc-300">
-                <div className="text-[11px] text-zinc-500 uppercase font-sans mb-0.5">Mandated Strategy:</div>
+                <div className="text-[11px] text-zinc-500 uppercase font-sans mb-0.5">Session Directive:</div>
                 <div className="font-semibold text-zinc-100">{rec.optimal_strategy}</div>
               </div>
             </div>
@@ -286,11 +409,13 @@ export const StrategyRecommendationBox: React.FC = () => {
               </div>
             </div>
 
-            {/* Card 4: Stint Target Windows */}
+            {/* Card 4: Stint Target Windows (Conditional on session progression) */}
             <div className="p-4 rounded-lg bg-black/50 border border-white/[0.08] space-y-2.5">
               <div className="flex items-center justify-between text-xs text-zinc-400 font-sans uppercase font-bold tracking-wider">
-                <span>OPTIMAL PIT WINDOWS</span>
-                <span className="text-[11px] text-emerald-400 font-bold font-mono">ACTIVE</span>
+                <span>{selectedSession === 'FP1' ? 'ESTIMATED STINTS' : 'OPTIMAL PIT WINDOWS'}</span>
+                <span className="text-[11px] text-emerald-400 font-bold font-mono">
+                  {selectedSession === 'FP1' ? 'ESTIMATE' : selectedSession === 'FP2' ? 'REFINED' : 'MANDATED'}
+                </span>
               </div>
               <div className="space-y-1.5">
                 {rec.pit_windows.map((pw) => (
@@ -334,8 +459,8 @@ export const StrategyRecommendationBox: React.FC = () => {
             </div>
           </div>
 
-          {/* Post-Race Validation Card (Visible during Sunday Race) */}
-          {rec.post_race_metrics && (
+          {/* Post-Race Validation Card (ONLY REVEALED during Sunday Race session) */}
+          {rec.post_race_metrics && selectedSession === 'Race' && (
             <div className="p-4 rounded-lg bg-emerald-950/30 border border-emerald-500/40 flex flex-wrap items-center justify-between gap-5">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
@@ -376,8 +501,75 @@ export const StrategyRecommendationBox: React.FC = () => {
                   </span>
                 </div>
               </div>
+
+              {/* Direct Link to Designated Post Race Validation Tab */}
+              <button
+                onClick={() => setActiveTab('validation')}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-display uppercase tracking-wider font-bold text-xs rounded-md shadow-md flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Award className="w-4 h-4 text-white" />
+                <span>OPEN FULL VALIDATION WORKSPACE</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
           )}
+
+          {/* Session Advancement Footer Card */}
+          <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] text-xs">
+            <div className="text-zinc-400 font-sans">
+              Grand Prix Weekend Status:{' '}
+              <strong className="text-white font-mono uppercase">
+                {selectedSession === 'FP1'
+                  ? 'FP1 Green Track Ingestion'
+                  : selectedSession === 'FP2'
+                  ? 'FP2 Long-Run Calibration (82% Weight)'
+                  : selectedSession === 'FP3'
+                  ? 'FP3 Pre-Race Parameter Freeze Locked'
+                  : 'Sunday Grand Prix Strategy Execution'}
+              </strong>
+            </div>
+
+            {selectedSession === 'FP1' && (
+              <button
+                onClick={advanceToNextSession}
+                className="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-display uppercase tracking-wider font-bold text-xs rounded-md shadow-md flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <span>MOVE ONTO FP2 (LONG-RUN UPDATE)</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+
+            {selectedSession === 'FP2' && (
+              <button
+                onClick={advanceToNextSession}
+                className="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-display uppercase tracking-wider font-bold text-xs rounded-md shadow-md flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <span>MOVE ONTO FP3 (PRE-RACE FREEZE)</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+
+            {selectedSession === 'FP3' && (
+              <button
+                onClick={advanceToNextSession}
+                className="px-5 py-2 bg-[#E10600] hover:bg-[#B30500] text-white font-display uppercase tracking-wider font-bold text-xs rounded-md shadow-md flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] animate-pulse"
+              >
+                <span>LAUNCH SUNDAY RACE 🚦</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+
+            {selectedSession === 'Race' && (
+              <button
+                onClick={() => setActiveTab('validation')}
+                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-display uppercase tracking-wider font-bold text-xs rounded-md shadow-md flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Award className="w-4 h-4 text-emerald-300" />
+                <span>GO TO DESIGNATED POST-RACE VALIDATION 🏆</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
 
         </div>
       )}
