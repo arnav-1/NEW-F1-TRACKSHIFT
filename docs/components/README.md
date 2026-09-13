@@ -63,14 +63,15 @@ Every document in this folder is structured for maximum engineering rigor and pr
 | [**08_FOUR_WHEEL_MODELING.md**](file:///c:/Users/daksh/Projects/Trackshiftv2/docs/components/08_FOUR_WHEEL_MODELING.md) | **4-Wheel Dynamics Deep Dive** | Milliken weight transfer, yaw moment, banking, and contact patch asymmetry. | `src/dep/degradation.py`, `core_model/` |
 | [**09_CONFIDENCE_STRATEGY_OPTIMIZATION.md**](file:///c:/Users/daksh/Projects/Trackshiftv2/docs/components/09_CONFIDENCE_STRATEGY_OPTIMIZATION.md) | **Decision Strategy Deep Dive** | Confidence scoring, undercut/overcut windows, Monte Carlo stint optimizer. | `src/cmp/comparison.py`, `post_race_validation/` |
 | [**10_ALL_FORMULAS_MASTER_CATALOG.md**](file:///c:/Users/daksh/Projects/Trackshiftv2/docs/components/10_ALL_FORMULAS_MASTER_CATALOG.md) | **All 49 Formulas Catalog** | Comprehensive equations catalog with full provenance and academic citations. | `docs/FORMULA_PROVENANCE_AND_FEATURE_GLOSSARY.md` |
+| [**11_LIVE_ODE_MODELING_AND_DEP_EXPANSION.md**](file:///c:/Users/daksh/Projects/Trackshiftv2/docs/components/11_LIVE_ODE_MODELING_AND_DEP_EXPANSION.md) | **Live ODE & DEP Expansion** | State-space sub-stepped ODE numerical integration, tri-mechanism wear accumulation, and live race execution code map. | `core_model/code/thermal_wear_model.py`, `src/export_frontend_data.py` |
 
 ---
 
 ## 3. How to Read Through These Documents
 
 1. **For Race Engineers & Data Scientists**:
-   Read sequentially from **01** to **06**. Notice how raw sensor spikes are filtered out in **02**, isolated into physics energies in **03**, fitted into degradation trajectories in **04**, solved in state-space differential equations in **05**, and scientifically validated against Sunday actuals in **06**.
+   Read sequentially from **01** to **06**, then inspect **11 (Live ODE & DEP Expansion)**. Notice how raw sensor spikes are filtered out in **02**, isolated into physics energies in **03**, fitted into degradation trajectories in **04**, solved in state-space differential equations in **05** and **11**, and scientifically validated against Sunday actuals in **06**.
 2. **For Strategists & Team Principals**:
-   Focus on **06 (Post-Race Validation)**, **07 (Console UI)**, and **09 (Strategy & Optimization)**. These documents define the exact pit window error (MAE in laps), compound ranking accuracy (Spearman rank correlation), and undercut crossover economics.
+   Focus on **06 (Post-Race Validation)**, **07 (Console UI)**, **09 (Strategy & Optimization)**, and **11 (Live Race Execution)**. These documents define the exact pit window error (MAE in laps), compound ranking accuracy (Spearman rank correlation), and real-time pit call triggers.
 3. **For Vehicle Dynamicists & Modelling Specialists**:
-   Deep dive into **04 (DEP)**, **05 (Core Model)**, **08 (4-Wheel Dynamics)**, and **10 (All Formulas Catalog)** for the exact vehicle dynamics equations (Milliken load transfer, Arrhenius thermal kinetics, and friction generation).
+   Deep dive into **04 (DEP)**, **05 (Core Model)**, **08 (4-Wheel Dynamics)**, **10 (All Formulas Catalog)**, and **11 (Live ODE & DEP Expansion)** for the exact vehicle dynamics equations (Milliken load transfer, coupled 2-node thermal ODEs, and friction generation).

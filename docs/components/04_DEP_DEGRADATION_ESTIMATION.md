@@ -211,5 +211,17 @@ class FourWheelState:
 [Output: DegradationFitResult & FourWheelState]
                │
                ▼
-[Component 05 (Core Model): Feeds State-Space Differential Equations]
+[Component 05 (Core Model) & Component 11 (Live ODE & DEP Expansion)]:
+ Feeds State-Space Differential Equations & Drives Live Sunday Lap-by-Lap State Updates
 ```
+
+---
+
+## 6. Live Race Mode vs Offline Mode (DEP Expansion)
+
+For the comprehensive deep dive on how DEP transitions from offline polynomial fitting into live Sunday state-space ODE stepping, please see:
+- [**Component 11: Final State-Space ODE Modeling, Live Race Execution & DEP Expansion**](file:///c:/Users/daksh/Projects/Trackshiftv2/docs/components/11_LIVE_ODE_MODELING_AND_DEP_EXPANSION.md)
+  - Details the continuous-time coupled ODEs: $dT_{\text{tread}}/dt$ and $dT_{\text{carcass}}/dt$.
+  - Explains the sub-stepped numerical integration across cornering duty cycles.
+  - Documents how live damage accumulation $D(t)$ maps to instantaneous grip loss $\Psi_{\text{wear}}(D)$ and lap pace loss $\Delta t_{\text{pred}}$.
+  - Maps where every line of live execution lives in the codebase.
